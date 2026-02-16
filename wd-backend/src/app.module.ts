@@ -22,7 +22,7 @@ import { LearningProgressModule } from './learning_progress/learning_progress.mo
       username: 'admin',
       password: 'password123',
       database: 'NewLearningAcademy_dev',
-      entities: [], // เราจะเพมิ่ Entities ทนี่ ี่ในภายหลัง
+      entities: [__dirname + '/**/*.entity{.ts,.js}'], // เราจะเพมิ่ Entities ทนี่ ี่ในภายหลัง
       synchronize: true, // สรา้ง Table อัตโนมตั ิ(ใชสำ้ สำ หรบั Dev เทา่ นั้น)
 }),
       UsersModule,
