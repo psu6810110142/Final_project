@@ -1,13 +1,12 @@
 import React from 'react';
-import './HomePage.css';
-import { Home, BookOpen, User, LogOut, ArrowRight, Book, Users, Star, Clock } from 'lucide-react';
-// import รูปภาพโลโก้ (ตรวจสอบ Path ให้ถูกนะครับ)
+import './HomePage.css'; // ใช้ CSS เดิม
+import { Home, BookOpen, Users, Star, Clock, LogIn, UserPlus, Book } from 'lucide-react';
 import logoImage from '../assets/Logo.png'; 
 
-const HomePage: React.FC = () => {
+const LandingPage: React.FC = () => {
   return (
     <div className="page-wrapper">
-      {/* ================= Navbar ================= */}
+      {/* ================= Navbar (เวอร์ชันยังไม่ล็อกอิน) ================= */}
       <nav className="navbar">
         <div className="container navbar-container">
           {/* Logo */}
@@ -19,7 +18,7 @@ const HomePage: React.FC = () => {
             </div>
           </a>
           
-          {/* Menu */}
+          {/* Menu & Auth Buttons */}
           <div className="navbar-menu">
             <a href="/" className="menu-item active">
               <Home size={18} /> หน้าหลัก
@@ -27,13 +26,16 @@ const HomePage: React.FC = () => {
             <a href="/courses" className="menu-item">
               <Book size={18} /> คอร์สเรียน
             </a>
-            <a href="/my-courses" className="menu-item">
-              <User size={18} /> คอร์สของฉัน
-            </a>
-            <a href="/logout" className="menu-item">
-              <LogOut size={18} /> ออกจากระบบ
-            </a>
-            <div className="user-pill">User</div>
+            
+            {/* ส่วนที่ต่างจาก HomePage: ปุ่ม Login/Register */}
+            <div className="nav-auth-buttons">
+                <a href="/login" className="btn-nav-login">
+                    <LogIn size={18} /> เข้าสู่ระบบ
+                </a>
+                <a href="/register" className="btn-nav-register">
+                    <UserPlus size={18} /> สมัครสมาชิก
+                </a>
+            </div>
           </div>
         </div>
       </nav>
@@ -44,9 +46,10 @@ const HomePage: React.FC = () => {
           <div className="hero-text">
             <h1>เรียนออนไลน์ <br />ที่บ้าน สะดวก สบาย</h1>
             <p>แพลตฟอร์มการเรียนออนไลน์สำหรับนักเรียนชั้นประถมและมัธยมต้น เรียนได้ทุกที่ทุกเวลา พร้อมครูผู้สอนที่มีคุณภาพ</p>
-            <button className="btn-hero">
-              <BookOpen size={20} /> เริ่มเรียนเลย
-            </button>
+            {/* ปุ่มกดแล้วไปหน้า Register */}
+            <a href="/register" className="btn-hero" style={{textDecoration: 'none'}}>
+              <BookOpen size={20} /> เริ่มต้นใช้งานฟรี
+            </a>
           </div>
 
           <div className="stats-grid">
@@ -91,7 +94,7 @@ const HomePage: React.FC = () => {
           <div className="section-header">
             <h2 className="section-title" style={{ margin: 0 }}>คอร์สแนะนำ</h2>
             <button className="btn-link">
-              ดูทั้งหมด <ArrowRight size={18} />
+              ดูทั้งหมด <img src="https://api.iconify.design/lucide:arrow-right.svg?color=%233b82f6" alt="" width="18" />
             </button>
           </div>
 
@@ -143,7 +146,7 @@ const HomePage: React.FC = () => {
   );
 };
 
-// --- Helper Components ---
+// --- Helper Components (เหมือนเดิม) ---
 const StatCard = ({ number, label }: any) => (
   <div className="stat-card">
     <div className="stat-number">{number}</div>
@@ -184,4 +187,4 @@ const CourseCard = ({ subject, grade, title, price, tagColor, textColor, imgSrc 
   </div>
 );
 
-export default HomePage;
+export default LandingPage;
