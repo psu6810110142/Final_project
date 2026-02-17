@@ -58,9 +58,10 @@ const LoginPage: React.FC = () => {
               </div>
             </div>
 
-            <button type="submit" className="btn-submit">
-              เข้าสู่ระบบ
-            </button>
+            {/* ตัวอย่างการแก้ปุ่มใน LoginPage.tsx เพื่อทดสอบลิ้งก์ไปหน้า Home */}
+            <a href="/home" className="btn-submit" style={{display:'block', textAlign:'center', textDecoration:'none'}}>
+            เข้าสู่ระบบ (Demo Link)
+            </a>
           </form>
 
           <div className="divider">

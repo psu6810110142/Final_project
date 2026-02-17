@@ -79,7 +79,7 @@ const RegisterPage: React.FC = () => {
           </button>
 
           <div className="auth-footer">
-            มีบัญชีอยู่แล้ว? <a href="#">เข้าสู่ระบบที่นี่</a>
+            มีบัญชีอยู่แล้ว? <a href="/login">เข้าสู่ระบบที่นี่</a>
           </div>
         </div>
       </div>
