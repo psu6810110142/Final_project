@@ -118,6 +118,18 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
+      <section className='hero' >
+        <div className="container" style={{ display: 'flex', justifyContent: 'center' }}>          
+          <div className="hero-text" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',width: '100%'}}> 
+            <h1 style={{ color: 'white',  whiteSpace: 'normal'}}>พร้อมเริ่มต้นการเรียนรู้แล้วหรือยัง</h1>
+            <p style={{ color: 'white'}}>ลงทะเบียนวันนี้และเริ่มเรียนคอร์สที่คุณสนใจได้เลย</p>
+            <a href="/register" className="btn-hero" style={{textDecoration: 'none'}}>
+              <BookOpen size={20} /> สมัครสมาชิกฟรี
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* ================= Footer ================= */}
       <footer className="footer">
         <div className="container">

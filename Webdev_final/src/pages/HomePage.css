@@ -1,8 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=Kanit&display=swap');
 :root {
   --primary-blue: #3b82f6;   /* สีฟ้าสดใส */
-  --dark-blue: #1e3a8a;      /* สีน้ำเงินเข้ม (Navbar) */
+  --dark-blue: #3674b5;      /* สีน้ำเงินเข้ม (Navbar) */
   --light-blue-bg: #eff6ff;  /* สีพื้นหลังอ่อนๆ */
   --text-dark: #1f2937;
   --text-gray: #6b7280;
@@ -14,11 +13,12 @@
 }
 
 body {
-  font-family: 'Sarabun', sans-serif;
+  font-family: 'Kanit', sans-serif;
   margin: 0;
   padding: 0;
   background-color: var(--light-blue-bg);
   color: var(--text-dark);
+  letter-spacing: 0.5px;
 }
 
 .container {
@@ -83,7 +83,8 @@ body {
 
 /* ================= Navbar (ใช้ร่วมกันทั้ง 2 หน้า) ================= */
 .navbar {
-  background: linear-gradient(90deg, #172554 0%, #1e3a8a 100%); /* ไล่สีน้ำเงินเข้ม */
+  /*background: linear-gradient(180deg, #3674B5 0%, #18334F 100%);*/
+  background-color: #3674b5;
   color: white;
   padding: 12px 0;
   box-shadow: 0 4px 20px rgba(0,0,0,0.1);
@@ -167,11 +168,11 @@ body {
 
 /* ================= Hero Section (หน้า Home) ================= */
 .hero {
-  background-color: #60a5fa;
-  /* ใส่ Pattern ลายเส้นจางๆ */
+  background-color: #51A6FF;
   background-image: 
-    radial-gradient(rgba(255, 255, 255, 0.2) 2px, transparent 2px),
-    linear-gradient(to right, #60a5fa, #3b82f6); 
+    linear-gradient(rgba(81, 166, 255, 0.95), rgba(81, 166, 255, 0.95)),  
+    url('../assets/BG.png'); 
+  background-repeat: repeat;
   background-size: 30px 30px, 100% 100%;
   color: white;
   padding: 80px 0;
