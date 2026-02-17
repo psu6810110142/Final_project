@@ -19,7 +19,7 @@ export class LevelsController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.levelsService.findOne(+id);
+    return this.levelsService.findOne(+id); // แปลง id จาก string เป็น number ด้วยเครื่องหมาย +
   }
 
   @Patch(':id')

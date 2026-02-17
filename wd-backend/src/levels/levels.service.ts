@@ -1,26 +1,40 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Level } from './entities/level.entity';
 import { CreateLevelDto } from './dto/create-level.dto';
 import { UpdateLevelDto } from './dto/update-level.dto';
 
 @Injectable()
 export class LevelsService {
+  constructor(
+    @InjectRepository(Level)
+    private readonly levelRepo: Repository<Level>,
+  ) {}
+
   create(createLevelDto: CreateLevelDto) {
-    return 'This action adds a new level';
+    const newLevel = this.levelRepo.create(createLevelDto);
+    return this.levelRepo.save(newLevel);
   }
 
   findAll() {
-    return `This action returns all levels`;
+    return this.levelRepo.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} level`;
+  async findOne(id: number) {
+    const level = await this.levelRepo.findOne({ where: { level_id: id } });
+    if (!level) throw new NotFoundException(`ไม่พบระดับชั้นรหัส ${id}`);
+    return level;
   }
 
-  update(id: number, updateLevelDto: UpdateLevelDto) {
-    return `This action updates a #${id} level`;
+  async update(id: number, updateLevelDto: UpdateLevelDto) {
+    const level = await this.findOne(id);
+    Object.assign(level, updateLevelDto);
+    return this.levelRepo.save(level);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} level`;
+  async remove(id: number) {
+    const level = await this.findOne(id);
+    return this.levelRepo.remove(level);
   }
 }

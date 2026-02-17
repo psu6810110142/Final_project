@@ -1,1 +1,3 @@
-export class CreateLevelDto {}
+export class CreateLevelDto {
+  level_name: string;
+}
