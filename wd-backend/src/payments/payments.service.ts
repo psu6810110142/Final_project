@@ -1,26 +1,63 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Payment } from './entities/payment.entity';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 
 @Injectable()
 export class PaymentsService {
+  constructor(
+    @InjectRepository(Payment)
+    private readonly paymentRepo: Repository<Payment>,
+  ) {}
+
+  // แจ้งโอนเงิน (แนบสลิป)
   create(createPaymentDto: CreatePaymentDto) {
-    return 'This action adds a new payment';
+    const payment = this.paymentRepo.create({
+      amount: createPaymentDto.amount,
+      slip_image_url: createPaymentDto.slip_image_url,
+      payment_date: createPaymentDto.payment_date,
+      order: { order_id: createPaymentDto.order_id }, // ผูกกับ Order
+      status: 'PENDING' // ✨ สถานะเริ่มต้นคือ "รอตรวจสอบ"
+    });
+    return this.paymentRepo.save(payment);
   }
 
+  // ดูรายการแจ้งโอนทั้งหมด (Admin)
   findAll() {
-    return `This action returns all payments`;
+    return this.paymentRepo.find({
+      relations: ['order', 'order.user'], // ดึงข้อมูลออเดอร์และคนจ่ายมาดูด้วย
+      order: { payment_date: 'DESC' }
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} payment`;
+  async findOne(id: number) {
+    const payment = await this.paymentRepo.findOne({ 
+      where: { payment_id: id },
+      relations: ['order']
+    });
+    if (!payment) throw new NotFoundException(`ไม่พบรายการชำระเงินรหัส ${id}`);
+    return payment;
   }
 
-  update(id: number, updatePaymentDto: UpdatePaymentDto) {
-    return `This action updates a #${id} payment`;
+  // อัปเดตสถานะ (Admin กดยืนยัน หรือ ปฏิเสธ)
+  async update(id: number, updatePaymentDto: UpdatePaymentDto) {
+    const payment = await this.findOne(id);
+    
+    // อัปเดตข้อมูลทั่วไป (ถ้ามี)
+    Object.assign(payment, updatePaymentDto);
+    
+    // เช็คพิเศษ: ถ้าส่ง status มาให้อัปเดตด้วย (PAID / REJECTED)
+    if (updatePaymentDto.status) {
+        payment.status = updatePaymentDto.status;
+    }
+
+    return this.paymentRepo.save(payment);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} payment`;
+  async remove(id: number) {
+    const payment = await this.findOne(id);
+    return this.paymentRepo.remove(payment);
   }
 }

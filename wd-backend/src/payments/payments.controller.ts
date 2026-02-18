@@ -7,12 +7,12 @@ import { UpdatePaymentDto } from './dto/update-payment.dto';
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
-  @Post()
+  @Post() // แจ้งโอน
   create(@Body() createPaymentDto: CreatePaymentDto) {
     return this.paymentsService.create(createPaymentDto);
   }
 
-  @Get()
+  @Get() // ดูทั้งหมด (Admin)
   findAll() {
     return this.paymentsService.findAll();
   }
@@ -22,7 +22,7 @@ export class PaymentsController {
     return this.paymentsService.findOne(+id);
   }
 
-  @Patch(':id')
+  @Patch(':id') // แก้ไขสถานะ (ตรวจสลิป)
   update(@Param('id') id: string, @Body() updatePaymentDto: UpdatePaymentDto) {
     return this.paymentsService.update(+id, updatePaymentDto);
   }
