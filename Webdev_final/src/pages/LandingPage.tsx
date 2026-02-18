@@ -43,12 +43,12 @@ const LandingPage: React.FC = () => {
       {/* ================= Hero Section ================= */}
       <header className="page-header">
         <div className="container hero-content">
-          <div className="hero-text">
+          <div className="hero-text" style={{marginLeft : '5%'}}>
             <h1>เรียนออนไลน์ <br />ที่บ้าน สะดวก สบาย</h1>
-            <p>แพลตฟอร์มการเรียนออนไลน์สำหรับนักเรียนชั้นประถมและมัธยมต้น เรียนได้ทุกที่ทุกเวลา พร้อมครูผู้สอนที่มีคุณภาพ</p>
+            <p style={{ marginBottom: '30px'}}>แพลตฟอร์มการเรียนออนไลน์สำหรับนักเรียนชั้นประถมและมัธยมต้น เรียนได้ทุกที่ทุกเวลา พร้อมครูผู้สอนที่มีคุณภาพ</p>
             {/* ปุ่มกดแล้วไปหน้า Register */}
             <a href="/register" className="btn-hero" style={{textDecoration: 'none'}}>
-              <BookOpen size={20} /> เริ่มต้นใช้งานฟรี
+              <BookOpen size={20}/> เริ่มต้นใช้งานฟรี
             </a>
           </div>
 
@@ -122,7 +122,7 @@ const LandingPage: React.FC = () => {
         <div className="container" style={{ display: 'flex', justifyContent: 'center' }}>          
           <div className="hero-text" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',width: '100%'}}> 
             <h1 style={{ color: 'white',  whiteSpace: 'normal'}}>พร้อมเริ่มต้นการเรียนรู้แล้วหรือยัง</h1>
-            <p style={{ color: 'white'}}>ลงทะเบียนวันนี้และเริ่มเรียนคอร์สที่คุณสนใจได้เลย</p>
+            <p style={{ color: 'white', marginBottom: '30px'}}>ลงทะเบียนวันนี้และเริ่มเรียนคอร์สที่คุณสนใจได้เลย</p>
             <a href="/register" className="btn-hero" style={{textDecoration: 'none'}}>
               <BookOpen size={20} /> สมัครสมาชิกฟรี
             </a>
@@ -136,7 +136,7 @@ const LandingPage: React.FC = () => {
           <div className="footer-grid">
             <div>
               <h3>เกี่ยวกับเรา</h3>
-              <p>New Learning Academy เป็นแพลตฟอร์มการเรียนรู้ออนไลน์ชั้นนำ มุ่งเน้นพัฒนาศักยภาพผู้เรียน</p>
+              <p>New Learning Academy เป็นแพลตฟอร์มการเรียนรู้<br/>ออนไลน์ชั้นนำ มุ่งเน้นพัฒนาศักยภาพผู้เรียน</p>
             </div>
             <div>
               <h3>ติดต่อเรา</h3>
