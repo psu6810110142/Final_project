@@ -22,6 +22,11 @@ export class LessonsController {
     return this.lessonsService.findOne(+id);
   }
 
+  @Get('course/:courseId')
+  findByCourse(@Param('courseId') courseId: string) {
+      return this.lessonsService.findByCourse(+courseId);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateLessonDto: UpdateLessonDto) {
     return this.lessonsService.update(+id, updateLessonDto);
