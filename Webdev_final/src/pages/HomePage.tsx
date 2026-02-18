@@ -41,9 +41,9 @@ const HomePage: React.FC = () => {
       {/* ================= Hero Section ================= */}
       <header className="page-header">
         <div className="container hero-content">
-          <div className="hero-text">
+          <div className="hero-text" style={{marginLeft : '5%'}}>
             <h1>เรียนออนไลน์ <br />ที่บ้าน สะดวก สบาย</h1>
-            <p>แพลตฟอร์มการเรียนออนไลน์สำหรับนักเรียนชั้นประถมและมัธยมต้น เรียนได้ทุกที่ทุกเวลา พร้อมครูผู้สอนที่มีคุณภาพ</p>
+            <p style={{ marginBottom : '30px'}}>แพลตฟอร์มการเรียนออนไลน์สำหรับนักเรียนชั้นประถมและมัธยมต้น เรียนได้ทุกที่ทุกเวลา พร้อมครูผู้สอนที่มีคุณภาพ</p>
             <button className="btn-hero">
               <BookOpen size={20} /> เริ่มเรียนเลย
             </button>
@@ -118,10 +118,10 @@ const HomePage: React.FC = () => {
       {/* ================= Footer ================= */}
       <footer className="footer">
         <div className="container">
-          <div className="footer-grid">
+          <div className="footer-grid" >
             <div>
               <h3>เกี่ยวกับเรา</h3>
-              <p>New Learning Academy เป็นแพลตฟอร์มการเรียนรู้ออนไลน์ชั้นนำ มุ่งเน้นพัฒนาศักยภาพผู้เรียน</p>
+              <p>New Learning Academy เป็นแพลตฟอร์มการเรียนรู้<br/>ออนไลน์ชั้นนำ มุ่งเน้นพัฒนาศักยภาพผู้เรียน</p>
             </div>
             <div>
               <h3>ติดต่อเรา</h3>
