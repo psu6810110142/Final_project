@@ -22,6 +22,12 @@ export class LearningProgressController {
     return this.learningProgressService.findOne(+id);
   }
 
+  // ✨ เส้นพิเศษ: ดึงประวัติการเรียนทั้งหมดของ User คนนี้
+  @Get('user/:userId')
+  findByUser(@Param('userId') userId: string) {
+    return this.learningProgressService.findByUser(+userId);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateLearningProgressDto: UpdateLearningProgressDto) {
     return this.learningProgressService.update(+id, updateLearningProgressDto);
