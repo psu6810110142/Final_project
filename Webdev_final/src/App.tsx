@@ -6,6 +6,7 @@ import LandingPage from './pages/LandingPage'; // หน้าแรก (ยั�
 import HomePage from './pages/HomePage';       // หน้าหลัก (ล็อกอินแล้ว)
 import LoginPage from './pages/LoginPage';     // หน้าเข้าสู่ระบบ
 import RegisterPage from './pages/Register';   // หน้าสมัครสมาชิก
+import MyCourses from './pages/Mycourse';       //// หน้าคอร์สของฉัน
 
 function App() {
   return (
@@ -24,6 +25,11 @@ function App() {
 
         {/* หน้าหลักหลังล็อกอิน (localhost:5173/home) -> ให้แสดง HomePage */}
         <Route path="/home" element={<HomePage />} />
+
+        <Route path="/my-courses" element={<MyCourses />} />
+        
+        {/* (อนาคต) เอาไว้ทำหน้าเวลา User กดเข้าเรียน */}
+        {/* <Route path="/learn/:courseId" element={<LearnPage />} /> */}
 
         {/* กรณีพิมพ์มั่ว ให้เด้งกลับหน้าแรก */}
         <Route path="*" element={<LandingPage />} />

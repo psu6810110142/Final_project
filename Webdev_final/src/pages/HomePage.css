@@ -22,7 +22,7 @@ body {
 }
 
 .container {
-  max-width: 1200px;
+  max-width: 100%;
   margin: 0 auto;
   padding: 0 20px;
 }
@@ -258,6 +258,31 @@ body {
   font-weight: 500;
 }
 
+/* ================= Page Header (สำหรับหัวเว็บหน้าย่อย) ================= */
+.page-header {
+  background-color: #51A6FF;
+  background-image: 
+    linear-gradient(rgba(81, 166, 255, 0.95), rgba(81, 166, 255, 0.95)),  
+    url('../assets/BG.png');
+  background-size: 70%;
+  color: white;
+  padding: 50px 0;
+  text-align: left;
+  position: relative;
+}
+
+.page-header h1 {
+  font-size: 2.2rem;
+  margin: 0 0 10px 0;
+  font-weight: 700;
+}
+
+.page-header p {
+  font-size: 1rem;
+  margin: 0;
+  opacity: 0.85;
+}
+
 /* ================= Features & Courses ================= */
 .section {
   padding: 80px 0;
@@ -324,7 +349,7 @@ body {
 
 .courses-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 30px;
 }
 

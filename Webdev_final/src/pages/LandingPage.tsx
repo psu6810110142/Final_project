@@ -41,7 +41,7 @@ const LandingPage: React.FC = () => {
       </nav>
 
       {/* ================= Hero Section ================= */}
-      <header className="hero">
+      <header className="page-header">
         <div className="container hero-content">
           <div className="hero-text">
             <h1>เรียนออนไลน์ <br />ที่บ้าน สะดวก สบาย</h1>
@@ -118,7 +118,7 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      <section className='hero' >
+      <section className='page-header' >
         <div className="container" style={{ display: 'flex', justifyContent: 'center' }}>          
           <div className="hero-text" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',width: '100%'}}> 
             <h1 style={{ color: 'white',  whiteSpace: 'normal'}}>พร้อมเริ่มต้นการเรียนรู้แล้วหรือยัง</h1>

@@ -39,7 +39,7 @@ const HomePage: React.FC = () => {
       </nav>
 
       {/* ================= Hero Section ================= */}
-      <header className="hero">
+      <header className="page-header">
         <div className="container hero-content">
           <div className="hero-text">
             <h1>เรียนออนไลน์ <br />ที่บ้าน สะดวก สบาย</h1>
