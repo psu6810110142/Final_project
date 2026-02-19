@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api'; // ✨ เปลี่ยนมาใช้ api ของเราเอง
 import './HomePage.css'; 
-import { Home, LogOut, Plus, Edit, Trash2, X, Settings, Clock, AlertCircle } from 'lucide-react';
+import { LogOut, Plus, Edit, Trash2, X, Settings, Clock, AlertCircle } from 'lucide-react';
 import logoImage from '../assets/Logo.png'; 
 
 // Interface ให้ตรงกับ Database จริง
