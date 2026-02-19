@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import './HomePage.css'; 
 import { Home, LogIn } from 'lucide-react';
 import logoImage from '../assets/Logo.png'; 
+import api from '../api';
 
 const RegisterPage: React.FC = () => {
   // 1. สร้าง State เก็บข้อมูล (รวมฟิลด์ใหม่ level_id และ interesting_subject)
@@ -19,6 +19,22 @@ const RegisterPage: React.FC = () => {
   });
 
   const [loading, setLoading] = useState(false);
+
+  // ✨ 1. สร้าง State มารับข้อมูลระดับชั้นจาก Database
+  const [levels, setLevels] = useState<any[]>([]);
+
+  // ✨ 2. ใช้ useEffect ดึงข้อมูล Levels ตอนเปิดหน้าเว็บ
+  React.useEffect(() => {
+    const fetchLevels = async () => {
+      try {
+        const response = await api.get('/levels');
+        setLevels(response.data);
+      } catch (err) {
+        console.error('Fetch levels error:', err);
+      }
+    };
+    fetchLevels();
+  }, []);
 
   // 2. ฟังก์ชันอัปเดตค่าเมื่อพิมพ์ หรือเลือก Dropdown
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -41,16 +57,15 @@ const RegisterPage: React.FC = () => {
     setLoading(true);
     try {
       // ยิงไปที่ NestJS (Port 3001)
-      const response = await axios.post('http://localhost:3001/users', {
+      const response = await api.post('/users', {
         username: formData.username,
         email: formData.email,
         password_hash: formData.password_hash,
         full_name: formData.full_name,
         phone: formData.phone,
         role: formData.role,
-        // ส่งค่าเพิ่มเติม (ถ้า Backend รองรับ DTO นี้)
         interesting_subject: formData.interesting_subject,
-        // level_id: formData.level_id ? parseInt(formData.level_id) : null // ถ้า Backend ต้องการ number ให้เปิดบรรทัดนี้
+        level_id: formData.level_id ? parseInt(formData.level_id) : undefined      
       });
 
       if (response.status === 201) {
@@ -201,12 +216,12 @@ const RegisterPage: React.FC = () => {
                   onChange={handleChange}
                 >
                   <option value="">-- เลือกระดับชั้น --</option>
-                  <option value="1">ประถมศึกษาปีที่ 4</option>
-                  <option value="2">ประถมศึกษาปีที่ 5</option>
-                  <option value="3">ประถมศึกษาปีที่ 6</option>
-                  <option value="4">มัธยมศึกษาปีที่ 1</option>
-                  <option value="5">มัธยมศึกษาปีที่ 2</option>
-                  <option value="6">มัธยมศึกษาปีที่ 3</option>
+                  {/* ✨ 3. เอา levels ที่ดึงมา วนลูปสร้างตัวเลือก */}
+                  {levels.map((level) => (
+                    <option key={level.level_id} value={level.level_id}>
+                      {level.level_name}
+                    </option>
+                  ))}
                 </select>
               </div>
               
