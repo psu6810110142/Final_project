@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../api';
 import './HomePage.css'; // ตรวจสอบว่าไฟล์ CSS อยู่ที่ path นี้จริง
 import { Home, UserPlus } from 'lucide-react'; 
 import logoImage from '../assets/Logo.png'; // ตรวจสอบ path รูปภาพ
@@ -16,25 +16,23 @@ const LoginPage: React.FC = () => {
     setLoading(true);
 
     try {
-      // เชื่อมต่อกับ Backend (NestJS Port 3001)
-      const response = await axios.post('http://localhost:3001/auth/login', {
+      // 2. ใช้ api.post แทน และไม่ต้องพิมพ์ http://localhost:3000 แล้ว เพราะมีใน baseURL
+      const response = await api.post('/auth/login', {
         email: email,
         password: password 
       });
 
       if (response.data.access_token) {
-        // ✅ Login สำเร็จ: เก็บ Token และข้อมูล User
-        localStorage.setItem('token', response.data.access_token);
+        // 3. ✨ เปลี่ยนชื่อ key เป็น 'access_token' ให้ตรงกับไฟล์ api.ts
+        localStorage.setItem('access_token', response.data.access_token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
 
         const userRole = response.data.user.role;
         
         alert(`ยินดีต้อนรับคุณ ${response.data.user.full_name || response.data.user.username}`);
 
-        // ✅ Logic การเปลี่ยนหน้า (Redirect)
-        // ต้องใช้ URL Route (เช่น /admin/dashboard) ไม่ใช่ Path ของไฟล์ในเครื่อง
         if (userRole === 'ADMIN') {
-          window.location.href = '/admin/manage-courses'; 
+          window.location.href = '/manage-courses '; 
         } else {
           window.location.href = '/home';
         }
