@@ -32,7 +32,7 @@ const LoginPage: React.FC = () => {
       </nav>
 
       {/* ================= Login Form Content ================= */}
-      <div className="auth-container">
+      <div className="auth-container page-header-white">
         <div className="auth-card">
           <div className="auth-header">
             <h2>เข้าสู่ระบบ</h2>

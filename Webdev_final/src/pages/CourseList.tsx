@@ -69,7 +69,7 @@ const CourseList: React.FC = () => {
       </nav>
 
       {/* ================= Course Header & Search ================= */}
-      <div className="hero" style={{ padding: '60px 0', textAlign: 'center' }}>
+      <div className="page-header" style={{ padding: '60px 0', textAlign: 'center' }}>
         <div className="container">
           <h1 style={{ fontSize: '2.5rem', marginBottom: '15px' }}>ค้นหาคอร์สเรียนที่ใช่สำหรับคุณ</h1>
           <p style={{ opacity: 0.9, marginBottom: '30px' }}>เลือกเรียนจากคอร์สคุณภาพที่สอนโดยอาจารย์ผู้เชี่ยวชาญ</p>
