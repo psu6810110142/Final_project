@@ -1,13 +1,67 @@
-import React from 'react';
-import './HomePage.css'; // สำคัญ: ใช้ CSS เดียวกับ Home
+import React, { useState } from 'react';
+import axios from 'axios'; // อย่าลืมติดตั้ง npm install axios
+import './HomePage.css';
 import { Home, LogIn } from 'lucide-react';
 import logoImage from '../assets/Logo.png'; 
 
 const RegisterPage: React.FC = () => {
+  // 1. สร้าง State เก็บข้อมูลให้ตรงกับ CreateUserDto ใน Backend
+  const [formData, setFormData] = useState({
+    full_name: '',
+    email: '',
+    username: '', // เพิ่ม username เพราะใน Database น่าจะมีฟิลด์นี้
+    password_hash: '', // ใช้ชื่อให้ตรงกับที่ Backend รอรับ (หรือ password ตาม DTO)
+    confirmPassword: '',
+    phone: '000-000-0000', // ค่าเริ่มต้นหรือจะเพิ่ม Input ก็ได้
+    role: 'STUDENT' // สมัครหน้าเว็บปกติให้เป็น USER เสมอ
+  });
+
+  const [loading, setLoading] = useState(false);
+
+  // 2. ฟังก์ชันอัปเดตค่าเมื่อพิมพ์
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  // 3. ฟังก์ชันส่งข้อมูลสมัครสมาชิก
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // เช็ครหัสผ่านให้ตรงกันก่อนส่ง
+    if (formData.password_hash !== formData.confirmPassword) {
+      alert('รหัสผ่านไม่ตรงกันครับ!');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // ยิงไปที่ NestJS (Port 3001)
+      const response = await axios.post('http://localhost:3001/users', {
+        username: formData.email.split('@')[0], // สร้าง username ชั่วคราวจาก email
+        email: formData.email,
+        password_hash: formData.password_hash,
+        full_name: formData.full_name,
+        phone: formData.phone,
+        role: formData.role
+      });
+
+      if (response.status === 201) {
+        alert('ลงทะเบียนสำเร็จ! ยินดีต้อนรับครับ');
+        window.location.href = '/login'; // สมัครเสร็จส่งไปหน้าล็อกอิน
+      }
+    } catch (error: any) {
+      console.error('Register Error:', error);
+      alert(error.response?.data?.message || 'เกิดข้อผิดพลาดในการลงทะเบียน');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="page-wrapper">
-      
-      {/* ================= Navbar (เหมือนหน้า Home) ================= */}
       <nav className="navbar">
         <div className="container navbar-container">
           <a href="/" className="navbar-left">
@@ -29,7 +83,6 @@ const RegisterPage: React.FC = () => {
         </div>
       </nav>
 
-      {/* ================= Register Form Content ================= */}
       <div className="auth-container">
         <div className="auth-card">
           <div className="auth-header">
@@ -37,29 +90,58 @@ const RegisterPage: React.FC = () => {
             <p>สร้างบัญชีเพื่อเริ่มต้นการเรียนรู้กับเรา</p>
           </div>
 
-          <form>
+          {/* 4. ผูก onSubmit เข้ากับ Form */}
+          <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label className="form-label">ชื่อ - นามสกุล</label>
-              <input type="text" className="form-input" placeholder="กรอกชื่อและนามสกุล" />
+              <input 
+                name="full_name"
+                type="text" 
+                className="form-input" 
+                placeholder="กรอกชื่อและนามสกุล" 
+                onChange={handleChange}
+                required
+              />
             </div>
 
             <div className="form-group">
               <label className="form-label">อีเมล</label>
-              <input type="email" className="form-input" placeholder="name@example.com" />
+              <input 
+                name="email"
+                type="email" 
+                className="form-input" 
+                placeholder="name@example.com" 
+                onChange={handleChange}
+                required
+              />
             </div>
 
             <div className="form-group">
               <label className="form-label">รหัสผ่าน</label>
-              <input type="password" className="form-input" placeholder="กำหนดรหัสผ่าน (ขั้นต่ำ 8 ตัวอักษร)" />
+              <input 
+                name="password_hash"
+                type="password" 
+                className="form-input" 
+                placeholder="กำหนดรหัสผ่าน (ขั้นต่ำ 6 ตัวอักษร)" 
+                onChange={handleChange}
+                required
+              />
             </div>
 
             <div className="form-group">
               <label className="form-label">ยืนยันรหัสผ่าน</label>
-              <input type="password" className="form-input" placeholder="กรอกรหัสผ่านอีกครั้ง" />
+              <input 
+                name="confirmPassword"
+                type="password" 
+                className="form-input" 
+                placeholder="กรอกรหัสผ่านอีกครั้ง" 
+                onChange={handleChange}
+                required
+              />
             </div>
 
-            <button type="submit" className="btn-submit">
-              ลงทะเบียน
+            <button type="submit" className="btn-submit" disabled={loading}>
+              {loading ? 'กำลังบันทึก...' : 'ลงทะเบียน'}
             </button>
           </form>
 
@@ -68,7 +150,6 @@ const RegisterPage: React.FC = () => {
           </div>
 
           <button className="btn-google">
-             {/* Google Icon SVG */}
              <svg width="20" height="20" viewBox="0 0 24 24">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                 <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -84,7 +165,6 @@ const RegisterPage: React.FC = () => {
         </div>
       </div>
 
-      {/* ================= Footer ================= */}
       <footer className="footer">
         <div className="container">
           <div className="copyright">
@@ -92,7 +172,6 @@ const RegisterPage: React.FC = () => {
           </div>
         </div>
       </footer>
-
     </div>
   );
 };
