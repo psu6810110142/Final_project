@@ -1,27 +1,53 @@
-import React, { useState } from 'react';
-import './HomePage.css'; // ใช้ CSS ชุดเดิมได้เลย
+import React, { useState, useEffect } from 'react';
+import './HomePage.css'; 
 import { Home, Book, User, LogOut, Search, Users, Clock, Filter } from 'lucide-react';
-import logoImage from '../assets/Logo.png'; // เช็ค path รูปให้ถูกนะครับ
+import logoImage from '../assets/Logo.png'; 
+import api from '../api';
 
-// --- ข้อมูลจำลอง (Mock Data) สำหรับคอร์สเรียน ---
-const MOCK_COURSES = [
-  { id: 1, subject: "คณิตศาสตร์", grade: "ป.5", title: "คณิตศาสตร์ ป.5 ตะลุยโจทย์", price: "฿1,500", tagColor: "#dbeafe", textColor: "#1e40af", imgSrc: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&q=80&w=400" },
-  { id: 2, subject: "วิทยาศาสตร์", grade: "ม.1", title: "วิทยาศาสตร์ ม.1 พื้นฐาน", price: "฿1,800", tagColor: "#f3e8ff", textColor: "#6b21a8", imgSrc: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&q=80&w=400" },
-  { id: 3, subject: "ภาษาอังกฤษ", grade: "ป.6", title: "Grammar ป.6 สอบเข้า ม.1", price: "฿2,000", tagColor: "#dcfce7", textColor: "#166534", imgSrc: "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?auto=format&fit=crop&q=80&w=400" },
-  { id: 4, subject: "คณิตศาสตร์", grade: "ม.3", title: "คณิตศาสตร์ ม.3 เตรียมสอบ O-NET", price: "฿2,500", tagColor: "#dbeafe", textColor: "#1e40af", imgSrc: "https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&q=80&w=400" },
-  { id: 5, subject: "ภาษาไทย", grade: "ม.2", title: "ภาษาไทย ม.2 วรรณคดี", price: "฿1,200", tagColor: "#ffedd5", textColor: "#9a3412", imgSrc: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&q=80&w=400" },
-  { id: 6, subject: "วิทยาศาสตร์", grade: "ป.4", title: "การทดลองวิทย์ ป.4 สนุกๆ", price: "฿1,500", tagColor: "#f3e8ff", textColor: "#6b21a8", imgSrc: "https://images.unsplash.com/photo-1564325724739-bae0bd08762c?auto=format&fit=crop&q=80&w=400" },
-];
+interface CourseData {
+  course_id: number;
+  title: string;
+  description: string;
+  price: number;
+  duration_weeks: number;
+  cover_image_url?: string;
+  level?: {
+    level_name: string;
+  };
+  instructor?: {
+    name: string;
+  };
+}
 
 const CourseList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeCategory, setActiveCategory] = useState("ทั้งหมด");
 
-  const categories = ["ทั้งหมด", "คณิตศาสตร์", "วิทยาศาสตร์", "ภาษาอังกฤษ", "ภาษาไทย"];
+  const [courses, setCourses] = useState<CourseData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await api.get('/courses');
+        setCourses(response.data);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching courses:', err);
+        setError('ไม่สามารถดึงข้อมูลคอร์สเรียนได้ กรุณาตรวจสอบว่า Backend รันอยู่หรือไม่');
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, []);
+
+  const dynamicCategories = ["ทั้งหมด", ...Array.from(new Set(courses.map(c => c.level?.level_name).filter(Boolean)))];
 
   return (
     <div className="page-wrapper">
-      {/* ================= Navbar (แบบล็อกอินแล้ว) ================= */}
+      {/* ================= Navbar ================= */}
       <nav className="navbar">
         <div className="container navbar-container">
           <a href="/" className="navbar-left">
@@ -33,18 +59,10 @@ const CourseList: React.FC = () => {
           </a>
           
           <div className="navbar-menu">
-            <a href="/home" className="menu-item">
-              <Home size={18} /> หน้าหลัก
-            </a>
-            <a href="/courses" className="menu-item active">
-              <Book size={18} /> คอร์สเรียน
-            </a>
-            <a href="/my-courses" className="menu-item">
-              <User size={18} /> คอร์สของฉัน
-            </a>
-            <a href="/logout" className="menu-item">
-              <LogOut size={18} /> ออกจากระบบ
-            </a>
+            <a href="/home" className="menu-item"><Home size={18} /> หน้าหลัก</a>
+            <a href="/courses" className="menu-item active"><Book size={18} /> คอร์สเรียน</a>
+            <a href="/my-courses" className="menu-item"><User size={18} /> คอร์สของฉัน</a>
+            <a href="/logout" className="menu-item"><LogOut size={18} /> ออกจากระบบ</a>
             <div className="user-pill">User</div>
           </div>
         </div>
@@ -61,7 +79,7 @@ const CourseList: React.FC = () => {
             <Search style={{ position: 'absolute', left: '15px', top: '14px', color: '#6b7280' }} size={20} />
             <input 
               type="text" 
-              placeholder="ค้นหาชื่อคอร์สเรียน, วิชา..." 
+              placeholder="ค้นหาชื่อคอร์สเรียน, รายละเอียด..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               style={{ width: '100%', padding: '14px 14px 14px 45px', borderRadius: '50px', border: 'none', fontSize: '1rem', outline: 'none', color: '#1f2937' }}
@@ -74,15 +92,15 @@ const CourseList: React.FC = () => {
       <section className="section" style={{ backgroundColor: '#f9fafb', minHeight: '50vh' }}>
         <div className="container">
           
-          {/* Categories Filter */}
+          {/* Categories Filter (สร้างปุ่มอัตโนมัติตามข้อมูลที่มี) */}
           <div style={{ display: 'flex', gap: '10px', marginBottom: '40px', overflowX: 'auto', paddingBottom: '10px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontWeight: 'bold', color: '#4b5563', marginRight: '10px' }}>
               <Filter size={18} /> หมวดหมู่:
             </div>
-            {categories.map((cat) => (
+            {dynamicCategories.map((cat) => (
               <button 
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
+                key={cat as string}
+                onClick={() => setActiveCategory(cat as string)}
                 style={{ 
                   padding: '8px 20px', 
                   borderRadius: '50px', 
@@ -95,31 +113,45 @@ const CourseList: React.FC = () => {
                   transition: 'all 0.2s'
                 }}
               >
-                {cat}
+                {cat as string}
               </button>
             ))}
           </div>
 
-          {/* Courses Grid */}
-          <div className="courses-grid">
-            {MOCK_COURSES
-              // กรองตามหมวดหมู่
-              .filter(course => activeCategory === "ทั้งหมด" || course.subject === activeCategory)
-              // กรองตามคำค้นหา
-              .filter(course => course.title.toLowerCase().includes(searchTerm.toLowerCase()))
-              .map((course) => (
-                <CourseCard 
-                  key={course.id}
-                  subject={course.subject} 
-                  grade={course.grade} 
-                  title={course.title} 
-                  price={course.price} 
-                  tagColor={course.tagColor} 
-                  textColor={course.textColor}
-                  imgSrc={course.imgSrc}
-                />
-            ))}
-          </div>
+          {/* ✨ สถานะการโหลด หรือ Error */}
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '40px', fontSize: '1.2rem', color: '#6b7280' }}>กำลังโหลดข้อมูลคอร์สเรียน... ⏳</div>
+          ) : error ? (
+            <div style={{ textAlign: 'center', padding: '40px', color: 'red' }}>{error} ❌</div>
+          ) : (
+            <div className="courses-grid">
+              {courses
+                .filter(course => activeCategory === "ทั้งหมด" || course.level?.level_name === activeCategory)
+                .filter(course => course.title.toLowerCase().includes(searchTerm.toLowerCase()) || course.description.toLowerCase().includes(searchTerm.toLowerCase()))
+                .map((course) => (
+                  <CourseCard 
+                    key={course.course_id}
+                    subject={course.level?.level_name || 'ทั่วไป'} 
+                    grade={course.level?.level_name || '-'} 
+                    title={course.title} 
+                    price={`฿${course.price.toLocaleString()}`} 
+                    tagColor="#dbeafe" 
+                    textColor="#1e40af"
+                    imgSrc={course.cover_image_url || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=400"} // รูป Default
+                    instructorName={course.instructor?.name || 'ไม่ระบุ'}
+                    duration={course.duration_weeks || 12}
+                    description={course.description}
+                  />
+              ))}
+              
+              {/* ถ้าค้นหาแล้วไม่เจออะไรเลย */}
+              {courses.filter(course => (activeCategory === "ทั้งหมด" || course.level?.level_name === activeCategory) && (course.title.toLowerCase().includes(searchTerm.toLowerCase()) || course.description.toLowerCase().includes(searchTerm.toLowerCase()))).length === 0 && (
+                <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: '#6b7280' }}>
+                  ไม่พบคอร์สเรียนที่ตรงกับการค้นหา
+                </div>
+              )}
+            </div>
+          )}
           
         </div>
       </section>
@@ -136,27 +168,33 @@ const CourseList: React.FC = () => {
   );
 };
 
-// --- Helper Component: CourseCard (ก๊อปมาจาก HomePage) ---
-const CourseCard = ({ subject, grade, title, price, tagColor, textColor, imgSrc }: any) => (
+const CourseCard = ({ subject, grade, title, price, tagColor, textColor, imgSrc, instructorName, duration, description }: any) => (
   <div className="course-card">
     <div className="course-image">
-      <img src={imgSrc} alt={title} />
+      <img src={imgSrc} alt={title} style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
       <span className="badge">{grade}</span>
     </div>
     <div className="course-content">
       <span className="course-tag" style={{ backgroundColor: tagColor, color: textColor }}>{subject}</span>
       <h3 className="course-title">{title}</h3>
-      <p className="course-desc">เรียนรู้พื้นฐานและเทคนิคสำคัญ ครอบคลุมทุกหัวข้อในหลักสูตร</p>
+      <p className="course-desc" style={{ 
+        display: '-webkit-box', 
+        WebkitLineClamp: 2, 
+        WebkitBoxOrient: 'vertical', 
+        overflow: 'hidden' 
+      }}>
+        {description}
+      </p>
       <div className="course-meta">
         <div><Users size={14} /> 100 คน</div>
-        <div><Clock size={14} /> 12 สัปดาห์</div>
+        <div><Clock size={14} /> {duration} สัปดาห์</div>
       </div>
       <div className="course-footer">
         <div className="instructor">
           <div className="avatar"></div>
-          <span>อ.สมชาย</span>
+          <span>{instructorName}</span>
         </div>
-        <div className="course-price">{price}</div>
+        <div className="course-price" style={{ color: '#e74c3c', fontWeight: 'bold' }}>{price}</div>
       </div>
     </div>
   </div>
