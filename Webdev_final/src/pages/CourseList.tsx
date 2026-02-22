@@ -26,6 +26,9 @@ const CourseList: React.FC = () => {
   const [courses, setCourses] = useState<CourseData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const dynamicCategories = ["ทั้งหมด", ...Array.from(new Set(courses.map(c => c.level?.level_name).filter(Boolean)))];
+
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -39,11 +42,26 @@ const CourseList: React.FC = () => {
         setLoading(false);
       }
     };
-
     fetchCourses();
   }, []);
 
-  const dynamicCategories = ["ทั้งหมด", ...Array.from(new Set(courses.map(c => c.level?.level_name).filter(Boolean)))];
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    const token = localStorage.getItem('access_token');
+    if (!token || !storedUser) {
+      window.location.href = '/landing';
+      return; 
+    }
+    setCurrentUser(JSON.parse(storedUser));
+  }, []);
+
+  const handleLogout = (e: React.MouseEvent) => {
+    e.preventDefault(); 
+    localStorage.removeItem('access_token'); 
+    localStorage.removeItem('user');
+    setCurrentUser(null);
+    window.location.href = '/landing';
+  };
 
   return (
     <div className="page-wrapper">
@@ -61,9 +79,13 @@ const CourseList: React.FC = () => {
           <div className="navbar-menu">
             <a href="/home" className="menu-item"><Home size={18} /> หน้าหลัก</a>
             <a href="/courses" className="menu-item active"><Book size={18} /> คอร์สเรียน</a>
-            <a href="/my-courses" className="menu-item"><User size={18} /> คอร์สของฉัน</a>
-            <a href="/logout" className="menu-item"><LogOut size={18} /> ออกจากระบบ</a>
-            <div className="user-pill">User</div>
+            {currentUser && (
+              <>
+                <a href="/my-courses" className="menu-item"><User size={18} /> คอร์สของฉัน</a>
+                <a onClick={handleLogout} className="menu-item" style={{ cursor: 'pointer' }}><LogOut size={18} /> ออกจากระบบ</a>
+                <div className='user-pill'> {currentUser.full_name || currentUser.username}</div>
+              </>
+            )}
           </div>
         </div>
       </nav>
