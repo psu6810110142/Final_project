@@ -1,10 +1,38 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import './HomePage.css';
 import { Home, BookOpen, User, LogOut, ArrowRight, Book, Users, Star, Clock } from 'lucide-react';
-// import รูปภาพโลโก้ (ตรวจสอบ Path ให้ถูกนะครับ)
 import logoImage from '../assets/Logo.png'; 
 
 const HomePage: React.FC = () => {
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setCurrentUser(JSON.parse(storedUser)); 
+    }
+  }, []);
+
+  // ฟังก์ชันออกจากระบบ
+  const handleLogout = (e: React.MouseEvent) => {
+    e.preventDefault();  //บังคับไม่ให้แท็ก <a> รีเฟรชหน้าจอหรือเด้งมั่ว
+    // เคลียร์ข้อมูลออกจากเบราว์เซอร์
+    localStorage.removeItem('access_token'); 
+    localStorage.removeItem('user');
+    setCurrentUser(null);
+    window.location.href = '/landing';
+  };
+
+  //ตรวจโทเคนคนแอบเข้ามา
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    const token = localStorage.getItem('access_token');
+    if (!token || !storedUser) {
+      window.location.href = '/landing';
+      return; 
+    }
+    setCurrentUser(JSON.parse(storedUser));
+  }, []);
+
   return (
     <div className="page-wrapper">
       {/* ================= Navbar ================= */}
@@ -27,13 +55,25 @@ const HomePage: React.FC = () => {
             <a href="/courses" className="menu-item">
               <Book size={18} /> คอร์สเรียน
             </a>
+            {currentUser ? (
+              <>
             <a href="/my-courses" className="menu-item">
               <User size={18} /> คอร์สของฉัน
             </a>
-            <a href="/logout" className="menu-item">
+            <a onClick={handleLogout} className="menu-item">
               <LogOut size={18} /> ออกจากระบบ
             </a>
-            <div className="user-pill">User</div>
+            {/* ================= ถ้าจะแก้ให้กดหน้า Profile ได้ ใส่ตรงนี้ href ลงไปใน classname ด้านล่าง ================= */}
+            <div className='user-pill'> 
+              {currentUser.full_name || currentUser.username}
+            </div>
+            </>
+            ) : (
+              <>
+              <a href="/login" className="menu-item">เข้าสู่ระบบ</a>
+              <a href="/register" className="btn-register">สมัครสมาชิก</a>
+            </>
+          )}
           </div>
         </div>
       </nav>
