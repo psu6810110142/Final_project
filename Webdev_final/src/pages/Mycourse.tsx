@@ -1,25 +1,100 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // นำเข้าเครื่องมือสำหรับเปลี่ยนหน้า
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom'; 
 import './HomePage.css'; 
 import { Home, Book, User, LogOut, PlayCircle, CheckCircle } from 'lucide-react';
-import logoImage from '../assets/Logo.png'; // เช็คชื่อไฟล์รูปโลโก้
-
-// --- ข้อมูลจำลองสำหรับคอร์สที่ซื้อแล้ว (เพิ่ม progress เข้ามา) ---
-const MY_COURSES = [
-  { id: 1, subject: "คณิตศาสตร์", grade: "ป.5", title: "คณิตศาสตร์ ป.5 ตะลุยโจทย์", progress: 45, tagColor: "#dbeafe", textColor: "#1e40af", imgSrc: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&q=80&w=400" },
-  { id: 2, subject: "วิทยาศาสตร์", grade: "ม.1", title: "วิทยาศาสตร์ ม.1 พื้นฐาน", progress: 100, tagColor: "#f3e8ff", textColor: "#6b21a8", imgSrc: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&q=80&w=400" },
-  { id: 3, subject: "ภาษาอังกฤษ", grade: "ป.6", title: "Grammar ป.6 สอบเข้า ม.1", progress: 10, tagColor: "#dcfce7", textColor: "#166534", imgSrc: "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?auto=format&fit=crop&q=80&w=400" },
-];
+import logoImage from '../assets/Logo.png'; 
+import api from '../api'; // ✨ นำเข้า api ของเรา
 
 const MyCourses: React.FC = () => {
-  const navigate = useNavigate(); // ฟังก์ชันสำหรับใช้เปลี่ยนหน้า
-  const [filter, setFilter] = useState("all"); // 'all', 'in-progress', 'completed'
+  const navigate = useNavigate(); 
+  const [filter, setFilter] = useState("all"); 
+  
+  // ✨ State สำหรับเก็บข้อมูลจริง
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [myCourses, setMyCourses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // ฟังก์ชันกรองคอร์สตามสถานะการเรียน
-  const filteredCourses = MY_COURSES.filter(course => {
+  // 👮‍♂️ 1. ยามเฝ้าประตู (ตรวจสอบการ Login)
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    const token = localStorage.getItem('access_token');
+    if (!token || !storedUser) {
+      window.location.replace('/landing');
+      return; 
+    }
+    setCurrentUser(JSON.parse(storedUser));
+  }, []);
+
+  // 📡 2. ดึงข้อมูลคอร์สที่ซื้อแล้วจาก Backend
+  useEffect(() => {
+    if (!currentUser) return; // รอให้โหลดข้อมูล User เสร็จก่อน
+
+    const fetchMyCourses = async () => {
+      // 1. หา userId ของคนที่ล็อกอินอยู่
+      const userId = currentUser?.user_id || currentUser?.id || currentUser?.userId || currentUser?.sub;
+      if (!userId) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        // 2. ดึงข้อมูลออเดอร์ทั้งหมด
+        const response = await api.get(`/orders/user/${userId}`);
+        let purchasedCourses: any[] = [];
+        
+        // 3. วนลูปสกัดเอาเฉพาะคอร์สที่จ่ายเงินแล้ว
+        response.data.forEach((order: any) => {
+          if (order.status === 'COMPLETED' && order.order_details) {
+            
+            order.order_details.forEach((detail: any) => {
+              const course = detail.course;
+              if (course) {
+                purchasedCourses.push({
+                  // --- 🟢 ข้อมูลหลัก: ดึงจาก Database 100% ---
+                  id: course.course_id,
+                  title: course.title,
+                  subject: course.level?.level_name || 'ไม่ระบุระดับชั้น',
+                  
+                  // --- 🟡 ข้อมูลสำรอง (Fallback): ดึงจาก DB ก่อน ถ้าไม่มีถึงจะใช้ภาพ Default ---
+                  imgSrc: course.cover_image_url || "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&q=80&w=400",
+                  
+                  // --- 🟠 ข้อมูลเฉพาะ UI: ยังไม่มีในตาราง Courses หรือรอทำ API เพิ่ม ---
+                  progress: 0,       // 🚧 รอเชื่อมต่อกับตาราง Learning Progress
+                  tagColor: "#dbeafe", 
+                  textColor: "#1e40af", 
+                });
+              }
+            });
+            
+          }
+        });
+
+        // 4. ลบวิชาที่ซ้ำกัน (กรณี User ซื้อคอร์สเดิมซ้ำ) แล้วอัปเดตลง State
+        const uniqueCourses = Array.from(new Map(purchasedCourses.map(item => [item.id, item])).values());
+        setMyCourses(uniqueCourses);
+
+      } catch (error) {
+        console.error('เกิดข้อผิดพลาดในการดึงข้อมูลคอร์ส:', error);
+      } finally {
+        setLoading(false); // ปิดสถานะโหลดเสมอไม่ว่าจะสำเร็จหรือพัง
+      }
+    };
+
+    fetchMyCourses();
+  }, [currentUser]);
+
+  // 🚪 ฟังก์ชันออกจากระบบ (เคลียร์ Session)
+  const handleLogout = (e: React.MouseEvent) => {
+    e.preventDefault(); 
+    localStorage.clear(); 
+    setCurrentUser(null);
+    window.location.replace('/landing'); 
+  };
+
+  const filteredCourses = myCourses.filter(course => {
     if (filter === "in-progress") return course.progress < 100;
     if (filter === "completed") return course.progress === 100;
-    return true; // "all"
+    return true; 
   });
 
   return (
@@ -36,19 +111,11 @@ const MyCourses: React.FC = () => {
           </a>
           
           <div className="navbar-menu">
-            <a href="/home" className="menu-item">
-              <Home size={18} /> หน้าหลัก
-            </a>
-            <a href="/courses" className="menu-item">
-              <Book size={18} /> คอร์สเรียน
-            </a>
-            <a href="/my-courses" className="menu-item active"> {/* ทำสี Active ที่หน้านี้ */}
-              <User size={18} /> คอร์สของฉัน
-            </a>
-            <a href="/logout" className="menu-item">
-              <LogOut size={18} /> ออกจากระบบ
-            </a>
-            <div className="user-pill">User</div>
+            <a href="/home" className="menu-item"><Home size={18} /> หน้าหลัก</a>
+            <a href="/courses" className="menu-item"><Book size={18} /> คอร์สเรียน</a>
+            <a href="/mycourse" className="menu-item active"><User size={18} /> คอร์สของฉัน</a>
+            <a onClick={handleLogout} className="menu-item" style={{ cursor: 'pointer' }}><LogOut size={18} /> ออกจากระบบ</a>
+            <div className="user-pill">{currentUser?.full_name || currentUser?.username}</div>
           </div>
         </div>
       </nav>
@@ -65,28 +132,29 @@ const MyCourses: React.FC = () => {
       <section className="section" style={{ backgroundColor: '#f9fafb', minHeight: '60vh' }}>
         <div className="container">
           
-          {/* Tabs สำหรับกรองสถานะการเรียน */}
           <div style={{ display: 'flex', gap: '15px', marginBottom: '30px', borderBottom: '2px solid #e5e7eb', paddingBottom: '10px' }}>
             <button onClick={() => setFilter("all")} style={tabStyle(filter === "all")}>ทั้งหมด</button>
             <button onClick={() => setFilter("in-progress")} style={tabStyle(filter === "in-progress")}>กำลังเรียน</button>
             <button onClick={() => setFilter("completed")} style={tabStyle(filter === "completed")}>เรียนจบแล้ว</button>
           </div>
 
-          {/* Courses Grid */}
-          <div className="courses-grid">
-            {filteredCourses.length > 0 ? (
-              filteredCourses.map((course) => (
-                // === จุดสำคัญ: ใส่ onClick เพื่อกดแล้วเปลี่ยนหน้าไปที่ /learn/:id ===
-                <div key={course.id} onClick={() => navigate(`/learn/${course.id}`)} style={{ cursor: 'pointer' }}>
-                  <MyCourseCard course={course} />
+          {loading ? (
+             <div style={{ textAlign: 'center', padding: '50px', color: '#6b7280' }}>กำลังโหลดข้อมูลคอร์สเรียนของคุณ... ⏳</div>
+          ) : (
+            <div className="courses-grid">
+              {filteredCourses.length > 0 ? (
+                filteredCourses.map((course) => (
+                  <div key={course.id} onClick={() => navigate(`/learn/${course.id}`)} style={{ cursor: 'pointer' }}>
+                    <MyCourseCard course={course} />
+                  </div>
+                ))
+              ) : (
+                <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '50px', color: '#6b7280' }}>
+                  คุณยังไม่มีคอร์สในหมวดหมู่นี้ เริ่มต้นค้นหาคอร์สที่ใช่เลย!
                 </div>
-              ))
-            ) : (
-              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '50px', color: '#6b7280' }}>
-                ไม่มีคอร์สในหมวดหมู่นี้
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
           
         </div>
       </section>
@@ -94,23 +162,7 @@ const MyCourses: React.FC = () => {
       {/* ================= Footer ================= */}
       <footer className="footer">
         <div className="container">
-          <div className="footer-grid">
-            <div>
-              <h3>เกี่ยวกับเรา</h3>
-              <p>New Learning Academy เป็นแพลตฟอร์มการเรียนรู้ออนไลน์ชั้นนำ มุ่งเน้นพัฒนาศักยภาพผู้เรียน</p>
-            </div>
-            <div>
-              <h3>ติดต่อเรา</h3>
-              <p>อีเมล: info@newlearning.com</p>
-              <p>โทร: 02-123-4567</p>
-            </div>
-            <div>
-              <h3>เวลาทำการ</h3>
-              <p>จันทร์ - ศุกร์: 09:00 - 18:00</p>
-              <p>เสาร์ - อาทิตย์: 10:00 - 16:00</p>
-            </div>
-          </div>
-          <div className="copyright">
+          <div className="copyright" style={{ paddingTop: '20px', borderTop: 'none' }}>
             © 2026 New Learning Academy. All rights reserved.
           </div>
         </div>
@@ -119,11 +171,11 @@ const MyCourses: React.FC = () => {
   );
 };
 
-// --- Component: การ์ดสำหรับคอร์สที่ซื้อแล้ว (มี Progress Bar) ---
+// --- Component: การ์ดสำหรับคอร์สที่ซื้อแล้ว ---
 const MyCourseCard = ({ course }: { course: any }) => (
-  <div className="course-card" style={{ transition: 'transform 0.2s, boxShadow 0.2s' }}>
+  <div className="course-card" style={{ transition: 'transform 0.2s, boxShadow 0.2s', display: 'flex', flexDirection: 'column', height: '100%' }}>
     <div className="course-image">
-      <img src={course.imgSrc} alt={course.title} />
+      <img src={course.imgSrc} alt={course.title} style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
       {course.progress === 100 && (
         <span style={{ position: 'absolute', top: 15, right: 15, background: '#16a34a', color: 'white', padding: '4px 12px', borderRadius: 20, fontSize: '0.8rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
           <CheckCircle size={14} /> เรียนจบแล้ว
@@ -131,14 +183,22 @@ const MyCourseCard = ({ course }: { course: any }) => (
       )}
     </div>
     
-    <div className="course-content" style={{ display: 'flex', flexDirection: 'column' }}>
-      <span className="course-tag" style={{ backgroundColor: course.tagColor, color: course.textColor, marginBottom: '10px' }}>
-        {course.subject} • {course.grade}
+    <div className="course-content" style={{ display: 'flex', flexDirection: 'column', padding: '0px 20px 20px', flexGrow: 1 }}>
+      <span className="course-tag" style={{ backgroundColor: course.tagColor, 
+        color: course.textColor, 
+        marginBottom: '10px',
+        padding: '6px 14px',
+        borderRadius: '50px',
+        fontSize: '0.85rem',
+        fontWeight: '600',
+        display: 'inline-block',
+        width: 'fit-content' }}>
+        {course.subject}
       </span>
       <h3 className="course-title" style={{ fontSize: '1.2rem' }}>{course.title}</h3>
       
       {/* Progress Bar */}
-      <div style={{ marginTop: 'auto', paddingTop: '20px' }}>
+      <div style={{ marginTop: 'auto', paddingTop: '5px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#6b7280', marginBottom: '8px' }}>
           <span>ความคืบหน้า</span>
           <span style={{ fontWeight: 'bold', color: course.progress === 100 ? '#16a34a' : '#2563eb' }}>{course.progress}%</span>
@@ -165,7 +225,7 @@ const tabStyle = (isActive: boolean) => ({
   color: isActive ? '#2563eb' : '#6b7280',
   borderBottom: isActive ? '3px solid #2563eb' : '3px solid transparent',
   cursor: 'pointer',
-  marginBottom: '-12px' // ให้ขอบเส้นทับกับเส้นกรอบด้านล่างพอดี
+  marginBottom: '-12px' 
 });
 
 export default MyCourses;
