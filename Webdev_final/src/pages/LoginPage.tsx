@@ -1,51 +1,16 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-<<<<<<< HEAD
-import './HomePage.css'; 
-import { Home, UserPlus } from 'lucide-react'; 
-import logoImage from '../assets/Logo.png';
-
-const LoginPage: React.FC = () => {
-  // 1. สร้าง State สำหรับเก็บค่า Email และ Password
-=======
-import { useNavigate, Link } from 'react-router-dom'; // ✅ 1. เพิ่ม useNavigate
+import { useNavigate, Link } from 'react-router-dom';
 import './HomePage.css'; 
 import { Home, UserPlus } from 'lucide-react'; 
 import logoImage from '../assets/Logo.png'; 
 
 const LoginPage: React.FC = () => {
-  const navigate = useNavigate(); // ✅ 2. สร้างตัวแปร navigate
->>>>>>> R_root
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-<<<<<<< HEAD
-  // 2. ฟังก์ชันจัดการการ Login
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault(); // ป้องกันหน้าเว็บ Refresh
-    setLoading(true);
-
-    try {
-      // ยิงไปที่ Port 3001 ตามที่ NestJS รันอยู่
-      const response = await axios.post('http://localhost:3001/auth/login', {
-        email: email,
-        password: password // ส่ง password ไปให้ AuthService.validateUser
-      });
-
-      if (response.data.access_token) {
-        // ✅ เก็บ Token และข้อมูล User ลง LocalStorage
-        localStorage.setItem('token', response.data.access_token);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-
-        alert('เข้าสู่ระบบสำเร็จ!');
-        window.location.href = '/home'; // ย้ายไปหน้า Home หลังล็อกอินสำเร็จ
-      }
-      if (response.data.user.role === 'ADMIN') {
-        window.location.href = '/admin/dashboard'; // พาไปหลังบ้าน
-      } else {
-        window.location.href = '/home'; // พาไปหน้าเรียนปกติ
-=======
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -56,19 +21,19 @@ const LoginPage: React.FC = () => {
         password: password 
       });
 
-      console.log("Login Response:", response.data); // 🔍 ดูข้อมูลที่ได้จาก Backend
+      console.log("Login Response:", response.data);
 
       if (response.data.access_token) {
         localStorage.setItem('token', response.data.access_token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
 
-        // ดึง Role และแปลงเป็นตัวพิมพ์ใหญ่กันเหนียว
+        // ดึง Role และแปลงเป็นตัวพิมพ์ใหญ่
         const userRole = response.data.user.role?.toUpperCase(); 
-        console.log("User Role is:", userRole); // 🔍 เช็คว่า Role เป็นอะไร
+        console.log("User Role is:", userRole);
 
         alert(`ยินดีต้อนรับคุณ ${response.data.user.full_name || response.data.user.username}`);
 
-        // ✅ 3. ใช้ navigate แทน window.location.href
+        // นำทางไปยังหน้าที่เหมาะสมตาม Role
         if (userRole === 'ADMIN') {
           console.log("Redirecting to Admin Dashboard...");
           navigate('/manage-courses'); 
@@ -76,7 +41,6 @@ const LoginPage: React.FC = () => {
           console.log("Redirecting to Home...");
           navigate('/home');
         }
->>>>>>> R_root
       }
     } catch (error: any) {
       console.error('Login Error:', error);
@@ -90,52 +54,31 @@ const LoginPage: React.FC = () => {
     <div className="page-wrapper">
       <nav className="navbar">
         <div className="container navbar-container">
-<<<<<<< HEAD
-          <a href="/" className="navbar-left">
-=======
-          <Link to="/" className="navbar-left"> {/* ใช้ Link แทน a href */}
->>>>>>> R_root
+          <Link to="/" className="navbar-left">
             <img src={logoImage} alt="Logo" className="navbar-logo" />
             <div className="brand-text">
               <span className="brand-title">New Learning Academy</span>
               <span className="brand-subtitle">สถาบันกวดวิชานิวเลิร์นนิง</span>
             </div>
-<<<<<<< HEAD
-          </a>
-=======
           </Link>
->>>>>>> R_root
           <div className="navbar-menu">
             <Link to="/" className="menu-item">
               <Home size={18} /> กลับหน้าหลัก
-<<<<<<< HEAD
-            </a>
-            <a href="/register" className="menu-item">
-=======
             </Link>
             <Link to="/register" className="menu-item">
->>>>>>> R_root
                <UserPlus size={18} /> สมัครสมาชิก
             </Link>
           </div>
         </div>
       </nav>
 
-<<<<<<< HEAD
-      <div className="auth-container">
-=======
       <div className="auth-container page-header-white">
->>>>>>> R_root
         <div className="auth-card">
           <div className="auth-header">
             <h2>เข้าสู่ระบบ</h2>
             <p>ยินดีต้อนรับกลับมา! กรุณาล็อกอินเพื่อเข้าเรียน</p>
           </div>
 
-<<<<<<< HEAD
-          {/* 3. ผูกฟังก์ชันเข้ากับ Form */}
-=======
->>>>>>> R_root
           <form onSubmit={handleLogin}>
             <div className="form-group">
               <label className="form-label">อีเมล</label>
@@ -144,11 +87,7 @@ const LoginPage: React.FC = () => {
                 className="form-input" 
                 placeholder="name@example.com" 
                 value={email}
-<<<<<<< HEAD
-                onChange={(e) => setEmail(e.target.value)} // ผูก State
-=======
                 onChange={(e) => setEmail(e.target.value)} 
->>>>>>> R_root
                 required
               />
             </div>
@@ -160,16 +99,9 @@ const LoginPage: React.FC = () => {
                 className="form-input" 
                 placeholder="กรอกรหัสผ่านของคุณ" 
                 value={password}
-<<<<<<< HEAD
-                onChange={(e) => setPassword(e.target.value)} // ผูก State
-                required
-              />
-              
-=======
                 onChange={(e) => setPassword(e.target.value)} 
                 required
               />
->>>>>>> R_root
               <div className="forgot-password-row">
                 <label className="remember-me">
                     <input type="checkbox" style={{accentColor: '#2563eb'}} /> จดจำฉันไว้
@@ -178,10 +110,6 @@ const LoginPage: React.FC = () => {
               </div>
             </div>
 
-<<<<<<< HEAD
-            {/* 4. เปลี่ยนปุ่มให้เป็นแบบ Submit จริง */}
-=======
->>>>>>> R_root
             <button 
               type="submit" 
               className="btn-submit" 
@@ -192,13 +120,12 @@ const LoginPage: React.FC = () => {
             </button>
           </form>
 
-<<<<<<< HEAD
           <div className="divider">
             <span>หรือเข้าสู่ระบบด้วย</span>
           </div>
 
           <button className="btn-google">
-             <svg width="20" height="20" viewBox="0 0 24 24">
+             <svg width="20" height="20" viewBox="0 0 24 24" style={{ marginRight: '8px' }}>
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                 <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
                 <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.84z" fill="#FBBC05"/>
@@ -206,10 +133,6 @@ const LoginPage: React.FC = () => {
             </svg>
             Google
           </button>
-=======
-          <div className="divider"><span>หรือเข้าสู่ระบบด้วย</span></div>
-          <button className="btn-google">Google</button>
->>>>>>> R_root
 
           <div className="auth-footer">
             ยังไม่มีบัญชีใช่ไหม? <Link to="/register">สมัครสมาชิกที่นี่</Link>

@@ -4,10 +4,8 @@ import { ValidationPipe } from '@nestjs/common'; // 👈 1. อย่าลื�
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-<<<<<<< HEAD
   app.enableCors();
   // ✨ เปลี่ยนจาก 3000 เป็น 3001 เพื่อหนี Port ที่ชนกัน
-=======
 
   // ตั้งค่า CORS
   app.enableCors({
@@ -23,7 +21,7 @@ async function bootstrap() {
   }));
 
   // ใช้ Port 3001
->>>>>>> R_root
+
   await app.listen(process.env.PORT ?? 3001); 
   
   console.log('Application is running on: http://localhost:3001');
