@@ -1,6 +1,6 @@
 import React from 'react';
 import './HomePage.css';
-import { Home, BookOpen, User, LogOut, ArrowRight, Book, Users, Star, Clock } from 'lucide-react';
+import { Home, BookOpen, User, LogOut, ArrowRight, Book, Users, Star, Clock, Settings } from 'lucide-react';
 // import รูปภาพโลโก้ (ตรวจสอบ Path ให้ถูกนะครับ)
 import logoImage from '../assets/Logo.png'; 
 
@@ -29,6 +29,9 @@ const HomePage: React.FC = () => {
             </a>
             <a href="/my-courses" className="menu-item">
               <User size={18} /> คอร์สของฉัน
+            </a>
+            <a href="/manage-courses" className="menu-item">
+              <Settings size={18} /> จัดการคอร์ส
             </a>
             <a href="/logout" className="menu-item">
               <LogOut size={18} /> ออกจากระบบ

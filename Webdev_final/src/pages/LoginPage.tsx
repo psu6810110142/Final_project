@@ -1,15 +1,26 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+<<<<<<< HEAD
 import './HomePage.css'; 
 import { Home, UserPlus } from 'lucide-react'; 
 import logoImage from '../assets/Logo.png';
 
 const LoginPage: React.FC = () => {
   // 1. สร้าง State สำหรับเก็บค่า Email และ Password
+=======
+import { useNavigate, Link } from 'react-router-dom'; // ✅ 1. เพิ่ม useNavigate
+import './HomePage.css'; 
+import { Home, UserPlus } from 'lucide-react'; 
+import logoImage from '../assets/Logo.png'; 
+
+const LoginPage: React.FC = () => {
+  const navigate = useNavigate(); // ✅ 2. สร้างตัวแปร navigate
+>>>>>>> R_root
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
+<<<<<<< HEAD
   // 2. ฟังก์ชันจัดการการ Login
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault(); // ป้องกันหน้าเว็บ Refresh
@@ -34,6 +45,38 @@ const LoginPage: React.FC = () => {
         window.location.href = '/admin/dashboard'; // พาไปหลังบ้าน
       } else {
         window.location.href = '/home'; // พาไปหน้าเรียนปกติ
+=======
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const response = await axios.post('http://localhost:3001/auth/login', {
+        email: email,
+        password: password 
+      });
+
+      console.log("Login Response:", response.data); // 🔍 ดูข้อมูลที่ได้จาก Backend
+
+      if (response.data.access_token) {
+        localStorage.setItem('token', response.data.access_token);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+
+        // ดึง Role และแปลงเป็นตัวพิมพ์ใหญ่กันเหนียว
+        const userRole = response.data.user.role?.toUpperCase(); 
+        console.log("User Role is:", userRole); // 🔍 เช็คว่า Role เป็นอะไร
+
+        alert(`ยินดีต้อนรับคุณ ${response.data.user.full_name || response.data.user.username}`);
+
+        // ✅ 3. ใช้ navigate แทน window.location.href
+        if (userRole === 'ADMIN') {
+          console.log("Redirecting to Admin Dashboard...");
+          navigate('/manage-courses'); 
+        } else {
+          console.log("Redirecting to Home...");
+          navigate('/home');
+        }
+>>>>>>> R_root
       }
     } catch (error: any) {
       console.error('Login Error:', error);
@@ -47,32 +90,52 @@ const LoginPage: React.FC = () => {
     <div className="page-wrapper">
       <nav className="navbar">
         <div className="container navbar-container">
+<<<<<<< HEAD
           <a href="/" className="navbar-left">
+=======
+          <Link to="/" className="navbar-left"> {/* ใช้ Link แทน a href */}
+>>>>>>> R_root
             <img src={logoImage} alt="Logo" className="navbar-logo" />
             <div className="brand-text">
               <span className="brand-title">New Learning Academy</span>
               <span className="brand-subtitle">สถาบันกวดวิชานิวเลิร์นนิง</span>
             </div>
+<<<<<<< HEAD
           </a>
+=======
+          </Link>
+>>>>>>> R_root
           <div className="navbar-menu">
-            <a href="/" className="menu-item">
+            <Link to="/" className="menu-item">
               <Home size={18} /> กลับหน้าหลัก
+<<<<<<< HEAD
             </a>
             <a href="/register" className="menu-item">
+=======
+            </Link>
+            <Link to="/register" className="menu-item">
+>>>>>>> R_root
                <UserPlus size={18} /> สมัครสมาชิก
-            </a>
+            </Link>
           </div>
         </div>
       </nav>
 
+<<<<<<< HEAD
       <div className="auth-container">
+=======
+      <div className="auth-container page-header-white">
+>>>>>>> R_root
         <div className="auth-card">
           <div className="auth-header">
             <h2>เข้าสู่ระบบ</h2>
             <p>ยินดีต้อนรับกลับมา! กรุณาล็อกอินเพื่อเข้าเรียน</p>
           </div>
 
+<<<<<<< HEAD
           {/* 3. ผูกฟังก์ชันเข้ากับ Form */}
+=======
+>>>>>>> R_root
           <form onSubmit={handleLogin}>
             <div className="form-group">
               <label className="form-label">อีเมล</label>
@@ -81,7 +144,11 @@ const LoginPage: React.FC = () => {
                 className="form-input" 
                 placeholder="name@example.com" 
                 value={email}
+<<<<<<< HEAD
                 onChange={(e) => setEmail(e.target.value)} // ผูก State
+=======
+                onChange={(e) => setEmail(e.target.value)} 
+>>>>>>> R_root
                 required
               />
             </div>
@@ -93,10 +160,16 @@ const LoginPage: React.FC = () => {
                 className="form-input" 
                 placeholder="กรอกรหัสผ่านของคุณ" 
                 value={password}
+<<<<<<< HEAD
                 onChange={(e) => setPassword(e.target.value)} // ผูก State
                 required
               />
               
+=======
+                onChange={(e) => setPassword(e.target.value)} 
+                required
+              />
+>>>>>>> R_root
               <div className="forgot-password-row">
                 <label className="remember-me">
                     <input type="checkbox" style={{accentColor: '#2563eb'}} /> จดจำฉันไว้
@@ -105,7 +178,10 @@ const LoginPage: React.FC = () => {
               </div>
             </div>
 
+<<<<<<< HEAD
             {/* 4. เปลี่ยนปุ่มให้เป็นแบบ Submit จริง */}
+=======
+>>>>>>> R_root
             <button 
               type="submit" 
               className="btn-submit" 
@@ -116,6 +192,7 @@ const LoginPage: React.FC = () => {
             </button>
           </form>
 
+<<<<<<< HEAD
           <div className="divider">
             <span>หรือเข้าสู่ระบบด้วย</span>
           </div>
@@ -129,18 +206,20 @@ const LoginPage: React.FC = () => {
             </svg>
             Google
           </button>
+=======
+          <div className="divider"><span>หรือเข้าสู่ระบบด้วย</span></div>
+          <button className="btn-google">Google</button>
+>>>>>>> R_root
 
           <div className="auth-footer">
-            ยังไม่มีบัญชีใช่ไหม? <a href="/register">สมัครสมาชิกที่นี่</a>
+            ยังไม่มีบัญชีใช่ไหม? <Link to="/register">สมัครสมาชิกที่นี่</Link>
           </div>
         </div>
       </div>
 
       <footer className="footer">
         <div className="container">
-          <div className="copyright">
-            © 2026 New Learning Academy. All rights reserved.
-          </div>
+          <div className="copyright">© 2026 New Learning Academy. All rights reserved.</div>
         </div>
       </footer>
     </div>
