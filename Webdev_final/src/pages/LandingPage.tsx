@@ -1,9 +1,47 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import './HomePage.css'; // ใช้ CSS เดิม
-import { Home, BookOpen, Users, Star, Clock, LogIn, UserPlus, Book } from 'lucide-react';
-import logoImage from '../assets/Logo.png'; 
+import { Home, BookOpen, Users, Star, ArrowRight, Clock, LogIn, UserPlus, Book } from 'lucide-react';
+import logoImage from '../assets/Logo.png';
+import api from '../api';
+
+interface CourseData {
+  course_id: number;
+  title: string;
+  description: string;
+  price: number;
+  duration_weeks: number;
+  cover_image_url?: string;
+  level?: {
+    level_name: string;
+  };
+  instructor?: {
+    name: string;
+  };
+}
+
 
 const LandingPage: React.FC = () => {
+
+  const [courses, setCourses] = useState<CourseData[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+
+  // ดึงข้อมูลคอร์สเรียนจาก Backend
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await api.get('/courses'); 
+        setCourses(response.data);
+      } catch (error) {
+        console.error('เกิดข้อผิดพลาดในการดึงข้อมูลคอร์ส:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, []);
+
   return (
     <div className="page-wrapper">
       {/* ================= Navbar (เวอร์ชันยังไม่ล็อกอิน) ================= */}
@@ -93,28 +131,36 @@ const LandingPage: React.FC = () => {
         <div className="container">
           <div className="section-header">
             <h2 className="section-title" style={{ margin: 0 }}>คอร์สแนะนำ</h2>
-            <button className="btn-link">
-              ดูทั้งหมด <img src="https://api.iconify.design/lucide:arrow-right.svg?color=%233b82f6" alt="" width="18" />
+            <button className="btn-link" onClick={() => window.location.href = '/courses'}>
+              ดูทั้งหมด <ArrowRight size={18} />
             </button>
           </div>
 
-          <div className="courses-grid">
-            <CourseCard 
-              subject="คณิตศาสตร์" grade="ป.5" title="คณิตศาสตร์ ป.5" price="฿1,500" 
-              tagColor="#dbeafe" textColor="#1e40af"
-              imgSrc="https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&q=80&w=400"
-            />
-            <CourseCard 
-              subject="วิทยาศาสตร์" grade="ม.1" title="วิทยาศาสตร์ ม.1" price="฿1,800" 
-              tagColor="#f3e8ff" textColor="#6b21a8"
-              imgSrc="https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&q=80&w=400"
-            />
-            <CourseCard 
-              subject="ภาษาอังกฤษ" grade="ป.6" title="ภาษาอังกฤษ ป.6" price="฿2,000" 
-              tagColor="#dcfce7" textColor="#166534"
-              imgSrc="https://images.unsplash.com/photo-1546410531-bb4caa6b424d?auto=format&fit=crop&q=80&w=400"
-            />
-          </div>
+          {isLoading ? (
+            <p style={{ textAlign: 'center', padding: '2rem 0' }}>กำลังโหลดข้อมูลคอร์ส...</p>
+          ) : (
+            <div className="courses-grid">
+              {courses.length > 0 ? (
+                courses.map((course) => (
+                  <CourseCard 
+                    key={course.course_id}
+                    subject={course.level?.level_name || 'ทั่วไป'} 
+                    grade={course.level?.level_name || '-'} 
+                    title={course.title} 
+                    price={`฿${course.price.toLocaleString()}`} 
+                    tagColor="#dbeafe" 
+                    textColor="#1e40af"
+                    imgSrc={course.cover_image_url || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=400"} // รูป Default
+                    instructorName={course.instructor?.name || 'ไม่ระบุ'}
+                    duration={course.duration_weeks || 12}
+                    description={course.description}
+                  />
+                ))
+              ) : (
+                <p style={{ gridColumn: '1 / -1', textAlign: 'center' }}>ยังไม่มีคอร์สแนะนำในขณะนี้</p>
+              )}
+            </div>
+          )}
         </div>
       </section>
 
