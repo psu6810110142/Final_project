@@ -989,3 +989,42 @@ body {
     max-height: 500px;
   }
 }
+
+/* ================= Horizontal Scroll Carousel ================= */
+.courses-scroll-container {
+  display: flex;
+  gap: 1.5rem; /* ระยะห่างระหว่างการ์ด */
+  overflow-x: auto; /* เปิดใช้งานการเลื่อนแนวนอน */
+  padding: 1rem 0 2rem 0; /* เผื่อพื้นที่ด้านล่างให้ Scrollbar และเงา */
+  
+  /* ทำให้เวลาเลื่อนแล้วมันดูดเข้าที่ (Snap) สมูทๆ */
+  scroll-snap-type: x mandatory; 
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch; /* สำหรับ iOS */
+}
+
+/* บังคับให้การ์ดไม่หดตัวและมีความกว้างคงที่ */
+.courses-scroll-container .course-card {
+  flex: 0 0 auto; /* ห้ามหด ห้ามขยาย */
+  width: 320px; /* กำหนดความกว้างของการ์ด (ปรับตัวเลขได้ตามต้องการ) */
+  scroll-snap-align: start; /* ให้มันดูดชิดซ้ายพอดีเวลาเลื่อน */
+}
+
+/* --- ตกแต่ง Scrollbar ให้ดูสวยงามเข้ากับเว็บ (สำหรับ Chrome/Edge/Safari) --- */
+.courses-scroll-container::-webkit-scrollbar {
+  height: 8px; /* ความหนาของ Scrollbar */
+}
+
+.courses-scroll-container::-webkit-scrollbar-track {
+  background: #f3f4f6; /* สีพื้นหลังแถบ Scroll */
+  border-radius: 10px;
+}
+
+.courses-scroll-container::-webkit-scrollbar-thumb {
+  background: #cbd5e1; /* สีตัวเลื่อน */
+  border-radius: 10px;
+}
+
+.courses-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8; /* สีตัวเลื่อนตอนเอาเมาส์ชี้ */
+}

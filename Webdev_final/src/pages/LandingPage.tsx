@@ -16,6 +16,7 @@ interface CourseData {
   };
   instructor?: {
     name: string;
+    profile_image_url: string;
   };
 }
 
@@ -139,7 +140,7 @@ const LandingPage: React.FC = () => {
           {isLoading ? (
             <p style={{ textAlign: 'center', padding: '2rem 0' }}>กำลังโหลดข้อมูลคอร์ส...</p>
           ) : (
-            <div className="courses-grid">
+            <div className="courses-scroll-container"> 
               {courses.length > 0 ? (
                 courses.map((course) => (
                   <CourseCard 
@@ -154,10 +155,11 @@ const LandingPage: React.FC = () => {
                     instructorName={course.instructor?.name || 'ไม่ระบุ'}
                     duration={course.duration_weeks || 12}
                     description={course.description}
+                    instructorImage={course.instructor?.profile_image_url}
                   />
                 ))
               ) : (
-                <p style={{ gridColumn: '1 / -1', textAlign: 'center' }}>ยังไม่มีคอร์สแนะนำในขณะนี้</p>
+                <p style={{ width: '100%', textAlign: 'center' }}>ยังไม่มีคอร์สแนะนำในขณะนี้</p>
               )}
             </div>
           )}
@@ -220,26 +222,40 @@ const FeatureCard = ({ icon, bg, title, desc }: any) => (
   </div>
 );
 
-const CourseCard = ({ subject, grade, title, price, tagColor, textColor, imgSrc }: any) => (
+const CourseCard = ({ subject, grade, title, price, tagColor, textColor, imgSrc, instructorName, instructorImage, instructor, duration, description }: any) => (
   <div className="course-card">
     <div className="course-image">
-      <img src={imgSrc} alt={title} />
+      <img src={imgSrc} alt={title} style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
       <span className="badge">{grade}</span>
     </div>
     <div className="course-content">
       <span className="course-tag" style={{ backgroundColor: tagColor, color: textColor }}>{subject}</span>
       <h3 className="course-title">{title}</h3>
-      <p className="course-desc">เรียนรู้พื้นฐานและเทคนิคสำคัญ ครอบคลุมทุกหัวข้อ</p>
+      <p className="course-desc" style={{ 
+        display: '-webkit-box', 
+        WebkitLineClamp: 2, 
+        WebkitBoxOrient: 'vertical', 
+        overflow: 'hidden' 
+      }}>
+        {description}
+      </p>
       <div className="course-meta">
         <div><Users size={14} /> 100 คน</div>
-        <div><Clock size={14} /> 12 สัปดาห์</div>
+        <div><Clock size={14} /> {duration} สัปดาห์</div>
       </div>
       <div className="course-footer">
         <div className="instructor">
-          <div className="avatar"></div>
-          <span>อ.สมชาย</span>
+          <div className="avatar" style={{ overflow: 'hidden', borderRadius: '50%', backgroundColor: '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <img 
+              // ถ้าระบบไม่มีรูป จะดึง API สร้างรูปตัวอักษรย่อชื่ออาจารย์มาโชว์แทนอัตโนมัติ
+              src={instructorImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(instructor || 'T')}&background=random&color=fff`} 
+              alt={instructor || 'Instructor'} 
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          </div>
+          <span>{instructorName}</span>
         </div>
-        <div className="course-price">{price}</div>
+        <div className="course-price" style={{ color: '#e74c3c', fontWeight: 'bold' }}>{price}</div>
       </div>
     </div>
   </div>
