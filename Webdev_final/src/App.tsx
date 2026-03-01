@@ -27,10 +27,10 @@ function App() {
         {/* หน้าหลักหลังล็อกอิน (localhost:5173/home) -> ให้แสดง HomePage */}
         <Route path="/home" element={<HomePage />} />
 
-        {/* หน้าแสดงคอร์สลิส (localhost:5173/home) -> ให้แสดง Courselist */}
+        {/* หน้าแสดงคอร์สลิส (localhost:5173/courses) -> ให้แสดง Courselist */}
         <Route path="/courses" element={<CourseList />} />
 
-        {/* หน้าแสดงจัดการคอร์ส (localhost:5173/home) -> ให้แสดง CourseManagement */}
+        {/* หน้าแสดงจัดการคอร์ส (localhost:5173/manage-course) -> ให้แสดง CourseManagement */}
         <Route path="/manage-courses" element={<CourseManagement />} />
 
         {/* กรณีพิมพ์มั่ว ให้เด้งกลับหน้าแรก */}

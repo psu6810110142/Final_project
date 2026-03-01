@@ -162,7 +162,23 @@ const MyCourses: React.FC = () => {
       {/* ================= Footer ================= */}
       <footer className="footer">
         <div className="container">
-          <div className="copyright" style={{ paddingTop: '20px', borderTop: 'none' }}>
+          <div className="footer-grid" >
+            <div>
+              <h3>เกี่ยวกับเรา</h3>
+              <p>New Learning Academy เป็นแพลตฟอร์มการเรียนรู้<br/>ออนไลน์ชั้นนำ มุ่งเน้นพัฒนาศักยภาพผู้เรียน</p>
+            </div>
+            <div>
+              <h3>ติดต่อเรา</h3>
+              <p>อีเมล: info@newlearning.com</p>
+              <p>โทร: 02-123-4567</p>
+            </div>
+            <div>
+              <h3>เวลาทำการ</h3>
+              <p>จันทร์ - ศุกร์: 09:00 - 18:00</p>
+              <p>เสาร์ - อาทิตย์: 10:00 - 16:00</p>
+            </div>
+          </div>
+          <div className="copyright">
             © 2026 New Learning Academy. All rights reserved.
           </div>
         </div>

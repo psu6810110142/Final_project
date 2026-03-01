@@ -866,3 +866,126 @@ body {
   cursor: pointer;
   font-weight: bold;
 }
+
+/* ================= Learning Page (หน้าห้องเรียน) ================= */
+.learning-layout {
+  display: grid;
+  grid-template-columns: 3fr 1fr; /* แบ่งสัดส่วน จอวิดีโอ 3 ส่วน / เมนูด้านข้าง 1 ส่วน */
+  gap: 24px;
+  padding: 30px 0;
+}
+
+/* ส่วนวิดีโอฝั่งซ้าย */
+.video-section {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.video-wrapper {
+  position: relative;
+  padding-bottom: 56.25%; /* อัตราส่วน 16:9 สำหรับวิดีโอ */
+  height: 0;
+  background-color: #000;
+}
+
+.video-wrapper iframe, 
+.video-wrapper video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.video-info {
+  padding: 24px;
+}
+
+.video-info h2 {
+  font-size: 1.5rem;
+  color: #1e293b;
+  margin: 0 0 10px 0;
+}
+
+.video-info p {
+  color: #64748b;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+/* ส่วนลิสต์บทเรียนฝั่งขวา */
+.playlist-section {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  /* ทำให้แถบด้านข้างเกาะติดหน้าจอเวลาเลื่อน (Sticky) */
+  position: sticky;
+  top: 90px;
+  max-height: calc(100vh - 120px);
+}
+
+.playlist-header {
+  padding: 20px;
+  border-bottom: 1px solid #e2e8f0;
+  background-color: #f8fafc;
+  border-radius: 16px 16px 0 0;
+}
+
+.playlist-content {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.lesson-item {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  gap: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+  align-items: flex-start;
+}
+
+.lesson-item:hover {
+  background-color: #f8fafc;
+}
+
+/* บทเรียนที่กำลังเรียนอยู่ */
+.lesson-item.active {
+  background-color: #eff6ff;
+  border-left: 4px solid #2563eb;
+}
+
+/* บทเรียนที่ยังไม่ปลดล็อก */
+.lesson-item.locked {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.lesson-title {
+  font-weight: 600;
+  color: #334155;
+  font-size: 0.95rem;
+  margin-bottom: 4px;
+}
+
+.lesson-duration {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+/* รองรับหน้าจอมือถือ/แท็บเล็ต */
+@media (max-width: 992px) {
+  .learning-layout {
+    grid-template-columns: 1fr; /* เปลี่ยนเป็น 1 คอลัมน์ (บน-ล่าง) */
+  }
+  .playlist-section {
+    position: static;
+    max-height: 500px;
+  }
+}
