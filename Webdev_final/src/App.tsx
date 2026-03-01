@@ -9,6 +9,7 @@ import RegisterPage from './pages/Register';   // หน้าสมัครส
 import CourseList from './pages/CourseList';  // หน้าคอร์สลิส
 import CourseManagement from './pages/CourseManagement';
 import MyCourses from './pages/Mycourse';
+import LearningPage from './pages/LearningPage';
 
 function App() {
   return (
@@ -28,13 +29,17 @@ function App() {
         {/* หน้าหลักหลังล็อกอิน (localhost:5173/home) -> ให้แสดง HomePage */}
         <Route path="/home" element={<HomePage />} />
 
-        {/* หน้าแสดงคอร์สลิส (localhost:5173/home) -> ให้แสดง Courselist */}
+        {/* หน้าแสดงคอร์สลิส (localhost:5173/courses) -> ให้แสดง Courselist */}
         <Route path="/courses" element={<CourseList />} />
 
-        {/* หน้าแสดงจัดการคอร์ส (localhost:5173/home) -> ให้แสดง CourseManagement */}
+        {/* หน้าแสดงจัดการคอร์ส (localhost:5173/manage-course) -> ให้แสดง CourseManagement */}
         <Route path="/manage-courses" element={<CourseManagement />} />
 
+        {/* หน้าแสดงจัดการคอร์ส (localhost:5173/my-courses) -> ให้แสดง MyCourse */}
         <Route path="/my-courses" element={<MyCourses />} />
+
+        {/* หน้าแสดงจัดการคอร์ส (localhost:5173/learn/:courseId) -> ให้แสดง LearningPage */}
+        <Route path="/learn/:courseId" element={<LearningPage />} />
 
         {/* กรณีพิมพ์มั่ว ให้เด้งกลับหน้าแรก */}
         <Route path="*" element={<LandingPage />} />
