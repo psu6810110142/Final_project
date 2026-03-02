@@ -1,18 +1,34 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../auth/roles.guard'; 
 import { Roles } from '../auth/roles.decorator';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { getStorageConfig, imageFileFilter } from 'src/utils/file-upload.config';
 
 @Controller('payments')
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
   @UseGuards(AuthGuard('jwt'))
-  @Post() // แจ้งโอน
-  create(@Body() createPaymentDto: CreatePaymentDto) {
+  @Post()
+  @UseInterceptors(
+    FileInterceptor('slip_image', {
+      storage: getStorageConfig('slips'), // เก็บไว้ใน uploads/slips
+      limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
+      fileFilter: imageFileFilter,
+    }),
+  )
+  create(
+    @Body() createPaymentDto: CreatePaymentDto,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (file) {
+      // ตรวจสอบชื่อฟิลด์เก็บรูปสลิปใน DB 
+      createPaymentDto.slip_image_url = `/uploads/slips/${file.filename}`;
+    }
     return this.paymentsService.create(createPaymentDto);
   }
 
