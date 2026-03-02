@@ -1,19 +1,35 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { LessonsService } from './lessons.service';
 import { CreateLessonDto } from './dto/create-lesson.dto';
 import { UpdateLessonDto } from './dto/update-lesson.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/roles.decorator';
+import { getStorageConfig, videoFileFilter } from 'src/utils/file-upload.config';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('lessons')
 export class LessonsController {
-  constructor(private readonly lessonsService: LessonsService) {}
+  constructor(private readonly lessonsService: LessonsService) { }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('ADMIN')
   @Post()
-  create(@Body() createLessonDto: CreateLessonDto) {
+  @UseInterceptors(
+    FileInterceptor('video_file', { // ✨ ชื่อ Key ใน Postman คือ video_file
+      storage: getStorageConfig('lessons'), // เก็บไว้ในโฟลเดอร์ uploads/lessons
+      limits: { fileSize: 100 * 1024 * 1024 }, // ✨ กำหนดขนาดสูงสุด 100MB (100 * 1024 KB * 1024 Bytes)
+      fileFilter: videoFileFilter,
+    }),
+  )
+  create(
+    @Body() createLessonDto: CreateLessonDto,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (file) {
+      // ✨ เช็คชื่อฟิลด์ใน Lesson Entity ของคุณด้วยนะครับ ว่าใช้ชื่อ video_url หรือไม่
+      createLessonDto.video_url = `/uploads/lessons/${file.filename}`;
+    }
     return this.lessonsService.create(createLessonDto);
   }
 
@@ -33,7 +49,7 @@ export class LessonsController {
   @UseGuards(AuthGuard('jwt'))
   @Get('course/:courseId')
   findByCourse(@Param('courseId') courseId: string) {
-      return this.lessonsService.findByCourse(+courseId);
+    return this.lessonsService.findByCourse(+courseId);
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)

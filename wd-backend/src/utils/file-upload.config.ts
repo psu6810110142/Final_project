@@ -24,3 +24,10 @@ export const imageFileFilter = (req: any, file: any, callback: any) => {
   }
   callback(null, true);
 };
+
+export const videoFileFilter = (req: any, file: any, callback: any) => {
+  if (!file.originalname.match(/\.(mp4|avi|mov|mkv)$/i)) {
+    return callback(new Error('อนุญาตให้อัพโหลดเฉพาะไฟล์วิดีโอ (mp4, avi, mov, mkv) เท่านั้น!'), false);
+  }
+  callback(null, true);
+};
