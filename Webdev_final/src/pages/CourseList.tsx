@@ -3,6 +3,7 @@ import './HomePage.css';
 import { Home, Book, User, LogOut, Search, Users, Clock, Filter, UserPlus, LogIn } from 'lucide-react';
 import logoImage from '../assets/Logo.png';
 import api from '../api';
+import { Link } from 'react-router-dom';
 
 interface CourseData {
   course_id: number;
@@ -173,6 +174,7 @@ const CourseList: React.FC = () => {
                 .map((course) => (
                   <CourseCard
                     key={course.course_id}
+                    id={course.course_id}
                     subject={course.level?.level_name || 'ทั่วไป'}
                     grade={course.level?.level_name || '-'}
                     title={course.title}
@@ -211,43 +213,45 @@ const CourseList: React.FC = () => {
   );
 };
 
-const CourseCard = ({ subject, grade, title, price, tagColor, textColor, imgSrc, instructorName, instructorImage, instructor, duration, description }: any) => (
-  <div className="course-card">
-    <div className="course-image">
-      <img src={imgSrc} alt={title} style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
-      <span className="badge">{grade}</span>
-    </div>
-    <div className="course-content">
-      <span className="course-tag" style={{ backgroundColor: tagColor, color: textColor }}>{subject}</span>
-      <h3 className="course-title">{title}</h3>
-      <p className="course-desc" style={{
-        display: '-webkit-box',
-        WebkitLineClamp: 2,
-        WebkitBoxOrient: 'vertical',
-        overflow: 'hidden'
-      }}>
-        {description}
-      </p>
-      <div className="course-meta">
-        <div><Users size={14} /> 100 คน</div>
-        <div><Clock size={14} /> {duration} สัปดาห์</div>
+const CourseCard = ({ id, subject, grade, title, price, tagColor, textColor, imgSrc, instructorName, instructorImage, instructor, duration, description }: any) => (
+  <Link to={`/courses/${id}`} style={{ textDecoration: 'none' }}>
+    <div className="course-card">
+      <div className="course-image">
+        <img src={imgSrc} alt={title} style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
+        <span className="badge">{grade}</span>
       </div>
-      <div className="course-footer">
-        <div className="instructor">
-          <div className="avatar" style={{ overflow: 'hidden', borderRadius: '50%', backgroundColor: '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <img
-              // ถ้าระบบไม่มีรูป จะดึง API สร้างรูปตัวอักษรย่อชื่ออาจารย์มาโชว์แทนอัตโนมัติ
-              src={instructorImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(instructor || 'T')}&background=random&color=fff`}
-              alt={instructor || 'Instructor'}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            />
-          </div>
-          <span>{instructorName}</span>
+      <div className="course-content">
+        <span className="course-tag" style={{ backgroundColor: tagColor, color: textColor }}>{subject}</span>
+        <h3 className="course-title">{title}</h3>
+        <p className="course-desc" style={{
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
+          overflow: 'hidden'
+        }}>
+          {description}
+        </p>
+        <div className="course-meta">
+          <div><Users size={14} /> 100 คน</div>
+          <div><Clock size={14} /> {duration} สัปดาห์</div>
         </div>
-        <div className="course-price" style={{ color: '#e74c3c', fontWeight: 'bold' }}>{price}</div>
+        <div className="course-footer">
+          <div className="instructor">
+            <div className="avatar" style={{ overflow: 'hidden', borderRadius: '50%', backgroundColor: '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <img
+                // ถ้าระบบไม่มีรูป จะดึง API สร้างรูปตัวอักษรย่อชื่ออาจารย์มาโชว์แทนอัตโนมัติ
+                src={instructorImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(instructor || 'T')}&background=random&color=fff`}
+                alt={instructor || 'Instructor'}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            </div>
+            <span>{instructorName}</span>
+          </div>
+          <div className="course-price" style={{ color: '#e74c3c', fontWeight: 'bold' }}>{price}</div>
+        </div>
       </div>
     </div>
-  </div>
+  </Link>
 );
 
 export default CourseList;
