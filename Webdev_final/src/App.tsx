@@ -16,7 +16,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         {/* === กำหนดเส้นทาง (Route) === */}
-        
+
         {/* หน้าแรกสุด (localhost:5173/) -> ให้แสดง LandingPage */}
         <Route path="/" element={<LandingPage />} />
 
