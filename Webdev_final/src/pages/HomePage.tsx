@@ -20,8 +20,13 @@ interface CourseData {
   };
 }
 
-const getImageUrl = (url?: string) => {
-  if (!url) return "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=400"; // รูป Default
+const getImageUrl = (url?: string, type: 'course' | 'user' = 'course') => {
+  if (!url) {
+    return type === 'user'
+      ? "" // 👨‍🏫 รูปคน Default
+      : "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=400"; // 📚 รูปคอร์สเรียน Default
+  }
+
   if (url.startsWith('/uploads')) {
     return `http://localhost:3000${url}`;
   }
@@ -192,7 +197,7 @@ const HomePage: React.FC = () => {
                     instructorName={course.instructor?.name || 'ไม่ระบุ'}
                     duration={course.duration_weeks || 12}
                     description={course.description}
-                    instructorImage={course.instructor?.profile_image_url}
+                    instructorImage={getImageUrl(course.instructor?.profile_image_url, 'user')}
                   />
                 ))
               ) : (
