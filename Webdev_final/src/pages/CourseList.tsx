@@ -19,6 +19,14 @@ interface CourseData {
   };
 }
 
+const getImageUrl = (url?: string) => {
+  if (!url) return "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=400"; // รูป Default
+  if (url.startsWith('/uploads')) {
+    return `http://localhost:3000${url}`;
+  }
+  return url;
+};
+
 const CourseList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeCategory, setActiveCategory] = useState("ทั้งหมด");
@@ -28,14 +36,6 @@ const CourseList: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const dynamicCategories = ["ทั้งหมด", ...Array.from(new Set(courses.map(c => c.level?.level_name).filter(Boolean)))];
-
-  const getImageUrl = (url?: string) => {
-    if (!url) return "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=400"; // รูป Default
-    if (url.startsWith('/uploads')) {
-      return `http://localhost:3000${url}`;
-    }
-    return url;
-  };
 
   useEffect(() => {
     const fetchCourses = async () => {
