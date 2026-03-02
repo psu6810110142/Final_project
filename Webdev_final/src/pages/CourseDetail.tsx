@@ -1,24 +1,97 @@
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import './HomePage.css'; 
+import api from '../api'; // 🌟 ดึงข้อมูลจาก API
+import logoImg from '../assets/Logo.png'; 
 
-// 🌟 นำเข้าไฟล์รูปโลโก้จากโฟลเดอร์ assets (เปลี่ยน logo.png เป็นชื่อไฟล์ของคุณ)
-import logoImg from '../assets/logo.png'; 
+// 📌 โครงสร้างข้อมูลจาก Database
+interface Lesson {
+  lesson_id: number;
+  title: string;
+  duration_minutes: number;
+}
+
+interface CourseDetailData {
+  course_id: number;
+  title: string;
+  description: string;
+  price: number;
+  duration_weeks: number;
+  cover_image_url?: string;
+  level?: {
+    level_name: string;
+  };
+  instructor?: {
+    name: string;
+    profile_image_url: string;
+  };
+  lessons?: Lesson[];
+}
 
 export default function CourseDetail() {
+  const { id } = useParams(); // รับ ID จาก URL
   const navigate = useNavigate();
+
+  // 📌 State สำหรับเก็บข้อมูลคอร์สที่ดึงมา
+  const [course, setCourse] = useState<CourseDetailData | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // ฟังก์ชันดึงรูปภาพ
+  const getImageUrl = (url?: string, type: 'course' | 'user' = 'course') => {
+    if (!url) {
+      return type === 'user'
+        ? ""
+        : "https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=800&q=80"; // รูปคอร์สเรียน Default
+    }
+    if (url.startsWith('/uploads')) {
+      return `http://localhost:3000${url}`;
+    }
+    return url;
+  };
+
+  // 🌟 ดึงข้อมูลจาก Backend เมื่อเข้ามาหน้านี้
+  useEffect(() => {
+    const fetchCourseDetail = async () => {
+      try {
+        setLoading(true);
+        const response = await api.get(`/courses/${id}`); 
+        setCourse(response.data);
+      } catch (err) {
+        console.error('Error fetching course details:', err);
+        setError('ไม่สามารถโหลดข้อมูลคอร์สได้ กรุณาลองใหม่อีกครั้ง');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchCourseDetail();
+    }
+  }, [id]);
+
+  // สถานะกำลังโหลด
+  if (loading) return <div style={{ textAlign: 'center', padding: '100px', fontSize: '1.2rem' }}>กำลังโหลดข้อมูลคอร์สเรียน... ⏳</div>;
+
+  // ถ้า Error หรือไม่พบข้อมูล
+  if (error || !course) return (
+    <div style={{ textAlign: 'center', padding: '100px' }}>
+      <p style={{ color: 'red', fontSize: '1.2rem', marginBottom: '20px' }}>{error || 'ไม่พบคอร์สเรียน'}</p>
+      <button onClick={() => navigate(-1)} style={{ padding: '10px 20px', cursor: 'pointer' }}>&larr; กลับไปก่อนหน้า</button>
+    </div>
+  );
 
   return (
     <div className="cd-page-wrapper">
       
-      {/* 🟢 แถบเมนูด้านบน (Navbar) - ไล่สีตาม Figma */}
+      {/* 🟢 แถบเมนูด้านบน (Navbar) */}
       <nav className="cd-navbar">
         <div className="cd-nav-container">
-          <div className="cd-logo" onClick={() => navigate('/home')}>
-            {/* 🌟 แสดงรูปโลโก้ที่ดึงมาจาก assets */}
+          <div className="cd-logo" onClick={() => navigate('/home')} style={{ cursor: 'pointer' }}>
             <img src={logoImg} alt="New Learning Academy Logo" className="cd-logo-img" />
             <div className="cd-logo-text">
-              <h2>New Learning Academy</h2>
-              <p>เรียนออนไลน์ ง่าย สนุก ได้ผล</p>
+              <h2 style={{ fontSize: '16px', margin: '0' }}>New Learning Academy</h2>
+              <p style={{ fontSize: '12px', margin: '0' }}>สถาบันกวดวิชานิวเลิร์นนิง</p>
             </div>
           </div>
 
@@ -35,13 +108,7 @@ export default function CourseDetail() {
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
               คอร์สของฉัน
             </li>
-            <li onClick={() => navigate('/')}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-              ออกจากระบบ
-            </li>
           </ul>
-
-          <div className="cd-user-btn">User</div>
         </div>
       </nav>
 
@@ -54,44 +121,50 @@ export default function CourseDetail() {
             
             <div className="cd-banner-info">
               <div className="cd-tags">
-                <span className="cd-tag white-bg">ม.1</span>
-                <span className="cd-tag outline">วิทยาศาสตร์</span>
+                <span className="cd-tag white-bg">{course.level?.level_name || 'ทั่วไป'}</span>
+                <span className="cd-tag outline">คอร์สเรียน</span>
               </div>
               
-              <h1 className="cd-title">วิทยาศาสตร์ ม.1</h1>
-              <p className="cd-subtitle">
-                วิทยาศาสตร์เบื้องต้นสำหรับนักเรียนชั้นมัธยมศึกษาปีที่ 1<br/>
-                เน้นการทดลองและเข้าใจหลักการ
+              {/* 🌟 ดึงชื่อและรายละเอียดจาก DB */}
+              <h1 className="cd-title">{course.title}</h1>
+              <p className="cd-subtitle" style={{
+                  display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden'
+              }}>
+                {course.description}
               </p>
               
               <div className="cd-stats-top">
                 <div className="cd-stat-item">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                  128 คน
+                  128 คน (จำลอง)
                 </div>
                 <div className="cd-stat-item">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                  16 สัปดาห์
+                  {course.duration_weeks || 12} สัปดาห์
                 </div>
               </div>
 
-              {/* ป้ายชื่ออาจารย์ */}
-              <div className="cd-instructor-badge">
-                <span className="cd-instructor-name">สอนโดย : อาจารย์สุดา ทองมณี</span>
-                <span className="cd-instructor-sub">เกียรตินิยมอันดับหนึ่ง</span>
-                <span className="cd-instructor-sub">คณะวิทยาศาสตร์และวิทยาศาสตร์ประยุกต์</span>
+              {/* 🌟 ดึงข้อมูลอาจารย์จาก DB */}
+              <div className="cd-instructor-badge" style={{ display: 'flex', alignItems: 'center', gap: '15px', marginTop: '20px' }}>
+                <img 
+                  src={`https://ui-avatars.com/api/?name=${encodeURIComponent(course.instructor?.name || 'Instructor')}&background=random&color=fff`} 
+                  alt="Instructor" 
+                  style={{ width: '50px', height: '50px', borderRadius: '50%' }} 
+                />
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span className="cd-instructor-name">สอนโดย: {course.instructor?.name || 'ไม่ระบุชื่อผู้สอน'}</span>
+                  <span className="cd-instructor-sub" style={{ fontSize: '0.9rem', opacity: 0.8 }}>ผู้เชี่ยวชาญประจำวิชา</span>
+                </div>
               </div>
             </div>
 
-            {/* รูปวิดีโอ */}
+            {/* รูปหน้าปกคอร์สจาก DB */}
             <div className="cd-banner-video">
               <img 
-                src="https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=800&q=80" 
-                alt="Video Preview" 
+                src={getImageUrl(course.cover_image_url)} 
+                alt={course.title} 
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
-              <div className="cd-play-button">
-                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-              </div>
             </div>
 
           </div>
@@ -107,68 +180,43 @@ export default function CourseDetail() {
               <h2 className="cd-card-title">รายละเอียดคอร์ส</h2>
               <div className="cd-feature-list">
                 <div className="cd-feature-item">
-                  <div className="cd-check-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00c4b5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                  </div>
-                  <div>
-                    <h4>เรียนรู้แบบทีละขั้นตอน</h4>
-                    <p>เนื้อหาครอบคลุมตามหลักสูตร จัดเรียงลำดับการเรียนอย่างเป็นระบบ</p>
-                  </div>
+                  <div className="cd-check-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00c4b5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg></div>
+                  <div><h4>เรียนรู้แบบทีละขั้นตอน</h4><p>เนื้อหาครอบคลุมตามหลักสูตร จัดเรียงลำดับการเรียนอย่างเป็นระบบ</p></div>
                 </div>
                 <div className="cd-feature-item">
-                  <div className="cd-check-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00c4b5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                  </div>
-                  <div>
-                    <h4>วิดีโอคุณภาพสูง</h4>
-                    <p>ความละเอียดชัด เสียงดัง ไม่มีสะดุด</p>
-                  </div>
+                  <div className="cd-check-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00c4b5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg></div>
+                  <div><h4>วิดีโอคุณภาพสูง</h4><p>ความละเอียดชัด เสียงดัง ไม่มีสะดุด</p></div>
                 </div>
                 <div className="cd-feature-item">
-                  <div className="cd-check-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00c4b5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                  </div>
-                  <div>
-                    <h4>ดูซ้ำได้ไม่จำกัด</h4>
-                    <p>เมื่อซื้อคอร์สแล้ว สามารถดูซ้ำได้ไม่จำกัดจำนวนครั้ง</p>
-                  </div>
-                </div>
-                <div className="cd-feature-item">
-                  <div className="cd-check-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00c4b5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                  </div>
-                  <div>
-                    <h4>แบบฝึกหัดและการบ้าน</h4>
-                    <p>มีแบบฝึกหัดให้ทำเพื่อทบทวนความเข้าใจ</p>
-                  </div>
+                  <div className="cd-check-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00c4b5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg></div>
+                  <div><h4>ดูซ้ำได้ไม่จำกัด</h4><p>เมื่อซื้อคอร์สแล้ว สามารถดูซ้ำได้ไม่จำกัดจำนวนครั้ง</p></div>
                 </div>
               </div>
             </div>
 
             <div className="cd-card">
-              <h2 className="cd-card-title">เนื้อหาในคอร์ส</h2>
+              <h2 className="cd-card-title">เนื้อหาในคอร์ส (Syllabus)</h2>
               <div className="cd-lesson-list">
-                <div className="cd-lesson-item">
-                  <div className="cd-lesson-name">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00c4b5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                    บทที่ 1
+                
+                {/* 🌟 วนลูปแสดงบทเรียนจาก Database */}
+                {course.lessons && course.lessons.length > 0 ? (
+                  course.lessons.map((lesson, index) => (
+                    <div className="cd-lesson-item" key={lesson.lesson_id || index}>
+                      <div className="cd-lesson-name">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00c4b5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                        {lesson.title}
+                      </div>
+                      <div className="cd-lesson-time">
+                        {lesson.duration_minutes ? `${lesson.duration_minutes} นาที` : 'ไม่ระบุเวลา'}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div style={{ padding: '20px', textAlign: 'center', color: '#777' }}>
+                    ยังไม่มีข้อมูลบทเรียนในขณะนี้
                   </div>
-                  <div className="cd-lesson-time">15 นาที</div>
-                </div>
-                <div className="cd-lesson-item">
-                  <div className="cd-lesson-name">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00c4b5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                    บทที่ 2
-                  </div>
-                  <div className="cd-lesson-time">15 นาที</div>
-                </div>
-                <div className="cd-lesson-item">
-                  <div className="cd-lesson-name">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00c4b5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                    บทที่ 3
-                  </div>
-                  <div className="cd-lesson-time">15 นาที</div>
-                </div>
+                )}
+                
               </div>
             </div>
 
@@ -177,7 +225,10 @@ export default function CourseDetail() {
           {/* ฝั่งขวา: ราคาสินค้า */}
           <div className="cd-right-column">
             <div className="cd-price-card">
-              <h1 className="cd-price-amount">฿1,800</h1>
+              {/* 🌟 ดึงราคาจาก Database */}
+              <h1 className="cd-price-amount">
+                {course.price > 0 ? `฿${course.price.toLocaleString()}` : 'เรียนฟรี'}
+              </h1>
               <p className="cd-price-subtitle">ครั้งเดียว เรียนได้ไม่จำกัด</p>
               
               <button className="cd-enroll-btn" onClick={() => navigate('/payment')}>
@@ -188,15 +239,11 @@ export default function CourseDetail() {
               <div className="cd-course-includes">
                 <div className="cd-include-item">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00c4b5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
-                  32 บทเรียน
+                  {course.lessons?.length || 0} บทเรียน
                 </div>
                 <div className="cd-include-item">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00c4b5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                  ระยะเวลา 16 สัปดาห์
-                </div>
-                <div className="cd-include-item">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00c4b5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                  128 นักเรียน
+                  ระยะเวลา {course.duration_weeks || 12} สัปดาห์
                 </div>
               </div>
             </div>
@@ -210,15 +257,7 @@ export default function CourseDetail() {
         <div className="cd-footer-content">
           <div className="cd-footer-col">
             <h3>เกี่ยวกับเรา</h3>
-            <p>New Learning Academy<br/>เป็นแพลตฟอร์มการเรียนออนไลน์ที่ออกแบบมาเพื่อนักเรียนระดับประถมและมัธยมต้น</p>
-          </div>
-          <div className="cd-footer-col">
-            <h3>ติดต่อเรา</h3>
-            <p>อีเมล: info@newlearning.com<br/>โทร: 02-XXX-XXXX</p>
-          </div>
-          <div className="cd-footer-col">
-            <h3>เวลาทำการ</h3>
-            <p>จันทร์ - ศุกร์: 09:00 - 18:00<br/>เสาร์ - อาทิตย์: 10:00 - 16:00</p>
+            <p>New Learning Academy<br/>แพลตฟอร์มการเรียนออนไลน์ที่ออกแบบมาเพื่อนักเรียน</p>
           </div>
         </div>
         <div className="cd-footer-bottom">

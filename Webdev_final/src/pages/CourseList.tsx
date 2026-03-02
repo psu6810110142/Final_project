@@ -172,21 +172,26 @@ const CourseList: React.FC = () => {
                 .filter(course => activeCategory === "ทั้งหมด" || course.level?.level_name === activeCategory)
                 .filter(course => course.title.toLowerCase().includes(searchTerm.toLowerCase()) || course.description.toLowerCase().includes(searchTerm.toLowerCase()))
                 .map((course) => (
-                  <CourseCard
+                  /* 🌟 ใช้ Link ครอบ CourseCard และส่ง ID ของคอร์สไปที่ URL (ย้าย key มาไว้ที่ Link) */
+                  <Link 
+                    to={`/course/${course.course_id}`} 
                     key={course.course_id}
-                    id={course.course_id}
-                    subject={course.level?.level_name || 'ทั่วไป'}
-                    grade={course.level?.level_name || '-'}
-                    title={course.title}
-                    price={`฿${course.price.toLocaleString()}`}
-                    tagColor="#dbeafe"
-                    textColor="#1e40af"
-                    imgSrc={getImageUrl(course.cover_image_url)}
-                    instructorName={course.instructor?.name || 'ไม่ระบุ'}
-                    duration={course.duration_weeks || 12}
-                    description={course.description}
-                    instructorImage={getImageUrl(course.instructor?.profile_image_url, 'user')}
-                  />
+                    style={{ textDecoration: 'none', color: 'inherit' }}
+                  >
+                    <CourseCard
+                      subject={course.level?.level_name || 'ทั่วไป'}
+                      grade={course.level?.level_name || '-'}
+                      title={course.title}
+                      price={`฿${course.price.toLocaleString()}`}
+                      tagColor="#dbeafe"
+                      textColor="#1e40af"
+                      imgSrc={getImageUrl(course.cover_image_url)}
+                      instructorName={course.instructor?.name || 'ไม่ระบุ'}
+                      duration={course.duration_weeks || 12}
+                      description={course.description}
+                      instructorImage={getImageUrl(course.instructor?.profile_image_url, 'user')}
+                    />
+                  </Link>
                 ))}
 
               {/* ถ้าค้นหาแล้วไม่เจออะไรเลย */}
