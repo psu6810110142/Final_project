@@ -9,6 +9,7 @@ import RegisterPage from './pages/Register';   // หน้าสมัครส
 import CourseList from './pages/CourseList';  // หน้าคอร์สลิส
 import CourseManagement from './pages/CourseManagement';
 import MyCourses from './pages/Mycourse';
+import CourseDetail from './pages/CourseDetail';
 
 function App() {
   return (
@@ -33,6 +34,9 @@ function App() {
 
         {/* หน้าแสดงจัดการคอร์ส (localhost:5173/home) -> ให้แสดง CourseManagement */}
         <Route path="/manage-courses" element={<CourseManagement />} />
+
+        {/* 🌟 เพิ่ม Route นี้สำหรับการดูรายละเอียดคอร์ส (ใช้ :id เพื่อรับค่า Parameter) */}
+        <Route path="/course/:id" element={<CourseDetail />} />
 
         <Route path="/my-courses" element={<MyCourses />} />
 
