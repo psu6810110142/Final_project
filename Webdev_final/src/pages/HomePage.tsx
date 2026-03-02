@@ -252,8 +252,7 @@ const FeatureCard = ({ icon, bg, title, desc }: any) => (
   </div>
 );
 
-const CourseCard = ({ subject, grade, title, price, tagColor, textColor, imgSrc, instructorName, instructorImage, instructor, duration, description }: any) => (
-  <div className="course-card">
+const CourseCard = ({ subject, grade, title, price, tagColor, textColor, imgSrc, instructorName, instructorImage, instructor, duration, description }: any) => (  <div className="course-card">
     <div className="course-image">
       <img src={imgSrc} alt={title} style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
       <span className="badge">{grade}</span>
@@ -290,4 +289,5 @@ const CourseCard = ({ subject, grade, title, price, tagColor, textColor, imgSrc,
     </div>
   </div>
 );
+
 export default HomePage;
