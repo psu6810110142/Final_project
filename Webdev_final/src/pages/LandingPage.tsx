@@ -3,6 +3,8 @@ import './HomePage.css'; // ใช้ CSS เดิม
 import { Home, BookOpen, Users, Star, ArrowRight, Clock, LogIn, UserPlus, Book } from 'lucide-react';
 import logoImage from '../assets/Logo.png';
 import api from '../api';
+import { Link } from 'react-router-dom';
+
 
 interface CourseData {
   course_id: number;
@@ -20,6 +22,17 @@ interface CourseData {
   };
 }
 
+const getImageUrl = (url?: string, type: 'course' | 'user' = 'course') => {
+  if (!url) {
+    return type === 'user'
+      ? "" // 👨‍🏫 รูปคน Default
+      : "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=400"; // 📚 รูปคอร์สเรียน Default
+  }
+  if (url.startsWith('/uploads')) {
+    return `http://localhost:3000${url}`;
+  }
+  return url;
+};
 
 const LandingPage: React.FC = () => {
 
@@ -143,20 +156,25 @@ const LandingPage: React.FC = () => {
             <div className="courses-scroll-container"> 
               {courses.length > 0 ? (
                 courses.map((course) => (
-                  <CourseCard 
+                  <Link 
+                    to={`/course/${course.course_id}`} 
                     key={course.course_id}
-                    subject={course.level?.level_name || 'ทั่วไป'} 
-                    grade={course.level?.level_name || '-'} 
-                    title={course.title} 
-                    price={`฿${course.price.toLocaleString()}`} 
-                    tagColor="#dbeafe" 
-                    textColor="#1e40af"
-                    imgSrc={course.cover_image_url || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=400"} // รูป Default
-                    instructorName={course.instructor?.name || 'ไม่ระบุ'}
-                    duration={course.duration_weeks || 12}
-                    description={course.description}
-                    instructorImage={course.instructor?.profile_image_url}
-                  />
+                    style={{ textDecoration: 'none', color: 'inherit' }}
+                  >
+                    <CourseCard
+                      subject={course.level?.level_name || 'ทั่วไป'}
+                      grade={course.level?.level_name || '-'}
+                      title={course.title}
+                      price={`฿${course.price.toLocaleString()}`}
+                      tagColor="#dbeafe"
+                      textColor="#1e40af"
+                      imgSrc={getImageUrl(course.cover_image_url)}
+                      instructorName={course.instructor?.name || 'ไม่ระบุ'}
+                      duration={course.duration_weeks || 12}
+                      description={course.description}
+                      instructorImage={getImageUrl(course.instructor?.profile_image_url, 'user')}
+                    />
+                  </Link>
                 ))
               ) : (
                 <p style={{ width: '100%', textAlign: 'center' }}>ยังไม่มีคอร์สแนะนำในขณะนี้</p>

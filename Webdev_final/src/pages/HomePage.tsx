@@ -3,6 +3,7 @@ import './HomePage.css';
 import { Home, BookOpen, User, LogOut, ArrowRight, Book, Users, Star, Clock } from 'lucide-react';
 import logoImage from '../assets/Logo.png';
 import api from '../api'; // สมมติว่าไฟล์นี้มีการตั้งค่า Axios instance เอาไว้
+import { Link } from 'react-router-dom';
 
 interface CourseData {
   course_id: number;
@@ -185,20 +186,25 @@ const HomePage: React.FC = () => {
             <div className="courses-scroll-container">
               {courses.length > 0 ? (
                 courses.map((course) => (
-                  <CourseCard
+                  <Link 
+                    to={`/course/${course.course_id}`} 
                     key={course.course_id}
-                    subject={course.level?.level_name || 'ทั่วไป'}
-                    grade={course.level?.level_name || '-'}
-                    title={course.title}
-                    price={`฿${course.price.toLocaleString()}`}
-                    tagColor="#dbeafe"
-                    textColor="#1e40af"
-                    imgSrc={getImageUrl(course.cover_image_url)}
-                    instructorName={course.instructor?.name || 'ไม่ระบุ'}
-                    duration={course.duration_weeks || 12}
-                    description={course.description}
-                    instructorImage={getImageUrl(course.instructor?.profile_image_url, 'user')}
-                  />
+                    style={{ textDecoration: 'none', color: 'inherit' }}
+                  >
+                    <CourseCard
+                      subject={course.level?.level_name || 'ทั่วไป'}
+                      grade={course.level?.level_name || '-'}
+                      title={course.title}
+                      price={`฿${course.price.toLocaleString()}`}
+                      tagColor="#dbeafe"
+                      textColor="#1e40af"
+                      imgSrc={getImageUrl(course.cover_image_url)}
+                      instructorName={course.instructor?.name || 'ไม่ระบุ'}
+                      duration={course.duration_weeks || 12}
+                      description={course.description}
+                      instructorImage={getImageUrl(course.instructor?.profile_image_url, 'user')}
+                    />
+                  </Link>
                 ))
               ) : (
                 <p style={{ gridColumn: '1 / -1', textAlign: 'center' }}>ยังไม่มีคอร์สแนะนำในขณะนี้</p>
@@ -252,7 +258,8 @@ const FeatureCard = ({ icon, bg, title, desc }: any) => (
   </div>
 );
 
-const CourseCard = ({ subject, grade, title, price, tagColor, textColor, imgSrc, instructorName, instructorImage, instructor, duration, description }: any) => (  <div className="course-card">
+const CourseCard = ({ subject, grade, title, price, tagColor, textColor, imgSrc, instructorName, instructorImage, instructor, duration, description }: any) => (
+  <div className="course-card">
     <div className="course-image">
       <img src={imgSrc} alt={title} style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
       <span className="badge">{grade}</span>
