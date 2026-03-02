@@ -16,11 +16,16 @@ interface CourseData {
   };
   instructor?: {
     name: string;
+    profile_image_url: string;
   };
 }
 
-const getImageUrl = (url?: string) => {
-  if (!url) return "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=400"; // รูป Default
+const getImageUrl = (url?: string, type: 'course' | 'user' = 'course') => {
+  if (!url) {
+    return type === 'user'
+      ? "" // 👨‍🏫 รูปคน Default
+      : "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=400"; // 📚 รูปคอร์สเรียน Default
+  }
   if (url.startsWith('/uploads')) {
     return `http://localhost:3000${url}`;
   }
@@ -178,6 +183,7 @@ const CourseList: React.FC = () => {
                     instructorName={course.instructor?.name || 'ไม่ระบุ'}
                     duration={course.duration_weeks || 12}
                     description={course.description}
+                    instructorImage={getImageUrl(course.instructor?.profile_image_url, 'user')}
                   />
                 ))}
 
@@ -205,7 +211,7 @@ const CourseList: React.FC = () => {
   );
 };
 
-const CourseCard = ({ subject, grade, title, price, tagColor, textColor, imgSrc, instructorName, duration, description }: any) => (
+const CourseCard = ({ subject, grade, title, price, tagColor, textColor, imgSrc, instructorName, instructorImage, instructor, duration, description }: any) => (
   <div className="course-card">
     <div className="course-image">
       <img src={imgSrc} alt={title} style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
@@ -228,7 +234,14 @@ const CourseCard = ({ subject, grade, title, price, tagColor, textColor, imgSrc,
       </div>
       <div className="course-footer">
         <div className="instructor">
-          <div className="avatar"></div>
+          <div className="avatar" style={{ overflow: 'hidden', borderRadius: '50%', backgroundColor: '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <img
+              // ถ้าระบบไม่มีรูป จะดึง API สร้างรูปตัวอักษรย่อชื่ออาจารย์มาโชว์แทนอัตโนมัติ
+              src={instructorImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(instructor || 'T')}&background=random&color=fff`}
+              alt={instructor || 'Instructor'}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          </div>
           <span>{instructorName}</span>
         </div>
         <div className="course-price" style={{ color: '#e74c3c', fontWeight: 'bold' }}>{price}</div>
