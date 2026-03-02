@@ -18,6 +18,7 @@ interface CourseData {
   instructor_id: number;
   level?: any;
   instructor?: any;
+  name?: string;
 }
 
 // ✨ สร้าง Interface มารองรับข้อมูล Levels และ Instructors
@@ -28,7 +29,7 @@ interface LevelData {
 
 interface InstructorData {
   instructor_id: number;
-  full_name: string;
+  name: string;
 }
 
 const CourseManagement: React.FC = () => {
@@ -51,6 +52,7 @@ const CourseManagement: React.FC = () => {
     price: 0, 
     duration_weeks: 0, 
     level_id: 0, 
+    name: '',
     instructor_id: 0, // ✨ เปลี่ยนค่า Default เป็น 0 เพื่อบังคับให้ผู้ใช้เลือกอาจารย์
     cover_image_url: '', 
     material_file_url: '', 
@@ -222,7 +224,7 @@ const CourseManagement: React.FC = () => {
                   
                   {/* ✨ โชว์ชื่ออาจารย์ผู้สอนในกล่องคอร์สด้วยเลย */}
                   <div style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '10px' }}>
-                     👨‍🏫 โดย: {course.instructor?.full_name || 'ไม่ระบุอาจารย์'}
+                     👨‍🏫 โดย: {course.instructor?.name}
                   </div>
 
                   <div className="course-meta meta-bottom">
@@ -298,7 +300,7 @@ const CourseManagement: React.FC = () => {
                     <option value={0} disabled>-- เลือกอาจารย์ผู้สอน --</option>
                     {instructors.map(instructor => (
                       <option key={instructor.instructor_id} value={instructor.instructor_id}>
-                        {instructor.full_name}
+                        {instructor.name}
                       </option>
                     ))}
                   </select>

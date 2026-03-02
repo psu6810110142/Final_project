@@ -197,6 +197,9 @@ export default function CourseDetail() {
                   {course.price > 0 ? `฿${course.price.toLocaleString()}` : 'เรียนฟรี'}
                 </h1>
                 <p className="cd-price-subtitle">จ่ายครั้งเดียว เข้าถึงเนื้อหาได้ตลอดไป</p>
+                <button className="cd-enroll-bag">
+                  + เพิ่มลงในตะกร้า
+                </button>
                 <button className="cd-enroll-btn" onClick={() => navigate('/payment')}>
                   ลงทะเบียนเรียนเลย
                 </button>
