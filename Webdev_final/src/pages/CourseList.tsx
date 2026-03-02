@@ -19,7 +19,6 @@ interface CourseData {
   };
 }
 
-//เพิ่มฟังก์ชันนี้ไว้ด้านบนสุดของไฟล์
 const getImageUrl = (url?: string) => {
   if (!url) return "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=400"; // รูป Default
   if (url.startsWith('/uploads')) {
