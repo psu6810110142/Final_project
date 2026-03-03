@@ -5,6 +5,19 @@ import { Home, Book, User, LogOut, PlayCircle, CheckCircle } from 'lucide-react'
 import logoImage from '../assets/Logo.png';
 import api from '../api';
 
+const getImageUrl = (url?: string, type: 'course' | 'user' = 'course') => {
+  if (!url) {
+    return type === 'user'
+      ? "" // 👨‍🏫 รูปคน Default
+      : "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=400"; // 📚 รูปคอร์สเรียน Default
+  }
+
+  if (url.startsWith('/uploads')) {
+    return `http://localhost:3000${url}`;
+  }
+  return url;
+};
+
 const MyCourses: React.FC = () => {
   const navigate = useNavigate();
   const [filter, setFilter] = useState("all");
@@ -185,7 +198,7 @@ const MyCourseCard = ({ course }: { course: any }) => {
   return (
     <div className="course-card my-course-card">
       <div className="course-image-wrapper">
-        <img src={course.imgSrc} alt={course.title} className="course-image-img" />
+        <img src={getImageUrl(course.imgSrc)} alt={course.title} className="course-image-img" />
         {isCompleted && (
           <span className="status-badge">
             <CheckCircle size={14} /> เรียนจบแล้ว
