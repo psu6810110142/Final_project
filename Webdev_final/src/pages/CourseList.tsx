@@ -4,6 +4,7 @@ import { Home, Book, User, LogOut, Search, Users, Clock, Filter, UserPlus, LogIn
 import logoImage from '../assets/Logo.png';
 import api from '../api';
 import { Link } from 'react-router-dom';
+import GrayLogo from '../assets/graylogo.png';
 
 interface CourseData {
   course_id: number;
@@ -24,9 +25,10 @@ interface CourseData {
 const getImageUrl = (url?: string, type: 'course' | 'user' = 'course') => {
   if (!url) {
     return type === 'user'
-      ? "" // 👨‍🏫 รูปคน Default
-      : "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=400"; // 📚 รูปคอร์สเรียน Default
+      ? GrayLogo // 👨‍🏫 รูปคน Default
+      : GrayLogo // 📚 รูปคอร์สเรียน Default
   }
+
   if (url.startsWith('/uploads')) {
     return `http://localhost:3000${url}`;
   }
@@ -173,8 +175,8 @@ const CourseList: React.FC = () => {
                 .filter(course => course.title.toLowerCase().includes(searchTerm.toLowerCase()) || course.description.toLowerCase().includes(searchTerm.toLowerCase()))
                 .map((course) => (
                   /* 🌟 ใช้ Link ครอบ CourseCard และส่ง ID ของคอร์สไปที่ URL (ย้าย key มาไว้ที่ Link) */
-                  <Link 
-                    to={`/course/${course.course_id}`} 
+                  <Link
+                    to={`/course/${course.course_id}`}
                     key={course.course_id}
                     style={{ textDecoration: 'none', color: 'inherit' }}
                   >

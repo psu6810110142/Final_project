@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './HomePage.css';
 import { Home, BookOpen, User, LogOut, ArrowRight, Book, Users, Star, Clock } from 'lucide-react';
 import logoImage from '../assets/Logo.png';
+import GrayLogo from '../assets/graylogo.png';
 import api from '../api'; // สมมติว่าไฟล์นี้มีการตั้งค่า Axios instance เอาไว้
 import { Link } from 'react-router-dom';
 
@@ -24,8 +25,8 @@ interface CourseData {
 const getImageUrl = (url?: string, type: 'course' | 'user' = 'course') => {
   if (!url) {
     return type === 'user'
-      ? "" // 👨‍🏫 รูปคน Default
-      : "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=400"; // 📚 รูปคอร์สเรียน Default
+      ? GrayLogo // 👨‍🏫 รูปคน Default
+      : GrayLogo // 📚 รูปคอร์สเรียน Default
   }
 
   if (url.startsWith('/uploads')) {
@@ -186,8 +187,8 @@ const HomePage: React.FC = () => {
             <div className="courses-scroll-container">
               {courses.length > 0 ? (
                 courses.map((course) => (
-                  <Link 
-                    to={`/course/${course.course_id}`} 
+                  <Link
+                    to={`/course/${course.course_id}`}
                     key={course.course_id}
                     style={{ textDecoration: 'none', color: 'inherit' }}
                   >

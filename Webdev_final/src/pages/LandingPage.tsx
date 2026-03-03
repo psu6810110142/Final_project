@@ -1,10 +1,10 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import './HomePage.css'; // ใช้ CSS เดิม
 import { Home, BookOpen, Users, Star, ArrowRight, Clock, LogIn, UserPlus, Book } from 'lucide-react';
 import logoImage from '../assets/Logo.png';
 import api from '../api';
 import { Link } from 'react-router-dom';
-
+import GrayLogo from '../assets/graylogo.png'
 
 interface CourseData {
   course_id: number;
@@ -25,9 +25,10 @@ interface CourseData {
 const getImageUrl = (url?: string, type: 'course' | 'user' = 'course') => {
   if (!url) {
     return type === 'user'
-      ? "" // 👨‍🏫 รูปคน Default
-      : "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=400"; // 📚 รูปคอร์สเรียน Default
+      ? GrayLogo // 👨‍🏫 รูปคน Default
+      : GrayLogo // 📚 รูปคอร์สเรียน Default
   }
+
   if (url.startsWith('/uploads')) {
     return `http://localhost:3000${url}`;
   }
@@ -44,7 +45,7 @@ const LandingPage: React.FC = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const response = await api.get('/courses'); 
+        const response = await api.get('/courses');
         setCourses(response.data);
       } catch (error) {
         console.error('เกิดข้อผิดพลาดในการดึงข้อมูลคอร์ส:', error);
@@ -69,7 +70,7 @@ const LandingPage: React.FC = () => {
               <span className="brand-subtitle">สถาบันกวดวิชานิวเลิร์นนิง</span>
             </div>
           </a>
-          
+
           {/* Menu & Auth Buttons */}
           <div className="navbar-menu">
             <a href="/" className="menu-item active">
@@ -78,15 +79,15 @@ const LandingPage: React.FC = () => {
             <a href="/courses" className="menu-item">
               <Book size={18} /> คอร์สเรียน
             </a>
-            
+
             {/* ส่วนที่ต่างจาก HomePage: ปุ่ม Login/Register */}
             <div className="nav-auth-buttons">
-                <a href="/login" className="btn-nav-login">
-                    <LogIn size={18} /> เข้าสู่ระบบ
-                </a>
-                <a href="/register" className="btn-nav-register">
-                    <UserPlus size={18} /> สมัครสมาชิก
-                </a>
+              <a href="/login" className="btn-nav-login">
+                <LogIn size={18} /> เข้าสู่ระบบ
+              </a>
+              <a href="/register" className="btn-nav-register">
+                <UserPlus size={18} /> สมัครสมาชิก
+              </a>
             </div>
           </div>
         </div>
@@ -95,12 +96,12 @@ const LandingPage: React.FC = () => {
       {/* ================= Hero Section ================= */}
       <header className="page-header">
         <div className="container hero-content">
-          <div className="hero-text" style={{marginLeft : '5%'}}>
+          <div className="hero-text" style={{ marginLeft: '5%' }}>
             <h1>เรียนออนไลน์ <br />ที่บ้าน สะดวก สบาย</h1>
-            <p style={{ marginBottom: '30px'}}>แพลตฟอร์มการเรียนออนไลน์สำหรับนักเรียนชั้นประถมและมัธยมต้น เรียนได้ทุกที่ทุกเวลา พร้อมครูผู้สอนที่มีคุณภาพ</p>
+            <p style={{ marginBottom: '30px' }}>แพลตฟอร์มการเรียนออนไลน์สำหรับนักเรียนชั้นประถมและมัธยมต้น เรียนได้ทุกที่ทุกเวลา พร้อมครูผู้สอนที่มีคุณภาพ</p>
             {/* ปุ่มกดแล้วไปหน้า Register */}
-            <a href="/register" className="btn-hero" style={{textDecoration: 'none'}}>
-              <BookOpen size={20}/> เริ่มต้นใช้งานฟรี
+            <a href="/register" className="btn-hero" style={{ textDecoration: 'none' }}>
+              <BookOpen size={20} /> เริ่มต้นใช้งานฟรี
             </a>
           </div>
 
@@ -118,19 +119,19 @@ const LandingPage: React.FC = () => {
         <div className="container">
           <h2 className="section-title">ทำไมต้องเลือกเรียนกับเรา?</h2>
           <div className="features-grid">
-            <FeatureCard 
+            <FeatureCard
               icon={<Star size={40} color="#2563eb" />}
               bg="#dbeafe"
               title="คุณภาพการสอน"
               desc="อาจารย์ผู้เชี่ยวชาญที่มีประสบการณ์การสอนมากกว่า 10 ปี"
             />
-            <FeatureCard 
+            <FeatureCard
               icon={<BookOpen size={40} color="#059669" />}
               bg="#d1fae5"
               title="เรียนได้ทุกที่"
               desc="เรียนออนไลน์ได้ทุกที่ทุกเวลา เหมาะกับนักเรียนที่อยู่ห่างไกล"
             />
-            <FeatureCard 
+            <FeatureCard
               icon={<Users size={40} color="#ea580c" />}
               bg="#ffedd5"
               title="ราคาเป็นกันเอง"
@@ -153,11 +154,11 @@ const LandingPage: React.FC = () => {
           {isLoading ? (
             <p style={{ textAlign: 'center', padding: '2rem 0' }}>กำลังโหลดข้อมูลคอร์ส...</p>
           ) : (
-            <div className="courses-scroll-container"> 
+            <div className="courses-scroll-container">
               {courses.length > 0 ? (
                 courses.map((course) => (
-                  <Link 
-                    to={`/course/${course.course_id}`} 
+                  <Link
+                    to={`/course/${course.course_id}`}
                     key={course.course_id}
                     style={{ textDecoration: 'none', color: 'inherit' }}
                   >
@@ -185,11 +186,11 @@ const LandingPage: React.FC = () => {
       </section>
 
       <section className='page-header' >
-        <div className="container" style={{ display: 'flex', justifyContent: 'center' }}>          
-          <div className="hero-text" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',width: '100%'}}> 
-            <h1 style={{ color: 'white',  whiteSpace: 'normal'}}>พร้อมเริ่มต้นการเรียนรู้แล้วหรือยัง</h1>
-            <p style={{ color: 'white', marginBottom: '30px'}}>ลงทะเบียนวันนี้และเริ่มเรียนคอร์สที่คุณสนใจได้เลย</p>
-            <a href="/register" className="btn-hero" style={{textDecoration: 'none'}}>
+        <div className="container" style={{ display: 'flex', justifyContent: 'center' }}>
+          <div className="hero-text" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', width: '100%' }}>
+            <h1 style={{ color: 'white', whiteSpace: 'normal' }}>พร้อมเริ่มต้นการเรียนรู้แล้วหรือยัง</h1>
+            <p style={{ color: 'white', marginBottom: '30px' }}>ลงทะเบียนวันนี้และเริ่มเรียนคอร์สที่คุณสนใจได้เลย</p>
+            <a href="/register" className="btn-hero" style={{ textDecoration: 'none' }}>
               <BookOpen size={20} /> สมัครสมาชิกฟรี
             </a>
           </div>
@@ -202,7 +203,7 @@ const LandingPage: React.FC = () => {
           <div className="footer-grid">
             <div>
               <h3>เกี่ยวกับเรา</h3>
-              <p>New Learning Academy เป็นแพลตฟอร์มการเรียนรู้<br/>ออนไลน์ชั้นนำ มุ่งเน้นพัฒนาศักยภาพผู้เรียน</p>
+              <p>New Learning Academy เป็นแพลตฟอร์มการเรียนรู้<br />ออนไลน์ชั้นนำ มุ่งเน้นพัฒนาศักยภาพผู้เรียน</p>
             </div>
             <div>
               <h3>ติดต่อเรา</h3>
@@ -249,11 +250,11 @@ const CourseCard = ({ subject, grade, title, price, tagColor, textColor, imgSrc,
     <div className="course-content">
       <span className="course-tag" style={{ backgroundColor: tagColor, color: textColor }}>{subject}</span>
       <h3 className="course-title">{title}</h3>
-      <p className="course-desc" style={{ 
-        display: '-webkit-box', 
-        WebkitLineClamp: 2, 
-        WebkitBoxOrient: 'vertical', 
-        overflow: 'hidden' 
+      <p className="course-desc" style={{
+        display: '-webkit-box',
+        WebkitLineClamp: 2,
+        WebkitBoxOrient: 'vertical',
+        overflow: 'hidden'
       }}>
         {description}
       </p>
@@ -264,10 +265,10 @@ const CourseCard = ({ subject, grade, title, price, tagColor, textColor, imgSrc,
       <div className="course-footer">
         <div className="instructor">
           <div className="avatar" style={{ overflow: 'hidden', borderRadius: '50%', backgroundColor: '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <img 
+            <img
               // ถ้าระบบไม่มีรูป จะดึง API สร้างรูปตัวอักษรย่อชื่ออาจารย์มาโชว์แทนอัตโนมัติ
-              src={instructorImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(instructor || 'T')}&background=random&color=fff`} 
-              alt={instructor || 'Instructor'} 
+              src={instructorImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(instructor || 'T')}&background=random&color=fff`}
+              alt={instructor || 'Instructor'}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           </div>
