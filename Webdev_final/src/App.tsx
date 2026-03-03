@@ -10,6 +10,7 @@ import CourseList from './pages/CourseList';  // หน้าคอร์สล�
 import CourseManagement from './pages/CourseManagement';
 import MyCourses from './pages/Mycourse';
 import CourseDetail from './pages/CourseDetail';
+import PaymentPage from './pages/PaymentPage';
 
 function App() {
   return (
@@ -37,6 +38,9 @@ function App() {
 
         {/* 🌟 เพิ่ม Route นี้สำหรับการดูรายละเอียดคอร์ส (ใช้ :id เพื่อรับค่า Parameter) */}
         <Route path="/course/:id" element={<CourseDetail />} />
+
+        {/* 🌟 เพิ่ม Route สำหรับหน้าชำระเงิน */}
+        <Route path="/payment" element={<PaymentPage />} />
 
         <Route path="/my-courses" element={<MyCourses />} />
 

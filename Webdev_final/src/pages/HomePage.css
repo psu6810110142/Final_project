@@ -1779,3 +1779,184 @@ body {
 .courses-scroll-container::-webkit-scrollbar-thumb:hover {
   background: #94a3b8; /* สีตัวเลื่อนตอนเอาเมาส์ชี้ */
 }
+/* ================= Payment Page (หน้าชำระเงิน) ================= */
+
+.payment-page-header {
+  background-color: #51A6FF; 
+  /* สำคัญ: เอาสีฟ้าโปร่งแสง (rgba) มาซ้อนทับรูปภาพ เพื่อให้ตัวหนังสือสีขาวเด่นขึ้น */
+  background-image: 
+    linear-gradient(rgba(81, 166, 255, 0.9), rgba(81, 166, 255, 0.9)), 
+    url('../assets/BG.png');
+  background-size: cover; 
+  background-position: center;
+  color: white;
+  padding: 60px 0;
+  margin-bottom: 40px;
+}
+
+.payment-page-header h1 {
+  font-size: 2.5rem;
+  margin: 0 0 10px 0;
+  font-weight: 800;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.payment-page-header p {
+  font-size: 1.1rem;
+  margin: 0;
+  opacity: 0.9;
+}
+/* เลย์เอาต์แบ่ง 2 ฝั่ง (ซ้ายใหญ่ ขวาเล็ก) */
+.payment-layout {
+  display: grid;
+  grid-template-columns: 1.8fr 1fr;
+  gap: 30px;
+  margin-bottom: 80px;
+  align-items: start; /* ให้กล่องขวาไม่ยืดความสูงตามกล่องซ้าย */
+}
+
+/* การ์ดสีขาว */
+.payment-card {
+  background: white;
+  border-radius: 20px;
+  padding: 30px 40px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+  margin-bottom: 24px;
+}
+
+.payment-title {
+  color: #147a74; /* สีเขียวอมฟ้าตามในรูป */
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 24px 0;
+}
+
+/* กล่องข้อมูลธนาคาร */
+.bank-info-box {
+  background-color: #f8fafc;
+  border-radius: 12px;
+  padding: 24px 30px;
+  margin-bottom: 24px;
+}
+
+.bank-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  font-size: 0.95rem;
+}
+
+.bank-row:last-child {
+  margin-bottom: 0;
+}
+
+.bank-label {
+  color: #64748b;
+}
+
+.bank-value {
+  color: #147a74; /* สีตัวหนังสือข้อมูลบัญชี */
+  font-weight: 700;
+}
+
+.bank-amount {
+  font-size: 2.2rem;
+  color: #12b5a9; /* สีเขียวสว่าง (ตัวเลขเงิน) */
+  font-weight: 800;
+}
+
+/* กล่องแจ้งเตือนสีฟ้าอ่อน */
+.payment-alert {
+  background-color: #f0f7ff;
+  border: 1px solid #dbeafe;
+  color: #3b82f6;
+  padding: 16px 20px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.9rem;
+}
+
+/* ช่องอัปโหลดไฟล์ */
+.upload-input-mock {
+  background-color: #f1f5f9;
+  border-radius: 12px;
+  padding: 16px;
+  width: 100%;
+  border: none;
+  margin-bottom: 24px;
+  box-sizing: border-box;
+  color: #64748b;
+}
+
+/* ปุ่มส่งหลักฐาน */
+.btn-upload-slip {
+  background: linear-gradient(90deg, #8ad4eb 0%, #68c7e8 100%);
+  color: white;
+  border: none;
+  padding: 16px;
+  width: 100%;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-upload-slip:hover {
+  opacity: 0.9;
+}
+
+/* สรุปการสั่งซื้อ */
+.summary-image {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.summary-course-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #147a74;
+  margin: 0 0 8px 0;
+}
+
+.summary-instructor {
+  color: #64748b;
+  font-size: 0.85rem;
+  margin-bottom: 24px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 0;
+  border-top: 1px solid #f1f5f9;
+  font-size: 0.95rem;
+  color: #334155;
+  font-weight: 600;
+}
+
+.summary-total-label {
+  color: #12b5a9;
+  font-weight: 700;
+}
+
+.summary-total-value {
+  color: #12b5a9;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .payment-layout { grid-template-columns: 1fr; }
+}
