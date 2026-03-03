@@ -31,3 +31,10 @@ export const videoFileFilter = (req: any, file: any, callback: any) => {
   }
   callback(null, true);
 };
+
+export const mixedFileFilter = (req: any, file: any, callback: any) => {
+  if (!file.originalname.match(/\.(jpg|jpeg|png|gif|mp4|avi|mov|mkv|pdf)$/i)) {
+    return callback(new Error('ไฟล์ไม่รองรับ! กรุณาอัพโหลดรูปภาพ, วิดีโอ หรือ PDF เท่านั้น'), false);
+  }
+  callback(null, true);
+};
