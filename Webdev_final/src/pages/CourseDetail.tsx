@@ -202,7 +202,7 @@ export default function CourseDetail() {
                 <button className="cd-enroll-bag">
                   + เพิ่มลงในตะกร้า
                 </button>
-                <button className="cd-enroll-btn" onClick={() => navigate('/payment')}>
+                <button className="cd-enroll-btn" onClick={() => navigate(`/payment/${course.course_id}`)}>
                   ลงทะเบียนเรียนเลย
                 </button>
                 <div className="cd-course-includes">

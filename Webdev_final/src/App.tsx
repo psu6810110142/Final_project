@@ -40,7 +40,7 @@ function App() {
         <Route path="/course/:id" element={<CourseDetail />} />
 
         {/* 🌟 เพิ่ม Route สำหรับหน้าชำระเงิน */}
-        <Route path="/payment" element={<PaymentPage />} />
+        <Route path="/payment/:courseId" element={<PaymentPage />} />
 
         <Route path="/my-courses" element={<MyCourses />} />
 

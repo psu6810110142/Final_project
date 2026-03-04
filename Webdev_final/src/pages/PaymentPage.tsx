@@ -1,26 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api'; 
 import './HomePage.css';
-import { Home, Book, User, LogOut, Info, Upload, CheckCircle } from 'lucide-react'; // เพิ่ม CheckCircle
+import { Home, Book, User, LogOut, Info, Upload, CheckCircle } from 'lucide-react';
 import logoImage from '../assets/Logo.png'; 
+import defaultCourseImage from '../assets/locobackgroudewhite.png'; // ✨ 1. Import รูป default เข้ามา
 
 const PaymentPage: React.FC = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
 
+  const [course, setCourse] = useState<any>(null);
+  const [loadingCourse, setLoadingCourse] = useState(true);
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState(''); 
-  
-  // 1. เพิ่ม State สำหรับจัดการสถานะ "สำเร็จ"
   const [isSuccess, setIsSuccess] = useState(false);
+
+  useEffect(() => {
+    const fetchCourse = async () => {
+      try {
+        const response = await api.get(`/courses/${courseId}`);
+        setCourse(response.data);
+      } catch (error) {
+        console.error('Error fetching course:', error);
+        setMessage('ไม่พบข้อมูลคอร์สเรียน กรุณากลับไปเลือกคอร์สใหม่');
+      } finally {
+        setLoadingCourse(false);
+      }
+    };
+
+    if (courseId) fetchCourse();
+  }, [courseId]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setSelectedFile(e.target.files[0]);
       setMessage('');
-      setIsSuccess(false); // เคลียร์สถานะสำเร็จเมื่อเลือกรูปใหม่
+      setIsSuccess(false); 
     }
   };
 
@@ -39,21 +57,18 @@ const PaymentPage: React.FC = () => {
       formData.append('slip_image', selectedFile); 
       
       if (courseId) {
-        formData.append('courseId', courseId);
+        formData.append('courseId', courseId); 
       }
 
-      const response = await axios.post('http://localhost:3000/payments/upload', formData, {
+      const response = await api.post('/payments/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         }
       });
 
       console.log('อัพโหลดสลิปสำเร็จ:', response.data);
-      
-      // 2. ตั้งค่าสถานะเป็น "สำเร็จ" แทนการใช้ alert()
       setIsSuccess(true);
       
-      // 3. หน่วงเวลา 3 วินาที (3000ms) ให้คนอ่านข้อความ ก่อนเด้งไปหน้าอื่น
       setTimeout(() => {
         navigate('/my-courses');
       }, 3000); 
@@ -65,6 +80,14 @@ const PaymentPage: React.FC = () => {
       setIsLoading(false);
     }
   };
+
+  // ✨ 2. ฟังก์ชันจัดการรูปภาพ ถ้าไม่มี url ให้ใช้ defaultCourseImage แทน
+  const getImageUrl = (url?: string) => {
+    if (!url) return defaultCourseImage; 
+    return url.startsWith('/uploads') ? `http://localhost:3000${url}` : url;
+  };
+
+  if (loadingCourse) return <div style={{ textAlign: 'center', padding: '100px', fontSize: '1.2rem' }}>กำลังเตรียมข้อมูลการชำระเงิน... ⏳</div>;
 
   return (
     <div className="page-wrapper" style={{ backgroundColor: '#f1f5f9', minHeight: '100vh' }}>
@@ -84,7 +107,6 @@ const PaymentPage: React.FC = () => {
             <a href="/courses" className="menu-item active"><Book size={18} /> คอร์สเรียน</a>
             <a href="/my-courses" className="menu-item"><User size={18} /> คอร์สของฉัน</a>
             <a href="/logout" className="menu-item"><LogOut size={18} /> ออกจากระบบ</a>
-            <div className="user-pill" style={{ background: 'rgba(255,255,255,0.2)' }}>User</div>
           </div>
         </div>
       </nav>
@@ -103,7 +125,6 @@ const PaymentPage: React.FC = () => {
           
           {/* ----- ฝั่งซ้าย: ข้อมูลการโอนเงิน & อัปโหลดสลิป ----- */}
           <div>
-            
             <div className="payment-card">
               <h2 className="payment-title">ข้อมูลการโอนเงิน</h2>
               <div className="bank-info-box">
@@ -121,7 +142,7 @@ const PaymentPage: React.FC = () => {
                 </div>
                 <div className="bank-row" style={{ marginTop: '20px' }}>
                   <span className="bank-label">จำนวนเงิน:</span>
-                  <div className="bank-amount">฿1,800</div>
+                  <div className="bank-amount">฿{course?.price ? course.price.toLocaleString() : '0'}</div>
                 </div>
               </div>
               <div className="payment-alert">
@@ -142,7 +163,7 @@ const PaymentPage: React.FC = () => {
                 accept="image/*"
                 onChange={handleFileChange}
                 className="upload-input-mock" 
-                disabled={isLoading || isSuccess} // ปิดช่องเมื่อส่งสำเร็จแล้ว
+                disabled={isLoading || isSuccess}
               />
 
               {message && (
@@ -157,7 +178,6 @@ const PaymentPage: React.FC = () => {
                 </div>
               )}
 
-              {/* 4. แสดงกล่องข้อความสีเขียวเมื่ออัปโหลดสำเร็จ */}
               {isSuccess && (
                 <div style={{ 
                   backgroundColor: '#dcfce7', 
@@ -176,7 +196,6 @@ const PaymentPage: React.FC = () => {
                 </div>
               )}
 
-              {/* ซ่อนปุ่มกดเมื่อสำเร็จแล้ว เพื่อไม่ให้กดซ้ำ */}
               {!isSuccess && (
                 <button 
                   className="btn-upload-slip" 
@@ -189,7 +208,6 @@ const PaymentPage: React.FC = () => {
                 </button>
               )}
             </div>
-
           </div>
 
           {/* ----- ฝั่งขวา: สรุปการสั่งซื้อ ----- */}
@@ -197,19 +215,21 @@ const PaymentPage: React.FC = () => {
             <div className="payment-card">
               <h2 className="payment-title">สรุปการสั่งซื้อ</h2>
               <img 
-                src="https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&q=80&w=400" 
-                alt="Science Course" 
+                src={getImageUrl(course?.cover_image_url)} 
+                alt={course?.title || "Course Image"} 
                 className="summary-image"
+                onError={(e) => { e.currentTarget.src = defaultCourseImage }} // ✨ 3. ดักจับกรณีรูปพัง ให้แสดง defaultCourseImage
               />
-              <h3 className="summary-course-title">วิทยาศาสตร์ ม.1</h3>
-              <p className="summary-instructor">อาจารย์: อาจารย์สุดา</p>
+              <h3 className="summary-course-title">{course?.title || 'ไม่ระบุชื่อวิชา'}</h3>
+              <p className="summary-instructor">อาจารย์: {course?.instructor?.name || 'ไม่ระบุ'}</p>
+              
               <div className="summary-row" style={{ borderTop: 'none', paddingTop: 0 }}>
                 <span className="bank-label">ราคาคอร์ส</span>
-                <span style={{ color: '#0f172a', fontWeight: 'bold' }}>฿1,800</span>
+                <span style={{ color: '#0f172a', fontWeight: 'bold' }}>฿{course?.price ? course.price.toLocaleString() : '0'}</span>
               </div>
               <div className="summary-row">
                 <span className="summary-total-label">ยอดรวม</span>
-                <span className="summary-total-value">฿1,800</span>
+                <span className="summary-total-value">฿{course?.price ? course.price.toLocaleString() : '0'}</span>
               </div>
             </div>
           </div>
