@@ -3,7 +3,8 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Home, Book, User, LogOut, UserPlus, LogIn, Clock, Users, PlayCircle, CheckCircle } from 'lucide-react';
 import './HomePage.css'; 
 import api from '../api'; 
-import logoImg from '../assets/Logo.png'; 
+import logoImg from '../assets/Logo.png';
+import imgVDO from '../assets/locobackgroudewhite.png' ;
 
 // 📌 Types
 interface Lesson {
@@ -75,21 +76,22 @@ export default function CourseDetail() {
     window.location.href = '/landing';
   };
 
+  // 🌟 ฟังก์ชันดึงรูปภาพ (ใช้รูป Logo.png จาก assets เป็นรูปเริ่มต้น)
   const getImageUrl = (url?: string, type: 'course' | 'user' = 'course') => {
     if (!url) {
       return type === 'user' 
         ? "" 
-        : "https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=800&q=80";
+        : imgVDO; 
     }
     return url.startsWith('/uploads') ? `http://localhost:3000${url}` : url;
   };
 
-  if (loading) return <div className="state-message">กำลังโหลดข้อมูลคอร์สเรียน... ⏳</div>;
+  if (loading) return <div className="state-message" style={{ textAlign: 'center', padding: '100px', fontSize: '1.2rem' }}>กำลังโหลดข้อมูลคอร์สเรียน... ⏳</div>;
 
   if (error || !course) return (
-    <div className="state-message">
-      <p style={{ color: 'red' }}>{error || 'ไม่พบคอร์สเรียน'}</p>
-      <button className="btn-learn review" onClick={() => navigate(-1)}>กลับไปก่อนหน้า</button>
+    <div className="state-message" style={{ textAlign: 'center', padding: '100px' }}>
+      <p style={{ color: 'red', fontSize: '1.2rem', marginBottom: '20px' }}>{error || 'ไม่พบคอร์สเรียน'}</p>
+      <button className="btn-learn review" onClick={() => navigate(-1)} style={{ padding: '10px 20px', cursor: 'pointer' }}>กลับไปก่อนหน้า</button>
     </div>
   );
 
