@@ -194,6 +194,7 @@ const MyCourses: React.FC = () => {
 const MyCourseCard = ({ course }: { course: any }) => {
   const isCompleted = course.progress === 100;
   const progressColor = isCompleted ? '#16a34a' : '#2563eb';
+  const navigate = useNavigate();
 
   return (
     <div className="course-card my-course-card">
@@ -229,7 +230,7 @@ const MyCourseCard = ({ course }: { course: any }) => {
           </div>
         </div>
 
-        <button className={`btn-learn ${isCompleted ? 'review' : 'continue'}`}>
+        <button className={`btn-learn ${isCompleted ? 'review' : 'continue'}`} onClick={() => navigate(`/learn/${course.id}`)}>
           {isCompleted ? 'ทบทวนเนื้อหา' : <><PlayCircle size={18} /> เรียนต่อ</>}
         </button>
       </div>

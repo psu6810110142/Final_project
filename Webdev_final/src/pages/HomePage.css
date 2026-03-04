@@ -1744,50 +1744,62 @@ body {
 /* ================= Horizontal Scroll Carousel ================= */
 .courses-scroll-container {
   display: flex;
-  gap: 1.5rem; /* ระยะห่างระหว่างการ์ด */
-  overflow-x: auto; /* เปิดใช้งานการเลื่อนแนวนอน */
-  padding: 1rem 0 2rem 0; /* เผื่อพื้นที่ด้านล่างให้ Scrollbar และเงา */
-  
+  gap: 1.5rem;
+  /* ระยะห่างระหว่างการ์ด */
+  overflow-x: auto;
+  /* เปิดใช้งานการเลื่อนแนวนอน */
+  padding: 1rem 0 2rem 0;
+  /* เผื่อพื้นที่ด้านล่างให้ Scrollbar และเงา */
+
   /* ทำให้เวลาเลื่อนแล้วมันดูดเข้าที่ (Snap) สมูทๆ */
-  scroll-snap-type: x mandatory; 
+  scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch; /* สำหรับ iOS */
+  -webkit-overflow-scrolling: touch;
+  /* สำหรับ iOS */
 }
 
 /* บังคับให้การ์ดไม่หดตัวและมีความกว้างคงที่ */
 .courses-scroll-container .course-card {
-  flex: 0 0 auto; /* ห้ามหด ห้ามขยาย */
-  width: 320px; /* กำหนดความกว้างของการ์ด (ปรับตัวเลขได้ตามต้องการ) */
-  scroll-snap-align: start; /* ให้มันดูดชิดซ้ายพอดีเวลาเลื่อน */
+  flex: 0 0 auto;
+  /* ห้ามหด ห้ามขยาย */
+  width: 320px;
+  /* กำหนดความกว้างของการ์ด (ปรับตัวเลขได้ตามต้องการ) */
+  scroll-snap-align: start;
+  /* ให้มันดูดชิดซ้ายพอดีเวลาเลื่อน */
 }
 
 /* --- ตกแต่ง Scrollbar ให้ดูสวยงามเข้ากับเว็บ (สำหรับ Chrome/Edge/Safari) --- */
 .courses-scroll-container::-webkit-scrollbar {
-  height: 8px; /* ความหนาของ Scrollbar */
+  height: 8px;
+  /* ความหนาของ Scrollbar */
 }
 
 .courses-scroll-container::-webkit-scrollbar-track {
-  background: #f3f4f6; /* สีพื้นหลังแถบ Scroll */
+  background: #f3f4f6;
+  /* สีพื้นหลังแถบ Scroll */
   border-radius: 10px;
 }
 
 .courses-scroll-container::-webkit-scrollbar-thumb {
-  background: #cbd5e1; /* สีตัวเลื่อน */
+  background: #cbd5e1;
+  /* สีตัวเลื่อน */
   border-radius: 10px;
 }
 
 .courses-scroll-container::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8; /* สีตัวเลื่อนตอนเอาเมาส์ชี้ */
+  background: #94a3b8;
+  /* สีตัวเลื่อนตอนเอาเมาส์ชี้ */
 }
+
 /* ================= Payment Page (หน้าชำระเงิน) ================= */
 
 .payment-page-header {
-  background-color: #51A6FF; 
+  background-color: #51A6FF;
   /* สำคัญ: เอาสีฟ้าโปร่งแสง (rgba) มาซ้อนทับรูปภาพ เพื่อให้ตัวหนังสือสีขาวเด่นขึ้น */
-  background-image: 
-    linear-gradient(rgba(81, 166, 255, 0.9), rgba(81, 166, 255, 0.9)), 
+  background-image:
+    linear-gradient(rgba(81, 166, 255, 0.9), rgba(81, 166, 255, 0.9)),
     url('../assets/BG.png');
-  background-size: cover; 
+  background-size: cover;
   background-position: center;
   color: white;
   padding: 60px 0;
@@ -1798,7 +1810,7 @@ body {
   font-size: 2.5rem;
   margin: 0 0 10px 0;
   font-weight: 800;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .payment-page-header p {
@@ -1806,13 +1818,15 @@ body {
   margin: 0;
   opacity: 0.9;
 }
+
 /* เลย์เอาต์แบ่ง 2 ฝั่ง (ซ้ายใหญ่ ขวาเล็ก) */
 .payment-layout {
   display: grid;
   grid-template-columns: 1.8fr 1fr;
   gap: 30px;
   margin-bottom: 80px;
-  align-items: start; /* ให้กล่องขวาไม่ยืดความสูงตามกล่องซ้าย */
+  align-items: start;
+  /* ให้กล่องขวาไม่ยืดความสูงตามกล่องซ้าย */
 }
 
 /* การ์ดสีขาว */
@@ -1820,12 +1834,13 @@ body {
   background: white;
   border-radius: 20px;
   padding: 30px 40px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
   margin-bottom: 24px;
 }
 
 .payment-title {
-  color: #147a74; /* สีเขียวอมฟ้าตามในรูป */
+  color: #147a74;
+  /* สีเขียวอมฟ้าตามในรูป */
   font-size: 1.1rem;
   font-weight: 700;
   margin: 0 0 24px 0;
@@ -1856,13 +1871,15 @@ body {
 }
 
 .bank-value {
-  color: #147a74; /* สีตัวหนังสือข้อมูลบัญชี */
+  color: #147a74;
+  /* สีตัวหนังสือข้อมูลบัญชี */
   font-weight: 700;
 }
 
 .bank-amount {
   font-size: 2.2rem;
-  color: #12b5a9; /* สีเขียวสว่าง (ตัวเลขเงิน) */
+  color: #12b5a9;
+  /* สีเขียวสว่าง (ตัวเลขเงิน) */
   font-weight: 800;
 }
 
@@ -1958,5 +1975,135 @@ body {
 
 /* Responsive */
 @media (max-width: 992px) {
-  .payment-layout { grid-template-columns: 1fr; }
+  .payment-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* ================= Learning Page (หน้าห้องเรียน) ================= */
+.learning-layout {
+  display: grid;
+  grid-template-columns: 3fr 1fr;
+  /* แบ่งสัดส่วน จอวิดีโอ 3 ส่วน / เมนูด้านข้าง 1 ส่วน */
+  gap: 24px;
+  padding: 30px 0;
+}
+
+/* ส่วนวิดีโอฝั่งซ้าย */
+.video-section {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.video-wrapper {
+  position: relative;
+  padding-bottom: 56.25%;
+  /* อัตราส่วน 16:9 สำหรับวิดีโอ */
+  height: 0;
+  background-color: #000;
+}
+
+.video-wrapper iframe,
+.video-wrapper video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.video-info {
+  padding: 24px;
+}
+
+.video-info h2 {
+  font-size: 1.5rem;
+  color: #1e293b;
+  margin: 0 0 10px 0;
+}
+
+.video-info p {
+  color: #64748b;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+/* ส่วนลิสต์บทเรียนฝั่งขวา */
+.playlist-section {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  /* ทำให้แถบด้านข้างเกาะติดหน้าจอเวลาเลื่อน (Sticky) */
+  position: sticky;
+  top: 90px;
+  max-height: calc(100vh - 120px);
+}
+
+.playlist-header {
+  padding: 20px;
+  border-bottom: 1px solid #e2e8f0;
+  background-color: #f8fafc;
+  border-radius: 16px 16px 0 0;
+}
+
+.playlist-content {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.lesson-item {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  gap: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+  align-items: flex-start;
+}
+
+.lesson-item:hover {
+  background-color: #f8fafc;
+}
+
+/* บทเรียนที่กำลังเรียนอยู่ */
+.lesson-item.active {
+  background-color: #eff6ff;
+  border-left: 4px solid #2563eb;
+}
+
+/* บทเรียนที่ยังไม่ปลดล็อก */
+.lesson-item.locked {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.lesson-title {
+  font-weight: 600;
+  color: #334155;
+  font-size: 0.95rem;
+  margin-bottom: 4px;
+}
+
+.lesson-duration {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+/* รองรับหน้าจอมือถือ/แท็บเล็ต */
+@media (max-width: 992px) {
+  .learning-layout {
+    grid-template-columns: 1fr;
+    /* เปลี่ยนเป็น 1 คอลัมน์ (บน-ล่าง) */
+  }
+
+  .playlist-section {
+    position: static;
+    max-height: 500px;
+  }
 }

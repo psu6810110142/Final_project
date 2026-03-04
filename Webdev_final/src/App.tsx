@@ -10,7 +10,7 @@ import CourseList from './pages/CourseList';  // หน้าคอร์สล�
 import CourseManagement from './pages/CourseManagement';
 import MyCourses from './pages/Mycourse';
 import CourseDetail from './pages/CourseDetail';
-import PaymentPage from './pages/PaymentPage';
+import LearningPage from './pages/LearningPage';
 
 function App() {
   return (
@@ -36,13 +36,14 @@ function App() {
         {/* หน้าแสดงจัดการคอร์ส (localhost:5173/manage-course) -> ให้แสดง CourseManagement */}
         <Route path="/manage-courses" element={<CourseManagement />} />
 
-        {/* 🌟 เพิ่ม Route นี้สำหรับการดูรายละเอียดคอร์ส (ใช้ :id เพื่อรับค่า Parameter) */}
+        {/* หน้าแสดงรายละเอียดคอร์ส (ใช้ :id เพื่อรับค่า Parameter) */}
         <Route path="/course/:id" element={<CourseDetail />} />
 
-        {/* 🌟 เพิ่ม Route สำหรับหน้าชำระเงิน */}
-        <Route path="/payment/:courseId" element={<PaymentPage />} />
-
+        {/* หน้าแสดงคอร์สของฉัน (localhost:5173/my-courses) -> ให้แสดง MyCourses */}
         <Route path="/my-courses" element={<MyCourses />} />
+
+        {/* หน้าแสดงคอร์สของฉัน (localhost:5173/learning) -> ให้แสดง LearningPage */}
+        <Route path="/learn/:courseId" element={<LearningPage />} />
 
         {/* กรณีพิมพ์มั่ว ให้เด้งกลับหน้าแรก */}
         <Route path="*" element={<LandingPage />} />
