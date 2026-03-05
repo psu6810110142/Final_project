@@ -109,6 +109,7 @@ const LearningPage: React.FC = () => {
   }
 
   const currentLesson = lessons.find(l => l.lesson_id === currentLessonId) || null;
+  const progressPercent = lessons.length > 0 ? Math.round((completedLessons.length / lessons.length) * 100) : 0;
 
   return (
     <div className="page-wrapper" >
@@ -213,6 +214,33 @@ const LearningPage: React.FC = () => {
               <div className="playlist-section">
                 <div className="playlist-header">
                   <h3 style={{ margin: '0 0 10px 0', fontSize: '1.1rem', color: '#1e293b' }}>เนื้อหาหลักสูตร</h3>
+
+                  {/* ตัวเลขบอกเปอร์เซ็นต์ */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#64748b', marginBottom: '8px', fontWeight: '500' }}>
+                    <span>ความคืบหน้าการเรียน</span>
+                    <span style={{ color: progressPercent === 100 ? '#16a34a' : '#2563eb' }}>
+                      {progressPercent}%
+                    </span>
+                  </div>
+
+                  {/* หลอดพื้นหลังสีเทา */}
+                  <div style={{ width: '100%', height: '8px', backgroundColor: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
+                    {/* หลอดสีเขียว/น้ำเงิน ที่ขยับตามเปอร์เซ็นต์จริง */}
+                    <div
+                      style={{
+                        width: `${progressPercent}%`,
+                        height: '100%',
+                        backgroundColor: progressPercent === 100 ? '#16a34a' : '#3b82f6', // ถ้าเต็ม 100% ให้เป็นสีเขียว
+                        transition: 'width 0.5s ease-in-out', // แอนิเมชันให้หลอดค่อยๆ วิ่ง
+                        borderRadius: '4px'
+                      }}
+                    ></div>
+                  </div>
+
+                  {/* บอกจำนวนบทเรียน (เช่น 1/4 บท) */}
+                  <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '8px', textAlign: 'right' }}>
+                    เรียนจบแล้ว {completedLessons.length} จาก {lessons.length} บท
+                  </div>
                 </div>
 
                 <div className="playlist-content">
