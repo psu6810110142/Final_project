@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './HomePage.css';
-import { ArrowLeft, PlayCircle, User, CheckCircle } from 'lucide-react'; // ลบ Lock, CheckCircle ออกก่อนชั่วคราว
+import { ArrowLeft, PlayCircle, User, CheckCircle, Download, FileText } from 'lucide-react'; // ลบ Lock, CheckCircle ออกก่อนชั่วคราว
 import logoImage from '../assets/Logo.png';
 import api from '../api';
 
@@ -33,6 +33,15 @@ const LearningPage: React.FC = () => {
     } catch (error) {
       console.error('Error saving progress:', error);
     }
+  };
+
+  const handleDownload = (fileUrl: string | null | undefined) => {
+    if (!fileUrl) {
+      alert('อาจารย์ยังไม่ได้อัปโหลดไฟล์สำหรับคอร์สนี้');
+      return;
+    }
+    // เปิดไฟล์ในแท็บใหม่ (ถ้าเป็น PDF เบราว์เซอร์จะเปิดให้ดู / ถ้าเป็น Zip จะดาวน์โหลดลงเครื่องทันที)
+    window.open(`http://localhost:3000${fileUrl}`, '_blank');
   };
 
   // ยามเฝ้าประตู 
@@ -159,9 +168,42 @@ const LearningPage: React.FC = () => {
                     </span>
                   </div>
                   <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '20px 0' }} />
-                  <p>
-                    {currentLesson?.description || 'ไม่มีรายละเอียดสำหรับบทเรียนนี้'}
-                  </p>
+                  <div>
+                    <h3 style={{ fontSize: '1.05rem', color: '#1e293b', marginBottom: '10px' }}>รายละเอียดคอร์สเรียน</h3>
+                    <p style={{ lineHeight: '1.6', color: '#475569', fontSize: '0.95rem', marginBottom: '25px' }}>
+                      {/* ดึงรายละเอียดจาก courseDetail แทน currentLesson */}
+                      {courseDetail?.description || 'ไม่มีรายละเอียดสำหรับคอร์สเรียนนี้'}
+                    </p>
+
+                    <h3 style={{ fontSize: '1.05rem', color: '#1e293b', marginBottom: '10px' }}>เอกสารประกอบการเรียน</h3>
+                    <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+
+                      {/* ปุ่มโหลดเอกสาร */}
+                      <button
+                        onClick={() => handleDownload(courseDetail?.material_file_url)}
+                        style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', backgroundColor: '#f1f5f9', color: '#334155', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer', fontWeight: '500', transition: 'all 0.2s' }}
+                        onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#e2e8f0'}
+                        onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
+                      >
+                        <FileText size={18} color="#2563eb" />
+                        เอกสารประกอบการเรียน
+                        <Download size={16} style={{ marginLeft: '4px' }} />
+                      </button>
+
+                      {/* ปุ่มโหลดแบบฝึกหัด */}
+                      <button
+                        onClick={() => handleDownload(courseDetail?.exercise_file_url)}
+                        style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', backgroundColor: '#f1f5f9', color: '#334155', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer', fontWeight: '500', transition: 'all 0.2s' }}
+                        onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#e2e8f0'}
+                        onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
+                      >
+                        <FileText size={18} color="#16a34a" />
+                        ไฟล์แบบฝึกหัด
+                        <Download size={16} style={{ marginLeft: '4px' }} />
+                      </button>
+
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
