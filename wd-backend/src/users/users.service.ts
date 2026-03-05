@@ -58,8 +58,18 @@ export class UsersService implements OnModuleInit {
   }
 
   // 3. ฟังก์ชันค้นหาจาก Email (ยังคงเดิม)
-  async findByEmail(email: string) {
+ async findByEmail(email: string) {
     return this.userRepo.findOne({ where: { email } });
+  }
+
+  // ✨ เพิ่มฟังก์ชันใหม่: ค้นหาด้วย Email หรือ Username
+  async findByUsernameOrEmail(identifier: string) {
+    return this.userRepo.findOne({
+      where: [
+        { email: identifier },      // เงื่อนไขที่ 1: ตรงกับ Email
+        { username: identifier }    // หรือ เงื่อนไขที่ 2: ตรงกับ Username
+      ]
+    });
   }
 
   findAll() {

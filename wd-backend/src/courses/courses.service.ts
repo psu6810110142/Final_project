@@ -22,7 +22,6 @@ export class CoursesService {
   }
 
   findAll() {
-    // ✨ สั่งดึงข้อมูล level และ instructor มาด้วยผ่าน relations
     return this.courseRepo.find({
       relations: ['level', 'instructor'], 
     });
@@ -37,16 +36,25 @@ export class CoursesService {
     return course;
   }
 
+  // ✨ แก้ไขฟังก์ชันนี้ใหม่ทั้งหมด ให้บันทึก Relation ได้ชัวร์ 100%
   async update(id: number, updateCourseDto: UpdateCourseDto) {
-    const course = await this.findOne(id);
+    await this.findOne(id); // เช็คก่อนว่ามีคอร์สนี้อยู่จริงไหม
     
-    Object.assign(course, updateCourseDto);
+    // แยก level_id กับ instructor_id ออกมาจากข้อมูลทั่วไป
+    const { level_id, instructor_id, ...updateData } = updateCourseDto;
     
-    // อัปเดต Foreign Keys ถ้ามีการส่ง ID มาใหม่
-    if (updateCourseDto.level_id) course.level = { level_id: updateCourseDto.level_id } as any;
-    if (updateCourseDto.instructor_id) course.instructor = { instructor_id: updateCourseDto.instructor_id } as any;
+    // สร้าง Payload สำหรับอัปเดต
+    const payload: any = { ...updateData };
+    
+    // ผูก Relation ใหม่ถ้ามีการเปลี่ยนค่า
+    if (level_id) payload.level = { level_id };
+    if (instructor_id) payload.instructor = { instructor_id };
 
-    return this.courseRepo.save(course);
+    // ใช้คำสั่ง .update() บังคับเขียนลง Database ตรงๆ
+    await this.courseRepo.update(id, payload);
+    
+    // ดึงข้อมูลใหม่ที่อัปเดตเสร็จแล้วส่งกลับไป
+    return this.findOne(id); 
   }
 
   async remove(id: number) {
