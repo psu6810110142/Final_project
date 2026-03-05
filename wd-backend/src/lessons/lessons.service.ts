@@ -79,8 +79,12 @@ export class LessonsService {
 
     Object.assign(lesson, updateLessonDto);
 
-    if (updateLessonDto.course_id) {
-      lesson.course = { course_id: updateLessonDto.course_id } as any;
+    if (updateLessonDto) {
+      Object.assign(lesson, updateLessonDto);
+
+      if (updateLessonDto.course_id) {
+        lesson.course = { course_id: updateLessonDto.course_id } as any;
+      }
     }
 
     return this.lessonRepo.save(lesson);

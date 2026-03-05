@@ -56,7 +56,17 @@ export class LessonsController {
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('ADMIN')
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateLessonDto: UpdateLessonDto) {
+  @UseInterceptors(
+    FileInterceptor('video_file', {
+      storage: getStorageConfig('lessons'),
+      limits: { fileSize: 100 * 1024 * 1024 },
+      fileFilter: videoFileFilter,
+    }),
+  )
+  update(@Param('id') id: string, @Body() updateLessonDto: UpdateLessonDto, @UploadedFile() file: Express.Multer.File) {
+    if (file) {
+      updateLessonDto.video_url = `/uploads/lessons/${file.filename}`;
+    }
     return this.lessonsService.update(+id, updateLessonDto);
   }
 
