@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './HomePage.css';
-import { ArrowLeft, PlayCircle, User } from 'lucide-react'; // ลบ Lock, CheckCircle ออกก่อนชั่วคราว
+import { ArrowLeft, PlayCircle, User, CheckCircle } from 'lucide-react'; // ลบ Lock, CheckCircle ออกก่อนชั่วคราว
 import logoImage from '../assets/Logo.png';
 import api from '../api';
 
@@ -13,8 +13,28 @@ const LearningPage: React.FC = () => {
   const [lessons, setLessons] = useState<any[]>([]);
   const [currentLessonId, setCurrentLessonId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [completedLessons, setCompletedLessons] = useState<number[]>([]);
 
-  // 1. ยามเฝ้าประตู 
+  const handleVideoEnd = async () => {
+    if (!currentLessonId) return;
+
+    try {
+      // ยิง API ไปบันทึกว่าเรียนจบแล้ว
+      await api.post('/learning-progress', {
+        lesson_id: currentLessonId,
+        is_completed: true
+      });
+
+      // ถ้าบันทึกสำเร็จ ให้อัปเดต State หน้าจอให้เป็นติ๊กถูก (โดยไม่ต้องรีเฟรชหน้า)
+      if (!completedLessons.includes(currentLessonId)) {
+        setCompletedLessons(prev => [...prev, currentLessonId]);
+      }
+    } catch (error) {
+      console.error('Error saving progress:', error);
+    }
+  };
+
+  // ยามเฝ้าประตู 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     const token = localStorage.getItem('access_token');
@@ -26,35 +46,43 @@ const LearningPage: React.FC = () => {
     setCurrentUser(JSON.parse(storedUser));
   }, []);
 
-  // 2. ดึงข้อมูลบทเรียนจาก API
   useEffect(() => {
     if (!currentUser) return;
 
-    const fetchLessons = async () => {
+    const fetchData = async () => {
       try {
-        const response = await api.get(`/lessons/course/${courseId}`);
-        const fetchedLessons = response.data;
-
+        // ดึงรายชื่อบทเรียน
+        const lessonsRes = await api.get(`/lessons/course/${courseId}`);
+        const fetchedLessons = lessonsRes.data;
         setLessons(fetchedLessons);
 
         if (fetchedLessons.length > 0) {
-          setCurrentLessonId(fetchedLessons[0].lesson_id); // ใช้ lesson_id ตาม Entity
+          setCurrentLessonId(fetchedLessons[0].lesson_id);
         }
-      } catch (error: any) {
-        console.error('Error fetching lessons:', error);
 
+        // ดึงประวัติการเรียนของฉัน
+        const progressRes = await api.get('/learning-progress/user/my-progress');
+        const myProgress = progressRes.data;
+
+        // กรองเอาเฉพาะ ID บทเรียนที่ is_completed เป็น true
+        const completedIds = myProgress
+          .filter((p: any) => p.is_completed === true)
+          .map((p: any) => p.lesson?.lesson_id);
+
+        setCompletedLessons(completedIds);
+
+      } catch (error: any) {
+        console.error('Error fetching data:', error);
         if (error.response && error.response.status === 403) {
           alert('คุณยังไม่ได้ซื้อคอร์สเรียนนี้ กรุณาสั่งซื้อก่อนเข้าเรียนครับ');
           window.location.replace('/my-courses');
-        } else {
-          alert('เกิดข้อผิดพลาดในการดึงข้อมูลบทเรียน');
         }
       } finally {
         setLoading(false);
       }
     };
 
-    fetchLessons();
+    fetchData();
   }, [courseId, currentUser]);
 
   // 3. ดักจับสถานะ Loading (ป้องกัน Error หน้าขาว)
@@ -89,7 +117,7 @@ const LearningPage: React.FC = () => {
       </nav>
 
       {/* ================= Main Learning Area ================= */}
-      <section className="section" style={{ backgroundColor: '#f1f5f9', minHeight: '75vh', padding: '40px 0' }}>
+      <section className="section" style={{ backgroundColor: '#f1f5f9', minHeight: '75vh', padding: '0px 0' }}>
         <div className="container">
           <div className="learning-layout">
 
@@ -98,9 +126,10 @@ const LearningPage: React.FC = () => {
               <div className="video-section">
                 <div className="video-wrapper">
                   <video
-                    key={currentLesson.lesson_id} // ✨ สำคัญ: ใส่ key เพื่อให้วิดีโอรีเฟรชเมื่อเปลี่ยนตอน
+                    key={currentLesson.lesson_id}
                     src={`http://localhost:3000${currentLesson.video_url}`}
                     controls
+                    onEnded={handleVideoEnd}
                     style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                   />
                 </div>
@@ -132,7 +161,7 @@ const LearningPage: React.FC = () => {
                       ยังไม่มีบทเรียนในคอร์สนี้
                     </div>
                   ) : (
-                    // ✨ วนลูปจาก State 'lessons' แทน MOCK_LESSONS
+                    // วนลูปจาก State 'lessons'
                     lessons.map((lesson) => (
                       <div
                         key={lesson.lesson_id}
@@ -140,7 +169,11 @@ const LearningPage: React.FC = () => {
                         onClick={() => setCurrentLessonId(lesson.lesson_id)}
                       >
                         <div style={{ marginTop: '2px' }}>
-                          <PlayCircle size={18} color={lesson.lesson_id === currentLessonId ? "#2563eb" : "#94a3b8"} />
+                          {completedLessons.includes(lesson.lesson_id) ? (
+                            <CheckCircle size={18} color="#16a34a" />
+                          ) : (
+                            <PlayCircle size={18} color={lesson.lesson_id === currentLessonId ? "#2563eb" : "#94a3b8"} />
+                          )}
                         </div>
                         <div>
                           <div className="lesson-title" style={{ color: lesson.lesson_id === currentLessonId ? '#1d4ed8' : '' }}>
