@@ -14,6 +14,7 @@ const LearningPage: React.FC = () => {
   const [currentLessonId, setCurrentLessonId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [completedLessons, setCompletedLessons] = useState<number[]>([]);
+  const [courseDetail, setCourseDetail] = useState<any>(null);
 
   const handleVideoEnd = async () => {
     if (!currentLessonId) return;
@@ -55,6 +56,10 @@ const LearningPage: React.FC = () => {
         const lessonsRes = await api.get(`/lessons/course/${courseId}`);
         const fetchedLessons = lessonsRes.data;
         setLessons(fetchedLessons);
+
+        // ดึงคอร์สเรียน เอาชื่อและรูปอาจารย์
+        const courseRes = await api.get(`/courses/${courseId}`);
+        setCourseDetail(courseRes.data);
 
         if (fetchedLessons.length > 0) {
           setCurrentLessonId(fetchedLessons[0].lesson_id);
@@ -107,7 +112,9 @@ const LearningPage: React.FC = () => {
             </button>
             <div style={{ height: '24px', width: '1px', backgroundColor: 'rgba(255,255,255,0.2)' }}></div>
             <img src={logoImage} alt="Logo" className="navbar-logo" />
-            <span style={{ fontWeight: '600', fontSize: '1.1rem' }}>ห้องเรียนออนไลน์</span>
+            <span style={{ fontWeight: '600', fontSize: '1.1rem' }}>
+              {courseDetail?.title || 'ห้องเรียนออนไลน์'}
+            </span>
           </div>
 
           <div className="navbar-menu">
@@ -137,7 +144,19 @@ const LearningPage: React.FC = () => {
                   {/* ใช้ Optional Chaining (?.) ป้องกัน Error */}
                   <h2>{currentLesson?.title || 'ไม่มีข้อมูลบทเรียน'}</h2>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginTop: '15px', color: '#64748b', fontSize: '0.95rem' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><User size={16} /> อ.ผู้สอน</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      {courseDetail.instructor.profile_image_url ? (
+                        <img
+                          src={`http://localhost:3000${courseDetail.instructor.profile_image_url}`}
+                          alt={courseDetail.instructor.name}
+                          style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }}
+                        />
+                      ) : (
+                        <User size={18} />
+                      )}
+                      {/* ดึงชื่ออาจารย์มาแสดง */}
+                      {courseDetail?.instructor?.name || 'อ.ผู้สอน'}
+                    </span>
                   </div>
                   <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '20px 0' }} />
                   <p>
@@ -194,7 +213,23 @@ const LearningPage: React.FC = () => {
       {/* ================= Footer ================= */}
       <footer className="footer">
         <div className="container">
-          <div className="copyright" style={{ paddingTop: '20px', borderTop: 'none' }}>
+          <div className="footer-grid">
+            <div>
+              <h3>เกี่ยวกับเรา</h3>
+              <p>New Learning Academy เป็นแพลตฟอร์มการเรียนรู้<br />ออนไลน์ชั้นนำ มุ่งเน้นพัฒนาศักยภาพผู้เรียน</p>
+            </div>
+            <div>
+              <h3>ติดต่อเรา</h3>
+              <p>อีเมล: info@newlearning.com</p>
+              <p>โทร: 02-123-4567</p>
+            </div>
+            <div>
+              <h3>เวลาทำการ</h3>
+              <p>จันทร์ - ศุกร์: 09:00 - 18:00</p>
+              <p>เสาร์ - อาทิตย์: 10:00 - 16:00</p>
+            </div>
+          </div>
+          <div className="copyright">
             © 2026 New Learning Academy. All rights reserved.
           </div>
         </div>
