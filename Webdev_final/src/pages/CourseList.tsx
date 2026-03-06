@@ -3,7 +3,7 @@ import './HomePage.css';
 import { Home, Book, User, LogOut, Search, Users, Clock, Filter, UserPlus, LogIn } from 'lucide-react';
 import logoImage from '../assets/Logo.png';
 import api from '../api';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import GrayLogo from '../assets/graylogo.png';
 
 interface CourseData {
@@ -77,6 +77,8 @@ const CourseList: React.FC = () => {
     window.location.replace('/landing');
   };
 
+  const navigate = useNavigate();
+
   return (
     <div className="page-wrapper">
       {/* ================= Navbar ================= */}
@@ -97,7 +99,9 @@ const CourseList: React.FC = () => {
               <>
                 <a href="/my-courses" className="menu-item"><User size={18} /> คอร์สของฉัน</a>
                 <a onClick={handleLogout} className="menu-item" style={{ cursor: 'pointer' }}><LogOut size={18} /> ออกจากระบบ</a>
-                <div className='user-pill'> {currentUser?.full_name || currentUser?.username}</div>
+                <div className="user-pill" onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>
+                  {currentUser.full_name || currentUser.username}
+                </div>
               </>
             ) : (
               <div className="nav-auth-buttons">
