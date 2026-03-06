@@ -34,6 +34,7 @@ export class OrdersService {
   async findByUser(userId: number) {
     return this.orderRepo.find({
       where: { user: { user_id: userId } },
+      relations: ['order_details', 'order_details.course', 'order_details.course.level'], 
       order: { created_at: 'DESC' }
     });
   }

@@ -31,6 +31,8 @@ export class CreateCourseDto {
   
   @IsNumber()
   @IsNotEmpty()
+  promo_video_url?: string;
+
   level_id: number;       // รับ ID ของระดับชั้น
 
   @IsNumber()

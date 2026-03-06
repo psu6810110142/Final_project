@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import './HomePage.css'; 
-import { Home, Book, User, LogOut, Search, Users, Clock, Filter } from 'lucide-react';
-import logoImage from '../assets/Logo.png'; 
+import './HomePage.css';
+import { Home, Book, User, LogOut, Search, Users, Clock, Filter, UserPlus, LogIn } from 'lucide-react';
+import logoImage from '../assets/Logo.png';
 import api from '../api';
+import { Link } from 'react-router-dom';
+import GrayLogo from '../assets/graylogo.png';
 
 interface CourseData {
   course_id: number;
@@ -16,8 +18,22 @@ interface CourseData {
   };
   instructor?: {
     name: string;
+    profile_image_url: string;
   };
 }
+
+const getImageUrl = (url?: string, type: 'course' | 'user' = 'course') => {
+  if (!url) {
+    return type === 'user'
+      ? GrayLogo // 👨‍🏫 รูปคน Default
+      : GrayLogo // 📚 รูปคอร์สเรียน Default
+  }
+
+  if (url.startsWith('/uploads')) {
+    return `http://localhost:3000${url}`;
+  }
+  return url;
+};
 
 const CourseList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -26,6 +42,8 @@ const CourseList: React.FC = () => {
   const [courses, setCourses] = useState<CourseData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const dynamicCategories = ["ทั้งหมด", ...Array.from(new Set(courses.map(c => c.level?.level_name).filter(Boolean)))];
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -39,11 +57,25 @@ const CourseList: React.FC = () => {
         setLoading(false);
       }
     };
-
     fetchCourses();
   }, []);
 
-  const dynamicCategories = ["ทั้งหมด", ...Array.from(new Set(courses.map(c => c.level?.level_name).filter(Boolean)))];
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    const token = localStorage.getItem('access_token');
+    if (token && storedUser) {
+      setCurrentUser(JSON.parse(storedUser));
+    } else {
+      setCurrentUser(null);
+    }
+  }, []);
+
+  const handleLogout = (e: React.MouseEvent) => {
+    e.preventDefault();
+    localStorage.clear();
+    setCurrentUser(null);
+    window.location.replace('/landing');
+  };
 
   return (
     <div className="page-wrapper">
@@ -57,13 +89,26 @@ const CourseList: React.FC = () => {
               <span className="brand-subtitle">สถาบันกวดวิชานิวเลิร์นนิง</span>
             </div>
           </a>
-          
+
           <div className="navbar-menu">
             <a href="/home" className="menu-item"><Home size={18} /> หน้าหลัก</a>
             <a href="/courses" className="menu-item active"><Book size={18} /> คอร์สเรียน</a>
-            <a href="/my-courses" className="menu-item"><User size={18} /> คอร์สของฉัน</a>
-            <a href="/logout" className="menu-item"><LogOut size={18} /> ออกจากระบบ</a>
-            <div className="user-pill">User</div>
+            {currentUser ? (
+              <>
+                <a href="/my-courses" className="menu-item"><User size={18} /> คอร์สของฉัน</a>
+                <a onClick={handleLogout} className="menu-item" style={{ cursor: 'pointer' }}><LogOut size={18} /> ออกจากระบบ</a>
+                <div className='user-pill'> {currentUser?.full_name || currentUser?.username}</div>
+              </>
+            ) : (
+              <div className="nav-auth-buttons">
+                <a href="/login" className="btn-nav-login">
+                  <LogIn size={18} /> เข้าสู่ระบบ
+                </a>
+                <a href="/register" className="btn-nav-register">
+                  <UserPlus size={18} /> สมัครสมาชิก
+                </a>
+              </div>
+            )}
           </div>
         </div>
       </nav>
@@ -73,13 +118,13 @@ const CourseList: React.FC = () => {
         <div className="container">
           <h1 style={{ fontSize: '2.5rem', marginBottom: '15px' }}>ค้นหาคอร์สเรียนที่ใช่สำหรับคุณ</h1>
           <p style={{ opacity: 0.9, marginBottom: '30px' }}>เลือกเรียนจากคอร์สคุณภาพที่สอนโดยอาจารย์ผู้เชี่ยวชาญ</p>
-          
+
           {/* Search Box */}
           <div style={{ maxWidth: '600px', margin: '0 auto', position: 'relative' }}>
             <Search style={{ position: 'absolute', left: '15px', top: '14px', color: '#6b7280' }} size={20} />
-            <input 
-              type="text" 
-              placeholder="ค้นหาชื่อคอร์สเรียน, รายละเอียด..." 
+            <input
+              type="text"
+              placeholder="ค้นหาชื่อคอร์สเรียน, รายละเอียด..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               style={{ width: '100%', padding: '14px 14px 14px 45px', borderRadius: '50px', border: 'none', fontSize: '1rem', outline: 'none', color: '#1f2937' }}
@@ -91,19 +136,19 @@ const CourseList: React.FC = () => {
       {/* ================= Courses Content ================= */}
       <section className="section" style={{ backgroundColor: '#f9fafb', minHeight: '50vh' }}>
         <div className="container">
-          
+
           {/* Categories Filter (สร้างปุ่มอัตโนมัติตามข้อมูลที่มี) */}
           <div style={{ display: 'flex', gap: '10px', marginBottom: '40px', overflowX: 'auto', paddingBottom: '10px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontWeight: 'bold', color: '#4b5563', marginRight: '10px' }}>
               <Filter size={18} /> หมวดหมู่:
             </div>
             {dynamicCategories.map((cat) => (
-              <button 
+              <button
                 key={cat as string}
                 onClick={() => setActiveCategory(cat as string)}
-                style={{ 
-                  padding: '8px 20px', 
-                  borderRadius: '50px', 
+                style={{
+                  padding: '8px 20px',
+                  borderRadius: '50px',
                   border: '1px solid #e5e7eb',
                   backgroundColor: activeCategory === cat ? '#2563eb' : 'white',
                   color: activeCategory === cat ? 'white' : '#4b5563',
@@ -129,21 +174,28 @@ const CourseList: React.FC = () => {
                 .filter(course => activeCategory === "ทั้งหมด" || course.level?.level_name === activeCategory)
                 .filter(course => course.title.toLowerCase().includes(searchTerm.toLowerCase()) || course.description.toLowerCase().includes(searchTerm.toLowerCase()))
                 .map((course) => (
-                  <CourseCard 
+                  /* 🌟 ใช้ Link ครอบ CourseCard และส่ง ID ของคอร์สไปที่ URL (ย้าย key มาไว้ที่ Link) */
+                  <Link
+                    to={`/course/${course.course_id}`}
                     key={course.course_id}
-                    subject={course.level?.level_name || 'ทั่วไป'} 
-                    grade={course.level?.level_name || '-'} 
-                    title={course.title} 
-                    price={`฿${course.price.toLocaleString()}`} 
-                    tagColor="#dbeafe" 
-                    textColor="#1e40af"
-                    imgSrc={course.cover_image_url || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=400"} // รูป Default
-                    instructorName={course.instructor?.name || 'ไม่ระบุ'}
-                    duration={course.duration_weeks || 12}
-                    description={course.description}
-                  />
-              ))}
-              
+                    style={{ textDecoration: 'none', color: 'inherit' }}
+                  >
+                    <CourseCard
+                      subject={course.level?.level_name || 'ทั่วไป'}
+                      grade={course.level?.level_name || '-'}
+                      title={course.title}
+                      price={`฿${course.price.toLocaleString()}`}
+                      tagColor="#dbeafe"
+                      textColor="#1e40af"
+                      imgSrc={getImageUrl(course.cover_image_url)}
+                      instructorName={course.instructor?.name || 'ไม่ระบุ'}
+                      duration={course.duration_weeks || 12}
+                      description={course.description}
+                      instructorImage={getImageUrl(course.instructor?.profile_image_url, 'user')}
+                    />
+                  </Link>
+                ))}
+
               {/* ถ้าค้นหาแล้วไม่เจออะไรเลย */}
               {courses.filter(course => (activeCategory === "ทั้งหมด" || course.level?.level_name === activeCategory) && (course.title.toLowerCase().includes(searchTerm.toLowerCase()) || course.description.toLowerCase().includes(searchTerm.toLowerCase()))).length === 0 && (
                 <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: '#6b7280' }}>
@@ -152,7 +204,7 @@ const CourseList: React.FC = () => {
               )}
             </div>
           )}
-          
+
         </div>
       </section>
 
@@ -168,7 +220,7 @@ const CourseList: React.FC = () => {
   );
 };
 
-const CourseCard = ({ subject, grade, title, price, tagColor, textColor, imgSrc, instructorName, duration, description }: any) => (
+const CourseCard = ({ subject, grade, title, price, tagColor, textColor, imgSrc, instructorName, instructorImage, instructor, duration, description }: any) => (
   <div className="course-card">
     <div className="course-image">
       <img src={imgSrc} alt={title} style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
@@ -177,11 +229,11 @@ const CourseCard = ({ subject, grade, title, price, tagColor, textColor, imgSrc,
     <div className="course-content">
       <span className="course-tag" style={{ backgroundColor: tagColor, color: textColor }}>{subject}</span>
       <h3 className="course-title">{title}</h3>
-      <p className="course-desc" style={{ 
-        display: '-webkit-box', 
-        WebkitLineClamp: 2, 
-        WebkitBoxOrient: 'vertical', 
-        overflow: 'hidden' 
+      <p className="course-desc" style={{
+        display: '-webkit-box',
+        WebkitLineClamp: 2,
+        WebkitBoxOrient: 'vertical',
+        overflow: 'hidden'
       }}>
         {description}
       </p>
@@ -191,7 +243,14 @@ const CourseCard = ({ subject, grade, title, price, tagColor, textColor, imgSrc,
       </div>
       <div className="course-footer">
         <div className="instructor">
-          <div className="avatar"></div>
+          <div className="avatar" style={{ overflow: 'hidden', borderRadius: '50%', backgroundColor: '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <img
+              // ถ้าระบบไม่มีรูป จะดึง API สร้างรูปตัวอักษรย่อชื่ออาจารย์มาโชว์แทนอัตโนมัติ
+              src={instructorImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(instructor || 'T')}&background=random&color=fff`}
+              alt={instructor || 'Instructor'}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          </div>
           <span>{instructorName}</span>
         </div>
         <div className="course-price" style={{ color: '#e74c3c', fontWeight: 'bold' }}>{price}</div>

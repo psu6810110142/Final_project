@@ -1,25 +1,103 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // นำเข้าเครื่องมือสำหรับเปลี่ยนหน้า
-import './HomePage.css'; 
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import './HomePage.css'; // แน่ใจว่าไฟล์ CSS อัปเดตแล้ว
 import { Home, Book, User, LogOut, PlayCircle, CheckCircle } from 'lucide-react';
-import logoImage from '../assets/Logo.png'; // เช็คชื่อไฟล์รูปโลโก้
+import logoImage from '../assets/Logo.png';
+import api from '../api';
 
-// --- ข้อมูลจำลองสำหรับคอร์สที่ซื้อแล้ว (เพิ่ม progress เข้ามา) ---
-const MY_COURSES = [
-  { id: 1, subject: "คณิตศาสตร์", grade: "ป.5", title: "คณิตศาสตร์ ป.5 ตะลุยโจทย์", progress: 45, tagColor: "#dbeafe", textColor: "#1e40af", imgSrc: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&q=80&w=400" },
-  { id: 2, subject: "วิทยาศาสตร์", grade: "ม.1", title: "วิทยาศาสตร์ ม.1 พื้นฐาน", progress: 100, tagColor: "#f3e8ff", textColor: "#6b21a8", imgSrc: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&q=80&w=400" },
-  { id: 3, subject: "ภาษาอังกฤษ", grade: "ป.6", title: "Grammar ป.6 สอบเข้า ม.1", progress: 10, tagColor: "#dcfce7", textColor: "#166534", imgSrc: "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?auto=format&fit=crop&q=80&w=400" },
-];
+const getImageUrl = (url?: string, type: 'course' | 'user' = 'course') => {
+  if (!url) {
+    return type === 'user'
+      ? "" // 👨‍🏫 รูปคน Default
+      : "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=400"; // 📚 รูปคอร์สเรียน Default
+  }
+
+  if (url.startsWith('/uploads')) {
+    return `http://localhost:3000${url}`;
+  }
+  return url;
+};
 
 const MyCourses: React.FC = () => {
-  const navigate = useNavigate(); // ฟังก์ชันสำหรับใช้เปลี่ยนหน้า
-  const [filter, setFilter] = useState("all"); // 'all', 'in-progress', 'completed'
+  const navigate = useNavigate();
+  const [filter, setFilter] = useState("all");
 
-  // ฟังก์ชันกรองคอร์สตามสถานะการเรียน
-  const filteredCourses = MY_COURSES.filter(course => {
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [myCourses, setMyCourses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    const token = localStorage.getItem('access_token');
+    if (!token || !storedUser) {
+      window.location.replace('/landing');
+      return;
+    }
+    setCurrentUser(JSON.parse(storedUser));
+  }, []);
+
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const fetchMyCourses = async () => {
+      const userId = currentUser?.user_id || currentUser?.id || currentUser?.userId || currentUser?.sub;
+      if (!userId) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await api.get(`/orders/user/${userId}`);
+        let purchasedCourses: any[] = [];
+
+        response.data.forEach((order: any) => {
+          if (order.status === 'COMPLETED' && order.order_details) {
+            order.order_details.forEach((detail: any) => {
+              const course = detail.course;
+              if (course) {
+                purchasedCourses.push({
+                  id: course.course_id,
+                  title: course.title,
+                  subject: course.level?.level_name || 'ไม่ระบุระดับชั้น',
+                  imgSrc: course.cover_image_url || "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&q=80&w=400",
+                  progress: 0,
+                  tagColor: "#dbeafe",
+                  textColor: "#1e40af",
+                });
+              }
+            });
+          }
+        });
+
+        const uniqueCourses = Array.from(new Map(purchasedCourses.map(item => [item.id, item])).values());
+        setMyCourses(uniqueCourses);
+
+      } catch (error: any) {
+        console.error('เกิดข้อผิดพลาดในการดึงข้อมูลคอร์ส:', error);
+        if (error.response && error.response.status === 401) {
+          alert('เซสชันของคุณหมดอายุ หรือไม่ได้รับอนุญาต กรุณาเข้าสู่ระบบใหม่อีกครั้ง');
+          localStorage.clear();
+          window.location.replace('/login');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMyCourses();
+  }, [currentUser]);
+
+  const handleLogout = (e: React.MouseEvent) => {
+    e.preventDefault();
+    localStorage.clear();
+    setCurrentUser(null);
+    window.location.replace('/landing');
+  };
+
+  const filteredCourses = myCourses.filter(course => {
     if (filter === "in-progress") return course.progress < 100;
     if (filter === "completed") return course.progress === 100;
-    return true; // "all"
+    return true;
   });
 
   return (
@@ -34,21 +112,13 @@ const MyCourses: React.FC = () => {
               <span className="brand-subtitle">สถาบันกวดวิชานิวเลิร์นนิง</span>
             </div>
           </a>
-          
+
           <div className="navbar-menu">
-            <a href="/home" className="menu-item">
-              <Home size={18} /> หน้าหลัก
-            </a>
-            <a href="/courses" className="menu-item">
-              <Book size={18} /> คอร์สเรียน
-            </a>
-            <a href="/my-courses" className="menu-item active"> {/* ทำสี Active ที่หน้านี้ */}
-              <User size={18} /> คอร์สของฉัน
-            </a>
-            <a href="/logout" className="menu-item">
-              <LogOut size={18} /> ออกจากระบบ
-            </a>
-            <div className="user-pill">User</div>
+            <a href="/home" className="menu-item"><Home size={18} /> หน้าหลัก</a>
+            <a href="/courses" className="menu-item"><Book size={18} /> คอร์สเรียน</a>
+            <a href="/mycourse" className="menu-item active"><User size={18} /> คอร์สของฉัน</a>
+            <a onClick={handleLogout} className="menu-item" style={{ cursor: 'pointer' }}><LogOut size={18} /> ออกจากระบบ</a>
+            <div className="user-pill">{currentUser?.full_name || currentUser?.username}</div>
           </div>
         </div>
       </nav>
@@ -56,38 +126,39 @@ const MyCourses: React.FC = () => {
       {/* ================= Header ================= */}
       <div className="page-header">
         <div className="container">
-          <h1 style={{ fontSize: '2rem', margin: 0 }}>คอร์สเรียนของฉัน</h1>
-          <p style={{ opacity: 0.8, marginTop: '10px' }}>ยินดีต้อนรับกลับมา! ลุยต่อให้จบกันเถอะ</p>
+          <h1 className="my-courses-header">คอร์สเรียนของฉัน</h1>
+          <p className="my-courses-subtitle">ยินดีต้อนรับกลับมา! ลุยต่อให้จบกันเถอะ</p>
         </div>
       </div>
 
       {/* ================= My Courses Content ================= */}
-      <section className="section" style={{ backgroundColor: '#f9fafb', minHeight: '60vh' }}>
+      <section className="section my-courses-section">
         <div className="container">
-          
-          {/* Tabs สำหรับกรองสถานะการเรียน */}
-          <div style={{ display: 'flex', gap: '15px', marginBottom: '30px', borderBottom: '2px solid #e5e7eb', paddingBottom: '10px' }}>
-            <button onClick={() => setFilter("all")} style={tabStyle(filter === "all")}>ทั้งหมด</button>
-            <button onClick={() => setFilter("in-progress")} style={tabStyle(filter === "in-progress")}>กำลังเรียน</button>
-            <button onClick={() => setFilter("completed")} style={tabStyle(filter === "completed")}>เรียนจบแล้ว</button>
+
+          <div className="tabs-container">
+            <button className={`tab-button ${filter === "all" ? "active" : ""}`} onClick={() => setFilter("all")}>ทั้งหมด</button>
+            <button className={`tab-button ${filter === "in-progress" ? "active" : ""}`} onClick={() => setFilter("in-progress")}>กำลังเรียน</button>
+            <button className={`tab-button ${filter === "completed" ? "active" : ""}`} onClick={() => setFilter("completed")}>เรียนจบแล้ว</button>
           </div>
 
-          {/* Courses Grid */}
-          <div className="courses-grid">
-            {filteredCourses.length > 0 ? (
-              filteredCourses.map((course) => (
-                // === จุดสำคัญ: ใส่ onClick เพื่อกดแล้วเปลี่ยนหน้าไปที่ /learn/:id ===
-                <div key={course.id} onClick={() => navigate(`/learn/${course.id}`)} style={{ cursor: 'pointer' }}>
-                  <MyCourseCard course={course} />
+          {loading ? (
+            <div className="state-message">กำลังโหลดข้อมูลคอร์สเรียนของคุณ... ⏳</div>
+          ) : (
+            <div className="courses-grid">
+              {filteredCourses.length > 0 ? (
+                filteredCourses.map((course) => (
+                  <div key={course.id} onClick={() => navigate(`/learn/${course.id}`)} style={{ cursor: 'pointer' }}>
+                    <MyCourseCard course={course} />
+                  </div>
+                ))
+              ) : (
+                <div className="state-message empty-state-grid">
+                  คุณยังไม่มีคอร์สในหมวดหมู่นี้ เริ่มต้นค้นหาคอร์สที่ใช่เลย!
                 </div>
-              ))
-            ) : (
-              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '50px', color: '#6b7280' }}>
-                ไม่มีคอร์สในหมวดหมู่นี้
-              </div>
-            )}
-          </div>
-          
+              )}
+            </div>
+          )}
+
         </div>
       </section>
 
@@ -97,7 +168,7 @@ const MyCourses: React.FC = () => {
           <div className="footer-grid">
             <div>
               <h3>เกี่ยวกับเรา</h3>
-              <p>New Learning Academy เป็นแพลตฟอร์มการเรียนรู้ออนไลน์ชั้นนำ มุ่งเน้นพัฒนาศักยภาพผู้เรียน</p>
+              <p>New Learning Academy เป็นแพลตฟอร์มการเรียนรู้<br />ออนไลน์ชั้นนำ มุ่งเน้นพัฒนาศักยภาพผู้เรียน</p>
             </div>
             <div>
               <h3>ติดต่อเรา</h3>
@@ -119,53 +190,52 @@ const MyCourses: React.FC = () => {
   );
 };
 
-// --- Component: การ์ดสำหรับคอร์สที่ซื้อแล้ว (มี Progress Bar) ---
-const MyCourseCard = ({ course }: { course: any }) => (
-  <div className="course-card" style={{ transition: 'transform 0.2s, boxShadow 0.2s' }}>
-    <div className="course-image">
-      <img src={course.imgSrc} alt={course.title} />
-      {course.progress === 100 && (
-        <span style={{ position: 'absolute', top: 15, right: 15, background: '#16a34a', color: 'white', padding: '4px 12px', borderRadius: 20, fontSize: '0.8rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <CheckCircle size={14} /> เรียนจบแล้ว
-        </span>
-      )}
-    </div>
-    
-    <div className="course-content" style={{ display: 'flex', flexDirection: 'column' }}>
-      <span className="course-tag" style={{ backgroundColor: course.tagColor, color: course.textColor, marginBottom: '10px' }}>
-        {course.subject} • {course.grade}
-      </span>
-      <h3 className="course-title" style={{ fontSize: '1.2rem' }}>{course.title}</h3>
-      
-      {/* Progress Bar */}
-      <div style={{ marginTop: 'auto', paddingTop: '20px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#6b7280', marginBottom: '8px' }}>
-          <span>ความคืบหน้า</span>
-          <span style={{ fontWeight: 'bold', color: course.progress === 100 ? '#16a34a' : '#2563eb' }}>{course.progress}%</span>
-        </div>
-        <div style={{ width: '100%', height: '8px', backgroundColor: '#e5e7eb', borderRadius: '4px', overflow: 'hidden' }}>
-          <div style={{ width: `${course.progress}%`, height: '100%', backgroundColor: course.progress === 100 ? '#16a34a' : '#2563eb', transition: 'width 0.5s ease-in-out' }}></div>
-        </div>
+// --- Component: การ์ดสำหรับคอร์สที่ซื้อแล้ว ---
+const MyCourseCard = ({ course }: { course: any }) => {
+  const isCompleted = course.progress === 100;
+  const progressColor = isCompleted ? '#16a34a' : '#2563eb';
+  const navigate = useNavigate();
+
+  return (
+    <div className="course-card my-course-card">
+      <div className="course-image-wrapper">
+        <img src={getImageUrl(course.imgSrc)} alt={course.title} className="course-image-img" />
+        {isCompleted && (
+          <span className="status-badge">
+            <CheckCircle size={14} /> เรียนจบแล้ว
+          </span>
+        )}
       </div>
 
-      <button style={{ width: '100%', marginTop: '20px', padding: '10px', backgroundColor: course.progress === 100 ? '#f3f4f6' : '#eff6ff', color: course.progress === 100 ? '#4b5563' : '#2563eb', border: course.progress === 100 ? '1px solid #d1d5db' : '1px solid #bfdbfe', borderRadius: '8px', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-        {course.progress === 100 ? 'ทบทวนเนื้อหา' : <><PlayCircle size={18} /> เรียนต่อ</>}
-      </button>
-    </div>
-  </div>
-);
+      <div className="my-course-content">
+        <span
+          className="course-tag-custom"
+          style={{ backgroundColor: course.tagColor, color: course.textColor }}
+        >
+          {course.subject}
+        </span>
+        <h3 className="my-course-title">{course.title}</h3>
 
-// สไตล์จำลองสำหรับ Tab
-const tabStyle = (isActive: boolean) => ({
-  background: 'none',
-  border: 'none',
-  padding: '10px 15px',
-  fontSize: '1rem',
-  fontWeight: isActive ? 'bold' : 'normal',
-  color: isActive ? '#2563eb' : '#6b7280',
-  borderBottom: isActive ? '3px solid #2563eb' : '3px solid transparent',
-  cursor: 'pointer',
-  marginBottom: '-12px' // ให้ขอบเส้นทับกับเส้นกรอบด้านล่างพอดี
-});
+        {/* Progress Bar */}
+        <div className="progress-container">
+          <div className="progress-header">
+            <span>ความคืบหน้า</span>
+            <span style={{ fontWeight: 'bold', color: progressColor }}>{course.progress}%</span>
+          </div>
+          <div className="progress-track">
+            <div
+              className="progress-fill"
+              style={{ width: `${course.progress}%`, backgroundColor: progressColor }}
+            ></div>
+          </div>
+        </div>
+
+        <button className={`btn-learn ${isCompleted ? 'review' : 'continue'}`} onClick={() => navigate(`/learn/${course.id}`)}>
+          {isCompleted ? 'ทบทวนเนื้อหา' : <><PlayCircle size={18} /> เรียนต่อ</>}
+        </button>
+      </div>
+    </div>
+  );
+};
 
 export default MyCourses;

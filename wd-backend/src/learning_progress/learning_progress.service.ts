@@ -10,29 +10,39 @@ export class LearningProgressService {
   constructor(
     @InjectRepository(LearningProgress)
     private readonly progressRepo: Repository<LearningProgress>,
-  ) {}
+  ) { }
 
-  async create(createDto: CreateLearningProgressDto) {
+  async create(createLearningProgressDto: CreateLearningProgressDto) {
+    const { user_id, lesson_id, is_completed = true } = createLearningProgressDto;
+
+    // เช็คว่าเคยเรียนบทนี้ไปหรือยัง
     const existing = await this.progressRepo.findOne({
       where: {
-        user: { user_id: createDto.user_id },
-        lesson: { lesson_id: createDto.lesson_id },
-      },
+        user: { user_id: user_id },
+        lesson: { lesson_id: lesson_id }
+      }
     });
 
     if (existing) {
-      return existing;
+      // ถ้าสถานะเหมือนเดิมเป๊ะๆ ให้ข้ามการเซฟไปเลย (ป้องกัน TypeORM Error)
+      if (existing.is_completed === Boolean(is_completed)) {
+        return existing;
+      }
+
+      // ถ้ามีการเปลี่ยนค่า (เช่น จาก false เป็น true) ถึงจะยอมให้เซฟ
+      existing.is_completed = Boolean(is_completed);
+      return this.progressRepo.save(existing);
     }
 
+    // ถ้ายังไม่เคยมีประวัติเลย ก็สร้างใหม่
     const newProgress = this.progressRepo.create({
-      is_completed: createDto.is_completed ?? true, 
-      completed_at: new Date(),
-      user: { user_id: createDto.user_id },
-      lesson: { lesson_id: createDto.lesson_id },
+      is_completed: is_completed,
+      user: { user_id: user_id },
+      lesson: { lesson_id: lesson_id }
     });
-
     return this.progressRepo.save(newProgress);
   }
+
 
   findAll() {
     return this.progressRepo.find({

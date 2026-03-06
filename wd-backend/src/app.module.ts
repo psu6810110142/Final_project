@@ -14,11 +14,17 @@ import { PaymentsModule } from './payments/payments.module';
 import { OrderDetailsModule } from './order_details/order_details.module';
 import { LearningProgressModule } from './learning_progress/learning_progress.module';
 import { AuthModule } from './auth/auth.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'uploads'),
+      serveRoot: '/uploads', // Frontend จะเรียกผ่าน http://localhost:3000/uploads/...
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],

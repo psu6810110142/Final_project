@@ -31,6 +31,9 @@ export class Course {
   @Column({ type: 'text', nullable: true })
   exercise_file_url: string;
 
+  @Column({ type: 'text', nullable: true })
+  promo_video_url: string;
+
   @Column({ type: 'int', default: 0 })
   total_enrolled: number;
 
