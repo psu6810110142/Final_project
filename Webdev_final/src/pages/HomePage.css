@@ -2107,3 +2107,173 @@ body {
     max-height: 500px;
   }
 }
+
+/* ================= User Profile Page UI ================= */
+.profile-wrapper {
+  background-color: var(--light-blue-bg);
+  min-height: 100vh;
+  padding-bottom: 80px;
+}
+
+.profile-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 30px;
+  margin-top: -40px; /* ดึงการ์ดให้ลอยซ้อนทับ Header เล็กน้อย */
+  position: relative;
+  z-index: 10;
+}
+
+.profile-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 35px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f1f5f9;
+}
+
+/* Sidebar ส่วนแสดงโปรไฟล์ย่อ */
+.profile-sidebar {
+  text-align: center;
+  height: fit-content;
+}
+
+.profile-avatar-container {
+  width: 130px;
+  height: 130px;
+  margin: 0 auto 20px;
+  position: relative;
+  border-radius: 50%;
+  border: 5px solid white;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  background-color: #f3f4f6;
+}
+
+.profile-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.avatar-edit-btn {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background-color: var(--primary-blue);
+  color: white;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  transition: transform 0.2s;
+}
+
+.avatar-edit-btn:hover {
+  transform: scale(1.1);
+  background-color: var(--dark-blue);
+}
+
+.profile-name {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 0 0 5px 0;
+}
+
+.profile-role {
+  color: var(--primary-blue);
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.profile-email {
+  color: var(--text-gray);
+  font-size: 0.9rem;
+  margin: 0 0 20px 0;
+}
+
+.profile-divider {
+  height: 1px;
+  background-color: #e5e7eb;
+  margin: 20px 0;
+}
+
+.btn-outline-primary {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid var(--primary-blue);
+  background: transparent;
+  color: var(--primary-blue);
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--primary-blue);
+  color: white;
+}
+
+/* ส่วนฟอร์มหลัก */
+.profile-section-title {
+  color: var(--dark-blue);
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0 0 25px 0;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #f1f5f9;
+}
+
+.profile-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #f1f5f9;
+}
+
+/* รองรับมือถือ */
+@media (max-width: 992px) {
+  .profile-layout {
+    grid-template-columns: 1fr;
+    margin-top: 20px;
+  }
+  
+  .profile-card {
+    padding: 25px 20px;
+  }
+}
+
+/* ================= ปุ่มย้อนกลับ (Back Button) ================= */
+.btn-back {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 6px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 20px; /* ระยะห่างระหว่างปุ่มกับหัวข้อ H1 */
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.btn-back:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateX(-4px); /* เอฟเฟกต์เลื่อนไปทางซ้ายนิดนึงตอนเอาเมาส์ชี้ */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}

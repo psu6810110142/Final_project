@@ -11,6 +11,7 @@ import CourseManagement from './pages/CourseManagement';
 import MyCourses from './pages/Mycourse';
 import CourseDetail from './pages/CourseDetail';
 import LearningPage from './pages/LearningPage';
+import ProfilePage from './pages/ProfilePage';
 
 function App() {
   return (
@@ -44,6 +45,8 @@ function App() {
 
         {/* หน้าแสดงคอร์สของฉัน (localhost:5173/learning) -> ให้แสดง LearningPage */}
         <Route path="/learn/:courseId" element={<LearningPage />} />
+
+        <Route path="/profile" element={<ProfilePage />} />
 
         {/* กรณีพิมพ์มั่ว ให้เด้งกลับหน้าแรก */}
         <Route path="*" element={<LandingPage />} />
