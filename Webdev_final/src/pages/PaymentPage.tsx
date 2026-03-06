@@ -4,7 +4,7 @@ import api from '../api';
 import './HomePage.css';
 import { Home, Book, User, LogOut, Info, Upload, CheckCircle } from 'lucide-react';
 import logoImage from '../assets/Logo.png'; 
-import defaultCourseImage from '../assets/locobackgroudewhite.png'; // ✨ 1. Import รูป default เข้ามา
+import defaultCourseImage from '../assets/locobackgroudewhite.png'; 
 
 const PaymentPage: React.FC = () => {
   const { courseId } = useParams();
@@ -57,10 +57,12 @@ const PaymentPage: React.FC = () => {
       formData.append('slip_image', selectedFile); 
       
       if (courseId) {
+        // ส่ง ID ของคอร์สกลับไปให้ Backend บันทึกว่าจ่ายเงินค่าคอร์สไหน
         formData.append('courseId', courseId); 
       }
 
-      const response = await api.post('/payments/upload', formData, {
+      // ✨ อัปเดตล่าสุด: เปลี่ยนเป็นยิงไปที่ /payments ตรงๆ (ตามที่ Backend เพื่อนเขียนไว้)
+      const response = await api.post('/payments', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         }
@@ -70,7 +72,7 @@ const PaymentPage: React.FC = () => {
       setIsSuccess(true);
       
       setTimeout(() => {
-        navigate('/my-courses');
+        navigate('/mycourse'); // ✨ เด้งกลับไปหน้าคอร์สของฉัน
       }, 3000); 
 
     } catch (error: any) {
@@ -81,7 +83,7 @@ const PaymentPage: React.FC = () => {
     }
   };
 
-  // ✨ 2. ฟังก์ชันจัดการรูปภาพ ถ้าไม่มี url ให้ใช้ defaultCourseImage แทน
+  // ฟังก์ชันจัดการรูปภาพ ถ้าไม่มี url ให้ใช้ defaultCourseImage แทน
   const getImageUrl = (url?: string) => {
     if (!url) return defaultCourseImage; 
     return url.startsWith('/uploads') ? `http://localhost:3000${url}` : url;
@@ -105,8 +107,8 @@ const PaymentPage: React.FC = () => {
           <div className="navbar-menu">
             <a href="/home" className="menu-item"><Home size={18} /> หน้าหลัก</a>
             <a href="/courses" className="menu-item active"><Book size={18} /> คอร์สเรียน</a>
-            <a href="/my-courses" className="menu-item"><User size={18} /> คอร์สของฉัน</a>
-            <a href="/logout" className="menu-item"><LogOut size={18} /> ออกจากระบบ</a>
+            <a href="/mycourse" className="menu-item"><User size={18} /> คอร์สของฉัน</a>
+            <a onClick={() => { localStorage.clear(); window.location.replace('/landing'); }} className="menu-item" style={{ cursor: 'pointer' }}><LogOut size={18} /> ออกจากระบบ</a>
           </div>
         </div>
       </nav>
@@ -218,7 +220,7 @@ const PaymentPage: React.FC = () => {
                 src={getImageUrl(course?.cover_image_url)} 
                 alt={course?.title || "Course Image"} 
                 className="summary-image"
-                onError={(e) => { e.currentTarget.src = defaultCourseImage }} // ✨ 3. ดักจับกรณีรูปพัง ให้แสดง defaultCourseImage
+                onError={(e) => { e.currentTarget.src = defaultCourseImage }}
               />
               <h3 className="summary-course-title">{course?.title || 'ไม่ระบุชื่อวิชา'}</h3>
               <p className="summary-instructor">อาจารย์: {course?.instructor?.name || 'ไม่ระบุ'}</p>

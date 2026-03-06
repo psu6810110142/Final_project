@@ -12,6 +12,7 @@ import MyCourses from './pages/Mycourse';
 import CourseDetail from './pages/CourseDetail';
 import LearningPage from './pages/LearningPage';
 import ProfilePage from './pages/ProfilePage';
+import PaymentPage from './pages/PaymentPage'; // ✨ 1. Import หน้า Payment เข้ามา
 
 function App() {
   return (
@@ -40,10 +41,13 @@ function App() {
         {/* หน้าแสดงรายละเอียดคอร์ส (ใช้ :id เพื่อรับค่า Parameter) */}
         <Route path="/course/:id" element={<CourseDetail />} />
 
+        {/* ✨ 2. เพิ่ม Route สำหรับหน้าชำระเงิน (รับ parameter courseId ด้วย) */}
+        <Route path="/payment/:courseId" element={<PaymentPage />} />
+
         {/* หน้าแสดงคอร์สของฉัน (localhost:5173/my-courses) -> ให้แสดง MyCourses */}
         <Route path="/my-courses" element={<MyCourses />} />
 
-        {/* หน้าแสดงคอร์สของฉัน (localhost:5173/learning) -> ให้แสดง LearningPage */}
+        {/* หน้าแสดงห้องเรียน (localhost:5173/learn) -> ให้แสดง LearningPage */}
         <Route path="/learn/:courseId" element={<LearningPage />} />
 
         <Route path="/profile" element={<ProfilePage />} />
