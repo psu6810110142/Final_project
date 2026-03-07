@@ -1797,26 +1797,26 @@ body {
   background-color: #51A6FF;
   /* สำคัญ: เอาสีฟ้าโปร่งแสง (rgba) มาซ้อนทับรูปภาพ เพื่อให้ตัวหนังสือสีขาวเด่นขึ้น */
   background-image:
-    linear-gradient(rgba(81, 166, 255, 0.9), rgba(81, 166, 255, 0.9)),
+    linear-gradient(rgba(81, 166, 255, 0.95), rgba(81, 166, 255, 0.95)),
     url('../assets/BG.png');
-  background-size: cover;
-  background-position: center;
+  background-size: 70%;
   color: white;
-  padding: 60px 0;
+  padding: 50px 0;
+  text-align: left;
+  position: relative;
   margin-bottom: 40px;
 }
 
 .payment-page-header h1 {
-  font-size: 2.5rem;
+  font-size: 2.2rem;
   margin: 0 0 10px 0;
-  font-weight: 800;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  font-weight: 700;
 }
 
 .payment-page-header p {
-  font-size: 1.1rem;
+  font-size: 1rem;
   margin: 0;
-  opacity: 0.9;
+  opacity: 0.85;
 }
 
 /* เลย์เอาต์แบ่ง 2 ฝั่ง (ซ้ายใหญ่ ขวาเล็ก) */
@@ -1839,8 +1839,8 @@ body {
 }
 
 .payment-title {
-  color: #147a74;
-  /* สีเขียวอมฟ้าตามในรูป */
+  color: #217dbb;
+  /* สีน้ำเงินตามตีมเว็บ */
   font-size: 1.1rem;
   font-weight: 700;
   margin: 0 0 24px 0;
@@ -1871,15 +1871,15 @@ body {
 }
 
 .bank-value {
-  color: #147a74;
+  color: #217dbb;
   /* สีตัวหนังสือข้อมูลบัญชี */
   font-weight: 700;
 }
 
 .bank-amount {
   font-size: 2.2rem;
-  color: #12b5a9;
-  /* สีเขียวสว่าง (ตัวเลขเงิน) */
+  color: #217dbb;
+  /* สีน้ำเงินสว่าง (ตัวเลขเงิน) */
   font-weight: 800;
 }
 
@@ -1910,7 +1910,7 @@ body {
 
 /* ปุ่มส่งหลักฐาน */
 .btn-upload-slip {
-  background: linear-gradient(90deg, #8ad4eb 0%, #68c7e8 100%);
+  background: #217dbb;
   color: white;
   border: none;
   padding: 16px;
@@ -1942,7 +1942,7 @@ body {
 .summary-course-title {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #147a74;
+  color: #217dbb;
   margin: 0 0 8px 0;
 }
 
@@ -1963,12 +1963,12 @@ body {
 }
 
 .summary-total-label {
-  color: #12b5a9;
+  color: #217dbb;
   font-weight: 700;
 }
 
 .summary-total-value {
-  color: #12b5a9;
+  color: #217dbb;
   font-size: 1.2rem;
   font-weight: 800;
 }
@@ -2119,7 +2119,8 @@ body {
   display: grid;
   grid-template-columns: 320px 1fr;
   gap: 30px;
-  margin-top: -40px; /* ดึงการ์ดให้ลอยซ้อนทับ Header เล็กน้อย */
+  margin-top: -40px;
+  /* ดึงการ์ดให้ลอยซ้อนทับ Header เล็กน้อย */
   position: relative;
   z-index: 10;
 }
@@ -2170,7 +2171,7 @@ body {
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   transition: transform 0.2s;
 }
 
@@ -2248,7 +2249,7 @@ body {
     grid-template-columns: 1fr;
     margin-top: 20px;
   }
-  
+
   .profile-card {
     padding: 25px 20px;
   }
@@ -2267,13 +2268,15 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 20px; /* ระยะห่างระหว่างปุ่มกับหัวข้อ H1 */
+  margin-bottom: 20px;
+  /* ระยะห่างระหว่างปุ่มกับหัวข้อ H1 */
   transition: all 0.2s ease;
   font-family: inherit;
 }
 
 .btn-back:hover {
   background: rgba(255, 255, 255, 0.25);
-  transform: translateX(-4px); /* เอฟเฟกต์เลื่อนไปทางซ้ายนิดนึงตอนเอาเมาส์ชี้ */
+  transform: translateX(-4px);
+  /* เอฟเฟกต์เลื่อนไปทางซ้ายนิดนึงตอนเอาเมาส์ชี้ */
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
