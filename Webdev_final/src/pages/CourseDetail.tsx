@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Home, Book, User, LogOut, UserPlus, LogIn, Clock, Users, PlayCircle, CheckCircle } from 'lucide-react';
-import './HomePage.css'; 
-import api from '../api'; 
+import './HomePage.css';
+import api from '../api';
 import logoImg from '../assets/Logo.png';
-import imgVDO from '../assets/locobackgroudewhite.png' ;
+import imgVDO from '../assets/locobackgroudewhite.png';
 
 // 📌 Types
 interface Lesson {
@@ -54,7 +54,7 @@ export default function CourseDetail() {
     const fetchCourseDetail = async () => {
       try {
         setLoading(true);
-        const response = await api.get(`/courses/${id}`); 
+        const response = await api.get(`/courses/${id}`);
         setCourse(response.data);
       } catch (err) {
         console.error('Error fetching course details:', err);
@@ -79,9 +79,9 @@ export default function CourseDetail() {
   // 🌟 ฟังก์ชันดึงรูปภาพ (ใช้รูป Logo.png จาก assets เป็นรูปเริ่มต้น)
   const getImageUrl = (url?: string, type: 'course' | 'user' = 'course') => {
     if (!url) {
-      return type === 'user' 
-        ? "" 
-        : imgVDO; 
+      return type === 'user'
+        ? ""
+        : imgVDO;
     }
     return url.startsWith('/uploads') ? `http://localhost:3001${url}` : url;
   };
@@ -97,7 +97,7 @@ export default function CourseDetail() {
 
   return (
     <div className="page-wrapper">
-      
+
       {/* ================= Navbar (เหมือนหน้าหลัก 100%) ================= */}
       <nav className="navbar">
         <div className="container navbar-container">
@@ -116,7 +116,9 @@ export default function CourseDetail() {
               <>
                 <Link to="/my-courses" className="menu-item"><User size={18} /> คอร์สของฉัน</Link>
                 <a onClick={handleLogout} className="menu-item" style={{ cursor: 'pointer' }}><LogOut size={18} /> ออกจากระบบ</a>
-                <div className='user-pill'>{currentUser.full_name || currentUser.username}</div>
+                <div className="user-pill" onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>
+                  {currentUser.full_name || currentUser.username}
+                </div>
               </>
             ) : (
               <div className="nav-auth-buttons">
@@ -138,7 +140,7 @@ export default function CourseDetail() {
               </div>
               <h1 className="cd-title">{course.title}</h1>
               <p className="cd-subtitle">{course.description}</p>
-              
+
               <div className="cd-stats-top">
                 <div className="cd-stat-item"><Users size={18} /> 128 คนเรียนแล้ว</div>
                 <div className="cd-stat-item"><Clock size={18} /> {course.duration_weeks || 12} สัปดาห์</div>
@@ -163,7 +165,7 @@ export default function CourseDetail() {
       <main className="section">
         <div className="container">
           <div className="cd-main-content">
-            
+
             {/* Left: Syllabus & Details */}
             <div className="cd-left-column">
               <div className="cd-card">
@@ -216,9 +218,28 @@ export default function CourseDetail() {
         </div>
       </main>
 
+      {/* ================= Footer ================= */}
       <footer className="footer">
         <div className="container">
-          <div className="copyright">© 2026 New Learning Academy. All rights reserved.</div>
+          <div className="footer-grid">
+            <div>
+              <h3>เกี่ยวกับเรา</h3>
+              <p>New Learning Academy เป็นแพลตฟอร์มการเรียนรู้<br />ออนไลน์ชั้นนำ มุ่งเน้นพัฒนาศักยภาพผู้เรียน</p>
+            </div>
+            <div>
+              <h3>ติดต่อเรา</h3>
+              <p>อีเมล: info@newlearning.com</p>
+              <p>โทร: 02-123-4567</p>
+            </div>
+            <div>
+              <h3>เวลาทำการ</h3>
+              <p>จันทร์ - ศุกร์: 09:00 - 18:00</p>
+              <p>เสาร์ - อาทิตย์: 10:00 - 16:00</p>
+            </div>
+          </div>
+          <div className="copyright">
+            © 2026 New Learning Academy. All rights reserved.
+          </div>
         </div>
       </footer>
     </div>

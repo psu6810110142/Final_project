@@ -118,7 +118,9 @@ const MyCourses: React.FC = () => {
             <a href="/courses" className="menu-item"><Book size={18} /> คอร์สเรียน</a>
             <a href="/mycourse" className="menu-item active"><User size={18} /> คอร์สของฉัน</a>
             <a onClick={handleLogout} className="menu-item" style={{ cursor: 'pointer' }}><LogOut size={18} /> ออกจากระบบ</a>
-            <div className="user-pill">{currentUser?.full_name || currentUser?.username}</div>
+            <div className="user-pill" onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>
+              {currentUser?.full_name || currentUser?.username}
+            </div>
           </div>
         </div>
       </nav>

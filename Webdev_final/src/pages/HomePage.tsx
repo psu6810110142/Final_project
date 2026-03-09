@@ -4,7 +4,7 @@ import { Home, BookOpen, User, LogOut, ArrowRight, Book, Users, Star, Clock } fr
 import logoImage from '../assets/Logo.png';
 import GrayLogo from '../assets/graylogo.png';
 import api from '../api'; // สมมติว่าไฟล์นี้มีการตั้งค่า Axios instance เอาไว้
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface CourseData {
   course_id: number;
@@ -79,6 +79,8 @@ const HomePage: React.FC = () => {
     window.location.href = '/landing';
   };
 
+  const navigate = useNavigate();
+
   return (
     <div className="page-wrapper">
       {/* ================= Navbar ================= */}
@@ -110,7 +112,11 @@ const HomePage: React.FC = () => {
                   <LogOut size={18} /> ออกจากระบบ
                 </a>
                 {/* ================= ถ้าจะแก้ให้กดหน้า Profile ได้ ใส่ตรงนี้ href ลงไปใน classname ด้านล่าง ================= */}
-                <div className='user-pill'>
+                <div 
+                  className="user-pill" 
+                  onClick={() => navigate('/profile')} 
+                  style={{ cursor: 'pointer' }}
+                >
                   {currentUser.full_name || currentUser.username}
                 </div>
               </>
