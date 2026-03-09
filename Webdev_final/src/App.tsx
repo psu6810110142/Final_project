@@ -7,7 +7,7 @@ import HomePage from './pages/HomePage';       // หน้าหลัก (ล�
 import LoginPage from './pages/LoginPage';     // หน้าเข้าสู่ระบบ
 import RegisterPage from './pages/Register';   // หน้าสมัครสมาชิก
 import CourseList from './pages/CourseList';  // หน้าคอร์สลิส
-import CourseManagement from './pages/CourseManagement';
+import CourseManagement from './pages/admin-modules/AdminDashboard';
 import MyCourses from './pages/Mycourse';
 import CourseDetail from './pages/CourseDetail';
 import LearningPage from './pages/LearningPage';

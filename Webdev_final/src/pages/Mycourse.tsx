@@ -13,7 +13,7 @@ const getImageUrl = (url?: string, type: 'course' | 'user' = 'course') => {
   }
 
   if (url.startsWith('/uploads')) {
-    return `http://localhost:3000${url}`;
+    return `http://localhost:3001${url}`;
   }
   return url;
 };

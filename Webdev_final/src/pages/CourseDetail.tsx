@@ -83,7 +83,7 @@ export default function CourseDetail() {
         ? "" 
         : imgVDO; 
     }
-    return url.startsWith('/uploads') ? `http://localhost:3000${url}` : url;
+    return url.startsWith('/uploads') ? `http://localhost:3001${url}` : url;
   };
 
   if (loading) return <div className="state-message" style={{ textAlign: 'center', padding: '100px', fontSize: '1.2rem' }}>กำลังโหลดข้อมูลคอร์สเรียน... ⏳</div>;

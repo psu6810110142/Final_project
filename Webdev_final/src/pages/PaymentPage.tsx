@@ -84,7 +84,7 @@ const PaymentPage: React.FC = () => {
   // ✨ 2. ฟังก์ชันจัดการรูปภาพ ถ้าไม่มี url ให้ใช้ defaultCourseImage แทน
   const getImageUrl = (url?: string) => {
     if (!url) return defaultCourseImage; 
-    return url.startsWith('/uploads') ? `http://localhost:3000${url}` : url;
+    return url.startsWith('/uploads') ? `http://localhost:3001${url}` : url;
   };
 
   if (loadingCourse) return <div style={{ textAlign: 'center', padding: '100px', fontSize: '1.2rem' }}>กำลังเตรียมข้อมูลการชำระเงิน... ⏳</div>;
