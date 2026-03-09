@@ -41,7 +41,7 @@ const LearningPage: React.FC = () => {
       return;
     }
     // เปิดไฟล์ในแท็บใหม่ (ถ้าเป็น PDF เบราว์เซอร์จะเปิดให้ดู / ถ้าเป็น Zip จะดาวน์โหลดลงเครื่องทันที)
-    window.open(`http://localhost:3000${fileUrl}`, '_blank');
+    window.open(`http://localhost:3001${fileUrl}`, '_blank');
   };
 
   // ยามเฝ้าประตู 
@@ -144,7 +144,7 @@ const LearningPage: React.FC = () => {
                 <div className="video-wrapper">
                   <video
                     key={currentLesson.lesson_id}
-                    src={`http://localhost:3000${currentLesson.video_url}`}
+                    src={`http://localhost:3001${currentLesson.video_url}`}
                     controls
                     onEnded={handleVideoEnd}
                     style={{ width: '100%', height: '100%', objectFit: 'contain' }}
@@ -157,7 +157,7 @@ const LearningPage: React.FC = () => {
                     <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                       {courseDetail.instructor.profile_image_url ? (
                         <img
-                          src={`http://localhost:3000${courseDetail.instructor.profile_image_url}`}
+                          src={`http://localhost:3001${courseDetail.instructor.profile_image_url}`}
                           alt={courseDetail.instructor.name}
                           style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }}
                         />

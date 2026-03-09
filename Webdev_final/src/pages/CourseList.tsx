@@ -3,7 +3,7 @@ import './HomePage.css';
 import { Home, Book, User, LogOut, Search, Users, Clock, Filter, UserPlus, LogIn } from 'lucide-react';
 import logoImage from '../assets/Logo.png';
 import api from '../api';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import GrayLogo from '../assets/graylogo.png';
 
 interface CourseData {
@@ -30,7 +30,7 @@ const getImageUrl = (url?: string, type: 'course' | 'user' = 'course') => {
   }
 
   if (url.startsWith('/uploads')) {
-    return `http://localhost:3000${url}`;
+    return `http://localhost:3001${url}`;
   }
   return url;
 };
@@ -77,6 +77,8 @@ const CourseList: React.FC = () => {
     window.location.replace('/landing');
   };
 
+  const navigate = useNavigate();
+
   return (
     <div className="page-wrapper">
       {/* ================= Navbar ================= */}
@@ -97,7 +99,9 @@ const CourseList: React.FC = () => {
               <>
                 <a href="/my-courses" className="menu-item"><User size={18} /> คอร์สของฉัน</a>
                 <a onClick={handleLogout} className="menu-item" style={{ cursor: 'pointer' }}><LogOut size={18} /> ออกจากระบบ</a>
-                <div className='user-pill'> {currentUser?.full_name || currentUser?.username}</div>
+                <div className="user-pill" onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>
+                  {currentUser.full_name || currentUser.username}
+                </div>
               </>
             ) : (
               <div className="nav-auth-buttons">
@@ -211,7 +215,23 @@ const CourseList: React.FC = () => {
       {/* ================= Footer ================= */}
       <footer className="footer">
         <div className="container">
-          <div className="copyright" style={{ paddingTop: '20px', borderTop: 'none' }}>
+          <div className="footer-grid">
+            <div>
+              <h3>เกี่ยวกับเรา</h3>
+              <p>New Learning Academy เป็นแพลตฟอร์มการเรียนรู้<br />ออนไลน์ชั้นนำ มุ่งเน้นพัฒนาศักยภาพผู้เรียน</p>
+            </div>
+            <div>
+              <h3>ติดต่อเรา</h3>
+              <p>อีเมล: info@newlearning.com</p>
+              <p>โทร: 02-123-4567</p>
+            </div>
+            <div>
+              <h3>เวลาทำการ</h3>
+              <p>จันทร์ - ศุกร์: 09:00 - 18:00</p>
+              <p>เสาร์ - อาทิตย์: 10:00 - 16:00</p>
+            </div>
+          </div>
+          <div className="copyright">
             © 2026 New Learning Academy. All rights reserved.
           </div>
         </div>

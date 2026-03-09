@@ -4,12 +4,14 @@ import { AxiosError } from 'axios';
 import './HomePage.css'; 
 import { Home, UserPlus } from 'lucide-react'; 
 import logoImage from '../assets/Logo.png'; 
+import { useNavigate } from 'react-router-dom';
 
 const LoginPage: React.FC = () => {
   // ✨ 1. เปลี่ยนชื่อ State จาก email เป็น identifier เพื่อความครอบคลุม
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault(); 
@@ -27,13 +29,12 @@ const LoginPage: React.FC = () => {
         localStorage.setItem('user', JSON.stringify(response.data.user));
 
         const userRole = response.data.user.role;
-        
-        alert(`ยินดีต้อนรับคุณ ${response.data.user.full_name || response.data.user.username}`);
 
+        // ✅ ใช้ navigate แทน window.location.href เพื่อกัน race condition
         if (userRole === 'ADMIN') {
           window.location.href = '/manage-courses'; 
         } else {
-          window.location.href = '/home';
+          navigate('/home');
         }
       }
     } catch (error: unknown) {
@@ -58,12 +59,8 @@ const LoginPage: React.FC = () => {
             </div>
           </a>
           <div className="navbar-menu">
-            <a href="/" className="menu-item">
-              <Home size={18} /> กลับหน้าหลัก
-            </a>
-            <a href="/register" className="menu-item">
-               <UserPlus size={18} /> สมัครสมาชิก
-            </a>
+            <a href="/" className="menu-item"><Home size={18} /> กลับหน้าหลัก</a>
+            <a href="/register" className="menu-item"><UserPlus size={18} /> สมัครสมาชิก</a>
           </div>
         </div>
       </nav>
@@ -102,25 +99,19 @@ const LoginPage: React.FC = () => {
               
               <div className="forgot-password-row">
                 <label className="remember-me">
-                    <input type="checkbox" style={{accentColor: '#2563eb'}} /> จดจำฉันไว้
+                  <input type="checkbox" style={{ accentColor: '#2563eb' }} /> จดจำฉันไว้
                 </label>
                 <a href="#" className="forgot-link">ลืมรหัสผ่าน?</a>
               </div>
             </div>
 
-            <button 
-              type="submit" 
-              className="btn-submit" 
-              disabled={loading}
-              style={{ width: '100%', border: 'none', cursor: loading ? 'not-allowed' : 'pointer' }}
-            >
+            <button type="submit" className="btn-submit" disabled={loading}
+              style={{ width: '100%', border: 'none', cursor: loading ? 'not-allowed' : 'pointer' }}>
               {loading ? 'กำลังตรวจสอบ...' : 'เข้าสู่ระบบ'}
             </button>
           </form>
 
-          <div className="divider">
-            <span>หรือเข้าสู่ระบบด้วย</span>
-          </div>
+          <div className="divider"><span>หรือเข้าสู่ระบบด้วย</span></div>
 
           <button className="btn-google">
              <svg width="20" height="20" viewBox="0 0 24 24">
@@ -140,9 +131,7 @@ const LoginPage: React.FC = () => {
 
       <footer className="footer">
         <div className="container">
-          <div className="copyright">
-            © 2026 New Learning Academy. All rights reserved.
-          </div>
+          <div className="copyright">© 2026 New Learning Academy. All rights reserved.</div>
         </div>
       </footer>
     </div>
