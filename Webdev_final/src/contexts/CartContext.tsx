@@ -1,56 +1,65 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import api from '../api';
 
+interface CartItem {
+  cart_item_id: number;
+  added_at: string;
+  course: {
+    course_id: number;
+    title: string;
+    price: string;
+    cover_image_url?: string;
+    instructor?: { name: string };
+  };
+}
+
 interface CartContextType {
-  cartItems: any[];
+  cartItems: CartItem[];
   cartCount: number;
   fetchCart: () => Promise<void>;
   addToCart: (courseId: number) => Promise<boolean>;
   removeFromCart: (cartItemId: number) => Promise<void>;
 }
 
-// สร้าง Context
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-// สร้าง Provider (ตัวคลุมระบบเพื่อแจกจ่ายข้อมูล)
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [cartItems, setCartItems] = useState<any[]>([]);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
-  // ฟังก์ชันไปดึงข้อมูลตะกร้าจาก Backend
-  const fetchCart = async () => {
+  const getUser = () => {
     const userStr = localStorage.getItem('user');
-    if (!userStr) return; // ถ้าไม่ได้ล็อกอิน ไม่ต้องดึง
+    return userStr ? JSON.parse(userStr) : null;
+  };
+
+  const fetchCart = async () => {
+    const user = getUser();
+    if (!user) return;
 
     try {
-      const user = JSON.parse(userStr);
-      // สมมติว่า Backend ของเพื่อนมี API สำหรับดึงตะกร้าของ User คนนี้
-      const response = await api.get(`/cart-items/user/${user.user_id || user.id}`);
+      const response = await api.get(`/cart-items/user/${user.sub}`);
       setCartItems(response.data);
     } catch (error) {
       console.error('Error fetching cart:', error);
     }
   };
 
-  // ดึงตะกร้าครั้งแรกตอนเปิดเว็บ
   useEffect(() => {
     fetchCart();
   }, []);
 
-  // ฟังก์ชันเพิ่มของลงตะกร้า
-  const addToCart = async (courseId: number) => {
-    const userStr = localStorage.getItem('user');
-    if (!userStr) {
+  const addToCart = async (courseId: number): Promise<boolean> => {
+    const user = getUser();
+    if (!user) {
       alert('กรุณาเข้าสู่ระบบก่อนหยิบใส่ตะกร้าครับ');
       return false;
     }
 
     try {
-      const user = JSON.parse(userStr);
       await api.post('/cart-items', {
-        user_id: user.user_id || user.id,
-        course_id: courseId
+        user_id: user.sub,
+        course_id: courseId,
       });
-      await fetchCart(); // ดึงข้อมูลใหม่เพื่ออัปเดตตัวเลข
+      await fetchCart();
       return true;
     } catch (error) {
       console.error('Error adding to cart:', error);
@@ -59,11 +68,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // ฟังก์ชันลบของออกจากตะกร้า
-  const removeFromCart = async (cartItemId: number) => {
+  const removeFromCart = async (cartItemId: number): Promise<void> => {
     try {
       await api.delete(`/cart-items/${cartItemId}`);
-      await fetchCart(); // ดึงข้อมูลใหม่
+      await fetchCart();
     } catch (error) {
       console.error('Error removing from cart:', error);
     }
@@ -76,7 +84,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
-// Hook สำหรับให้หน้าอื่นๆ เรียกใช้งานได้ง่ายๆ
 export const useCart = () => {
   const context = useContext(CartContext);
   if (context === undefined) {
