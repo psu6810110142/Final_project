@@ -10,8 +10,8 @@ import { Roles } from '../auth/roles.decorator';
 export class OrderDetailsController {
   constructor(private readonly orderDetailsService: OrderDetailsService) {}
 
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('ADMIN')
+  // ✅ User ทั่วไปสร้างได้ (ต้อง login แค่นั้น)
+  @UseGuards(AuthGuard('jwt'))
   @Post()
   create(@Body() createOrderDetailDto: CreateOrderDetailDto) {
     return this.orderDetailsService.create(createOrderDetailDto);
@@ -25,7 +25,7 @@ export class OrderDetailsController {
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Get('order/:orderId') // ✨ ดูรายการในบิลนี้
+  @Get('order/:orderId')
   findByOrder(@Param('orderId') orderId: string) {
     return this.orderDetailsService.findByOrder(+orderId);
   }

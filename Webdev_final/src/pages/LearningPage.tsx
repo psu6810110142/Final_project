@@ -8,6 +8,7 @@ import api from '../api';
 const LearningPage: React.FC = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
+  const [accessDenied, setAccessDenied] = React.useState(false);
 
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [lessons, setLessons] = useState<any[]>([]);
@@ -61,6 +62,19 @@ const LearningPage: React.FC = () => {
 
     const fetchData = async () => {
       try {
+        // ✅ เช็คสิทธิ์ก่อน — ดูว่า user มี order COMPLETED สำหรับคอร์สนี้ไหม
+        const userId = currentUser?.sub || currentUser?.user_id;
+        const ordersRes = await api.get(`/orders/user/${userId}`);
+        const hasAccess = ordersRes.data.some((o: any) =>
+          o.status === 'COMPLETED' &&
+          o.order_details?.some((d: any) => String(d.course?.course_id) === String(courseId))
+        );
+
+        if (!hasAccess) {
+          setAccessDenied(true);
+          return;
+        }
+
         // ดึงรายชื่อบทเรียน
         const lessonsRes = await api.get(`/lessons/course/${courseId}`);
         const fetchedLessons = lessonsRes.data;
@@ -142,13 +156,20 @@ const LearningPage: React.FC = () => {
             <div>
               <div className="video-section">
                 <div className="video-wrapper">
-                  <video
-                    key={currentLesson.lesson_id}
-                    src={`http://localhost:3001${currentLesson.video_url}`}
-                    controls
-                    onEnded={handleVideoEnd}
-                    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                  />
+                  {currentLesson?.video_url ? (
+                    <video
+                      key={currentLesson.lesson_id}
+                      src={`http://localhost:3001${currentLesson.video_url}`}
+                      controls
+                      onEnded={handleVideoEnd}
+                      style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                    />
+                  ) : (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#94a3b8', flexDirection: 'column', gap: '8px' }}>
+                      <span style={{ fontSize: '48px' }}>🎬</span>
+                      <span>ยังไม่มีวิดีโอสำหรับบทเรียนนี้</span>
+                    </div>
+                  )}
                 </div>
                 <div className="video-info">
                   {/* ใช้ Optional Chaining (?.) ป้องกัน Error */}

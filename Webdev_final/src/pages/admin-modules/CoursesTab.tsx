@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Plus, Edit, Trash2, X, Upload } from 'lucide-react';
 import api from '../../api';
-import type { CourseData, InstructorData } from './types.ts';
-import { mockLevels, getImageUrl } from './types.ts';
+import type { CourseData, InstructorData } from './types';
+import { mockLevels, getImageUrl } from './types';
 
 interface Props {
   courses: CourseData[];
@@ -56,11 +56,9 @@ const CoursesTab: React.FC<Props> = ({ courses, instructors, onRefresh }) => {
       fd.append('description', formData.description);
       fd.append('price', String(formData.price));
       fd.append('duration_weeks', String(formData.duration_weeks));
-      fd.append('level_id', String(formData.level_id));
-      fd.append('instructor_id', String(formData.instructor_id));
+      if (formData.level_id && formData.level_id > 0) fd.append('level_id', String(formData.level_id));
+      if (formData.instructor_id && formData.instructor_id > 0) fd.append('instructor_id', String(formData.instructor_id));
       if (formData.cover_image_file) fd.append('cover_image', formData.cover_image_file);
-      if (formData.material_file) fd.append('material_file', formData.material_file);
-      if (formData.exercise_file) fd.append('exercise_file', formData.exercise_file);
 
       const config = { headers: { 'Content-Type': 'multipart/form-data' } };
       if (modalMode === 'add') await api.post('/courses', fd, config);
@@ -197,26 +195,9 @@ const CoursesTab: React.FC<Props> = ({ courses, instructors, onRefresh }) => {
                     onChange={e => handleCoverChange(e.target.files?.[0] || null)}
                   />
                 </div>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>เอกสาร PDF</label>
-                    <input type="file" accept=".pdf" className="form-input"
-                      onChange={e => setFormData({ ...formData, material_file: e.target.files?.[0] || null })}
-                    />
-                    {formData.material_file_url && !formData.material_file && (
-                      <a href={getImageUrl(formData.material_file_url)} target="_blank" rel="noreferrer" style={{ fontSize: '11px', color: '#3b82f6' }}>ไฟล์ปัจจุบัน ↗</a>
-                    )}
-                  </div>
-                  <div className="form-group">
-                    <label>แบบฝึกหัด</label>
-                    <input type="file" className="form-input"
-                      onChange={e => setFormData({ ...formData, exercise_file: e.target.files?.[0] || null })}
-                    />
-                    {formData.exercise_file_url && !formData.exercise_file && (
-                      <a href={getImageUrl(formData.exercise_file_url)} target="_blank" rel="noreferrer" style={{ fontSize: '11px', color: '#3b82f6' }}>ไฟล์ปัจจุบัน ↗</a>
-                    )}
-                  </div>
-                </div>
+                <p style={{ fontSize: '12px', color: '#94a3b8', margin: '8px 0 0' }}>
+                  📁 ไฟล์เอกสารและแบบฝึกหัดจัดการได้ที่เมนู "จัดการบทเรียน"
+                </p>
               </div>
 
               <div className="modal-footer">

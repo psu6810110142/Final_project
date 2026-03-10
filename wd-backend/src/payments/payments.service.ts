@@ -27,7 +27,7 @@ export class PaymentsService {
   // ดูรายการแจ้งโอนทั้งหมด (Admin)
   findAll() {
     return this.paymentRepo.find({
-      relations: ['order', 'order.user'], // ดึงข้อมูลออเดอร์และคนจ่ายมาดูด้วย
+      relations: ['order', 'order.user', 'order.order_details', 'order.order_details.course'], // ดึงข้อมูลครบ
       order: { payment_date: 'DESC' }
     });
   }
@@ -44,16 +44,14 @@ export class PaymentsService {
   // อัปเดตสถานะ (Admin กดยืนยัน หรือ ปฏิเสธ)
   async update(id: number, updatePaymentDto: UpdatePaymentDto) {
     const payment = await this.findOne(id);
-    
-    // อัปเดตข้อมูลทั่วไป (ถ้ามี)
-    Object.assign(payment, updatePaymentDto);
-    
-    // เช็คพิเศษ: ถ้าส่ง status มาให้อัปเดตด้วย (PAID / REJECTED)
+
     if (updatePaymentDto.status) {
-        payment.status = updatePaymentDto.status;
+      payment.status = updatePaymentDto.status;
     }
 
-    return this.paymentRepo.save(payment);
+    const saved = await this.paymentRepo.save(payment);
+    console.log('Payment saved:', saved.payment_id, 'status:', saved.status);
+    return saved;
   }
 
   async remove(id: number) {

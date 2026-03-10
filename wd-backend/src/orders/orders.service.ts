@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Order } from './entities/order.entity';
@@ -12,12 +12,30 @@ export class OrdersService {
     private readonly orderRepo: Repository<Order>,
   ) {}
 
-  // เปิดบิลใหม่
-  create(createOrderDto: CreateOrderDto) {
+  // เปิดบิลใหม่ + ป้องกันลงทะเบียนซ้ำ
+  async create(createOrderDto: CreateOrderDto) {
+    // ✅ เช็คว่า user คนนี้มี order ที่ COMPLETED หรือ WAITING_PAYMENT สำหรับ course นี้ไหม
+    // (ตรวจจาก total_amount เป็น fallback เพราะ course_id อยู่ใน order_details)
+    const existingOrders = await this.orderRepo.find({
+      where: { user: { user_id: createOrderDto.user_id } },
+      relations: ['order_details', 'order_details.course'],
+    });
+
+    // ดึง course_id จาก DTO ที่ส่งมา (ถ้ามี)
+    if (createOrderDto.course_id) {
+      const alreadyEnrolled = existingOrders.some(o =>
+        ['COMPLETED', 'WAITING_PAYMENT'].includes(o.status) &&
+        o.order_details?.some(d => d.course?.course_id === createOrderDto.course_id)
+      );
+      if (alreadyEnrolled) {
+        throw new ConflictException('คุณได้ลงทะเบียนคอร์สนี้แล้ว');
+      }
+    }
+
     const newOrder = this.orderRepo.create({
       total_amount: createOrderDto.total_amount,
-      user: { user_id: createOrderDto.user_id }, // ผูกกับ User
-      status: 'WAITING_PAYMENT' // ✨ ตั้งค่าเริ่มต้นเป็น "รอจ่ายเงิน" เสมอ
+      user: { user_id: createOrderDto.user_id },
+      status: 'WAITING_PAYMENT'
     });
     return this.orderRepo.save(newOrder);
   }
@@ -51,16 +69,14 @@ export class OrdersService {
   // อัปเดตสถานะ (เช่น Admin กดยืนยันการโอนเงิน)
   async update(id: number, updateOrderDto: UpdateOrderDto) {
     const order = await this.findOne(id);
-    
-    // อัปเดตข้อมูลทั่วไป (ถ้ามี)
-    Object.assign(order, updateOrderDto);
-    
-    // เช็คพิเศษ: ถ้าส่ง status มาให้อัปเดตด้วย
+
     if (updateOrderDto.status) {
-        order.status = updateOrderDto.status;
+      order.status = updateOrderDto.status;
     }
 
-    return this.orderRepo.save(order);
+    const saved = await this.orderRepo.save(order);
+    console.log('Order saved:', saved.order_id, 'status:', saved.status);
+    return saved;
   }
 
   async remove(id: number) {

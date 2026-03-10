@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
+import { Injectable, NotFoundException, OnModuleInit, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt'; 
@@ -40,8 +40,20 @@ export class UsersService implements OnModuleInit {
  
   }
 
-  // 2. ฟังก์ชันสร้าง User ใหม่ (ยังคงเดิม)
+  // 2. ฟังก์ชันสร้าง User ใหม่
   async create(createUserDto: CreateUserDto) {
+    // ✅ เช็ค email ซ้ำก่อน insert
+    const existingEmail = await this.userRepo.findOne({ where: { email: createUserDto.email } });
+    if (existingEmail) {
+      throw new ConflictException('อีเมลนี้ถูกใช้งานแล้ว กรุณาใช้อีเมลอื่น');
+    }
+
+    // ✅ เช็ค username ซ้ำ
+    const existingUsername = await this.userRepo.findOne({ where: { username: createUserDto.username } });
+    if (existingUsername) {
+      throw new ConflictException('ชื่อผู้ใช้นี้ถูกใช้งานแล้ว กรุณาใช้ชื่ออื่น');
+    }
+
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(createUserDto.password_hash, salt);
 

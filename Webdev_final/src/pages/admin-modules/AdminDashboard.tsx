@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api';
 import { useNavigate } from 'react-router-dom';
-import { LayoutDashboard, BookOpen, GraduationCap, Briefcase, LogOut, Loader2 } from 'lucide-react';
+import { LayoutDashboard, BookOpen, GraduationCap, Briefcase, LogOut, Loader2, DollarSign, Video } from 'lucide-react';
 import logoImage from '../../assets/Logo.png';
 import '../HomePage.css';
 
@@ -9,12 +9,14 @@ import DashboardTab from './DashboardTab';
 import CoursesTab from './CoursesTab';
 import InstructorsTab from './InstructorsTab';
 import StudentsTab from './StudentsTab';
+import PaymentsTab from './PaymentsTab';
+import LessonsTab from './LessonsTab';
 
 import type {
   CourseData, UserData, InstructorData, OrderData, LearningProgressData
 } from './types';
 
-type Tab = 'dashboard' | 'courses' | 'instructors' | 'students';
+type Tab = 'dashboard' | 'courses' | 'instructors' | 'students' | 'payments' | 'lessons';
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -99,8 +101,10 @@ const AdminDashboard: React.FC = () => {
   const navItems: { tab: Tab; label: string; Icon: React.ElementType }[] = [
     { tab: 'dashboard', label: 'ภาพรวมระบบ', Icon: LayoutDashboard },
     { tab: 'courses', label: 'จัดการคอร์สเรียน', Icon: BookOpen },
+    { tab: 'lessons', label: 'จัดการบทเรียน', Icon: Video },
     { tab: 'instructors', label: 'จัดการผู้สอน', Icon: Briefcase },
     { tab: 'students', label: 'รายชื่อนักเรียน', Icon: GraduationCap },
+    { tab: 'payments', label: 'ตรวจสอบการชำระเงิน', Icon: DollarSign },
   ];
 
   return (
@@ -139,6 +143,12 @@ const AdminDashboard: React.FC = () => {
         )}
         {activeTab === 'students' && (
           <StudentsTab users={users} orders={orders} courses={courses} progressData={progressData} onRefresh={fetchAllData} />
+        )}
+        {activeTab === 'payments' && (
+          <PaymentsTab />
+        )}
+        {activeTab === 'lessons' && (
+          <LessonsTab courses={courses} />
         )}
       </main>
     </div>

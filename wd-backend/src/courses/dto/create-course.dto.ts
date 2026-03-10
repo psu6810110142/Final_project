@@ -1,4 +1,5 @@
 import { IsString, IsNumber, IsOptional, IsNotEmpty } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateCourseDto {
   @IsString()
@@ -6,15 +7,16 @@ export class CreateCourseDto {
   title: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   description: string;
 
+  @Type(() => Number)
   @IsNumber()
-  @IsNotEmpty()
   price: number;
 
+  @Type(() => Number)
   @IsNumber()
-  @IsNotEmpty()
+  @IsOptional()
   duration_weeks: number;
 
   @IsOptional()
@@ -28,14 +30,18 @@ export class CreateCourseDto {
   @IsOptional()
   @IsString()
   exercise_file_url?: string;
-  
-  @IsNumber()
-  @IsNotEmpty()
+
+  @IsOptional()
+  @IsString()
   promo_video_url?: string;
 
-  level_id: number;       // รับ ID ของระดับชั้น
-
+  @Type(() => Number)
   @IsNumber()
-  @IsNotEmpty()
-  instructor_id: number;  // รับ ID ของอาจารย์
+  @IsOptional()
+  level_id: number;
+
+  @Type(() => Number)
+  @IsNumber()
+  @IsOptional()
+  instructor_id: number;
 }

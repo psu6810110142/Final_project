@@ -51,18 +51,27 @@ const MyCourses: React.FC = () => {
         let purchasedCourses: any[] = [];
 
         response.data.forEach((order: any) => {
-          if (order.status === 'COMPLETED' && order.order_details) {
+          // แสดงทุก status ยกเว้น CANCELLED
+          if (order.status !== 'CANCELLED' && order.order_details) {
             order.order_details.forEach((detail: any) => {
               const course = detail.course;
               if (course) {
+                const statusMap: Record<string, { tagColor: string; textColor: string }> = {
+                  COMPLETED:       { tagColor: '#dcfce7', textColor: '#166534' },
+                  WAITING_PAYMENT: { tagColor: '#fef9c3', textColor: '#854d0e' },
+                  REJECTED:        { tagColor: '#fee2e2', textColor: '#991b1b' },
+                };
+                const statusStyle = statusMap[order.status] || { tagColor: '#f1f5f9', textColor: '#475569' };
+
                 purchasedCourses.push({
                   id: course.course_id,
                   title: course.title,
                   subject: course.level?.level_name || 'ไม่ระบุระดับชั้น',
                   imgSrc: course.cover_image_url || "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&q=80&w=400",
                   progress: 0,
-                  tagColor: "#dbeafe",
-                  textColor: "#1e40af",
+                  orderStatus: order.status,
+                  tagColor: statusStyle.tagColor,
+                  textColor: statusStyle.textColor,
                 });
               }
             });
@@ -195,6 +204,9 @@ const MyCourses: React.FC = () => {
 // --- Component: การ์ดสำหรับคอร์สที่ซื้อแล้ว ---
 const MyCourseCard = ({ course }: { course: any }) => {
   const isCompleted = course.progress === 100;
+  const isPending = course.orderStatus === 'WAITING_PAYMENT';
+  const isRejected = course.orderStatus === 'REJECTED';
+  const isApproved = course.orderStatus === 'COMPLETED';
   const progressColor = isCompleted ? '#16a34a' : '#2563eb';
   const navigate = useNavigate();
 
@@ -205,6 +217,16 @@ const MyCourseCard = ({ course }: { course: any }) => {
         {isCompleted && (
           <span className="status-badge">
             <CheckCircle size={14} /> เรียนจบแล้ว
+          </span>
+        )}
+        {isPending && (
+          <span className="status-badge" style={{ backgroundColor: '#fef9c3', color: '#854d0e', border: '1px solid #fde047' }}>
+            ⏳ รอตรวจสอบ
+          </span>
+        )}
+        {course.orderStatus === 'REJECTED' && (
+          <span className="status-badge" style={{ backgroundColor: '#fee2e2', color: '#991b1b', border: '1px solid #fecaca' }}>
+            ❌ ไม่อนุมัติ
           </span>
         )}
       </div>
@@ -218,23 +240,36 @@ const MyCourseCard = ({ course }: { course: any }) => {
         </span>
         <h3 className="my-course-title">{course.title}</h3>
 
-        {/* Progress Bar */}
-        <div className="progress-container">
-          <div className="progress-header">
-            <span>ความคืบหน้า</span>
-            <span style={{ fontWeight: 'bold', color: progressColor }}>{course.progress}%</span>
+        {/* แสดง progress เฉพาะคอร์สที่อนุมัติแล้ว */}
+        {isApproved && (
+          <div className="progress-container">
+            <div className="progress-header">
+              <span>ความคืบหน้า</span>
+              <span style={{ fontWeight: 'bold', color: progressColor }}>{course.progress}%</span>
+            </div>
+            <div className="progress-track">
+              <div
+                className="progress-fill"
+                style={{ width: `${course.progress}%`, backgroundColor: progressColor }}
+              ></div>
+            </div>
           </div>
-          <div className="progress-track">
-            <div
-              className="progress-fill"
-              style={{ width: `${course.progress}%`, backgroundColor: progressColor }}
-            ></div>
-          </div>
-        </div>
+        )}
 
-        <button className={`btn-learn ${isCompleted ? 'review' : 'continue'}`} onClick={() => navigate(`/learn/${course.id}`)}>
-          {isCompleted ? 'ทบทวนเนื้อหา' : <><PlayCircle size={18} /> เรียนต่อ</>}
-        </button>
+        {isPending ? (
+          <div style={{ padding: '10px', backgroundColor: '#fef9c3', borderRadius: '8px', fontSize: '13px', color: '#854d0e', textAlign: 'center' }}>
+            ⏳ รอแอดมินตรวจสอบสลิปการชำระเงิน
+          </div>
+        ) : isRejected ? (
+          <div style={{ padding: '10px', backgroundColor: '#fee2e2', borderRadius: '8px', fontSize: '13px', color: '#991b1b', textAlign: 'center' }}>
+            ❌ การชำระเงินถูกปฏิเสธ<br/>
+            <span style={{ fontSize: '12px' }}>กรุณาติดต่อแอดมินหรือชำระใหม่อีกครั้ง</span>
+          </div>
+        ) : (
+          <button className={`btn-learn ${isCompleted ? 'review' : 'continue'}`} onClick={() => navigate(`/learn/${course.id}`)}>
+            {isCompleted ? 'ทบทวนเนื้อหา' : <><PlayCircle size={18} /> เรียนต่อ</>}
+          </button>
+        )}
       </div>
     </div>
   );
