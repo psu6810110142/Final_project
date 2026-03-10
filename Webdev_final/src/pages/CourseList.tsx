@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import './HomePage.css';
-import { Home, Book, User, LogOut, Search, Users, Clock, Filter, UserPlus, LogIn } from 'lucide-react';
-import logoImage from '../assets/Logo.png';
+import {Search, Users, Clock, Filter} from 'lucide-react';
 import api from '../api';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import GrayLogo from '../assets/graylogo.png';
+import Navbar from '../components/Navbar';
 
 interface CourseData {
   course_id: number;
@@ -42,7 +42,6 @@ const CourseList: React.FC = () => {
   const [courses, setCourses] = useState<CourseData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentUser, setCurrentUser] = useState<any>(null);
   const dynamicCategories = ["ทั้งหมด", ...Array.from(new Set(courses.map(c => c.level?.level_name).filter(Boolean)))];
 
   useEffect(() => {
@@ -60,63 +59,9 @@ const CourseList: React.FC = () => {
     fetchCourses();
   }, []);
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    const token = localStorage.getItem('access_token');
-    if (token && storedUser) {
-      setCurrentUser(JSON.parse(storedUser));
-    } else {
-      setCurrentUser(null);
-    }
-  }, []);
-
-  const handleLogout = (e: React.MouseEvent) => {
-    e.preventDefault();
-    localStorage.clear();
-    setCurrentUser(null);
-    window.location.replace('/landing');
-  };
-
-  const navigate = useNavigate();
-
   return (
     <div className="page-wrapper">
-      {/* ================= Navbar ================= */}
-      <nav className="navbar">
-        <div className="container navbar-container">
-          <a href="/" className="navbar-left">
-            <img src={logoImage} alt="Logo" className="navbar-logo" />
-            <div className="brand-text">
-              <span className="brand-title">New Learning Academy</span>
-              <span className="brand-subtitle">สถาบันกวดวิชานิวเลิร์นนิง</span>
-            </div>
-          </a>
-
-          <div className="navbar-menu">
-            <a href="/home" className="menu-item"><Home size={18} /> หน้าหลัก</a>
-            <a href="/courses" className="menu-item active"><Book size={18} /> คอร์สเรียน</a>
-            {currentUser ? (
-              <>
-                <a href="/my-courses" className="menu-item"><User size={18} /> คอร์สของฉัน</a>
-                <a onClick={handleLogout} className="menu-item" style={{ cursor: 'pointer' }}><LogOut size={18} /> ออกจากระบบ</a>
-                <div className="user-pill" onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>
-                  {currentUser.full_name || currentUser.username}
-                </div>
-              </>
-            ) : (
-              <div className="nav-auth-buttons">
-                <a href="/login" className="btn-nav-login">
-                  <LogIn size={18} /> เข้าสู่ระบบ
-                </a>
-                <a href="/register" className="btn-nav-register">
-                  <UserPlus size={18} /> สมัครสมาชิก
-                </a>
-              </div>
-            )}
-          </div>
-        </div>
-      </nav>
-
+      <Navbar />
       {/* ================= Course Header & Search ================= */}
       <div className="page-header" style={{ padding: '60px 0', textAlign: 'center' }}>
         <div className="container">
