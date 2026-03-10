@@ -1,4 +1,13 @@
+// create-cart_item.dto.ts
+import { IsNumber } from 'class-validator';
+import { Type } from 'class-transformer';
+
 export class CreateCartItemDto {
-  user_id: number;   // ไอดีของ User ที่จะซื้อ
-  course_id: number; // ไอดีของ Course ที่จะซื้อ
+  @IsNumber()
+  @Type(() => Number)
+  user_id: number;
+
+  @IsNumber()
+  @Type(() => Number)
+  course_id: number;
 }

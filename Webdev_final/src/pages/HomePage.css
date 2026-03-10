@@ -1,5 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Kanit&display=swap');
 
+/* =========================================
+   UI หน้า Course Detail (สมบูรณ์แบบ 100% พร้อมแก้โลโก้)
+   ========================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap');
+
 :root {
   --primary-blue: #3b82f6;
   /* สีฟ้าสดใส */
@@ -1085,12 +1091,6 @@ body {
     /* ปรับเป็นจอเดียวในมือถือ */
   }
 }
-
-/* =========================================
-   UI หน้า Course Detail (สมบูรณ์แบบ 100% พร้อมแก้โลโก้)
-   ========================================= */
-
-@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap');
 
 .cd-page-wrapper {
   font-family: 'Prompt', sans-serif;
@@ -2280,3 +2280,96 @@ body {
   /* เอฟเฟกต์เลื่อนไปทางซ้ายนิดนึงตอนเอาเมาส์ชี้ */
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
+
+/* ================= ProfilePage ================= */
+
+.profile-page {
+  background-color: #f4f7f6; /* สีพื้นหลังอ่อนๆ ให้หน้าดูมีมิติกับ Card สีขาว */
+  min-height: 100vh;
+  padding-bottom: 2rem;
+}
+
+.profile-sidebar {
+  border: 1px solid #e5e7eb;
+}
+
+.active-tab {
+  background-color: #3b82f6; /* สีฟ้าอ่อนให้เข้ากับความน่าเชื่อถือ */
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.inactive-tab {
+  background-color: transparent;
+  color: #4b5563;
+}
+
+.inactive-tab:hover {
+  background-color: #f3f4f6;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.6rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  transition: border-color 0.2s;
+  outline: none;
+}
+
+.form-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.disabled-input {
+  background-color: #e5e7eb;
+  cursor: not-allowed;
+  color: #6b7280;
+}
+
+.save-btn {
+  background-color: #10b981; /* สีเขียวสำหรับบันทึก */
+  color: white;
+  padding: 0.6rem 1.5rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.save-btn:hover {
+  background-color: #059669;
+}
+
+.change-pwd-btn {
+  background-color: #ef4444; /* สีแดงสำหรับการเปลี่ยนรหัสผ่านเพื่อเตือนให้ระวัง */
+}
+
+.change-pwd-btn:hover {
+  background-color: #dc2626;
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ========== CSS เพิ่มเติม (ต่อท้าย HomePage.css) ========== */
+.btn-save { background: var(--primary-blue); color: white; padding: 12px; border-radius: 50px; width: 100%; font-weight: 600; border: none; cursor: pointer; transition: all 0.2s; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.form-group { margin-bottom: 20px; }
+.form-label { display: block; font-weight: 500; color: #374151; margin-bottom: 8px; font-size: 0.9rem; }
+.form-textarea { width: 100%; padding: 0.6rem 1rem; border: 1px solid #d1d5db; border-radius: 8px; outline: none; font-family: inherit; font-size: 0.95rem; }

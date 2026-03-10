@@ -58,11 +58,21 @@ export class UsersController {
     @Body() updateUserDto: UpdateUserDto, 
     @UploadedFile() file: Express.Multer.File, 
   ) {
-    // ถ้ามีไฟล์แนบมาด้วย ให้เอา Path ของไฟล์ไปยัดใส่ใน DTO ก่อนบันทึก
     if (file) {
       updateUserDto.profile_picture_url = `/uploads/profiles/${file.filename}`;
     }
     return this.usersService.update(+id, updateUserDto);
+  }
+
+  // ✅ เพิ่ม endpoint เปลี่ยนรหัสผ่าน
+  // สำคัญ: ต้องวางก่อน @Delete(':id') และใช้ path ":id/change-password"
+  @UseGuards(AuthGuard('jwt'))
+  @Patch(':id/change-password')
+  changePassword(
+    @Param('id') id: string,
+    @Body() body: { currentPassword: string; newPassword: string },
+  ) {
+    return this.usersService.changePassword(+id, body.currentPassword, body.newPassword);
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)

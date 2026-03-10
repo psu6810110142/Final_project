@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Home, Book, User, LogOut, UserPlus, LogIn, Clock, Users, PlayCircle, CheckCircle } from 'lucide-react';
+import { useParams, useNavigate} from 'react-router-dom';
+import {Book, Clock, Users, PlayCircle, CheckCircle } from 'lucide-react';
 import './HomePage.css';
 import api from '../api';
-import logoImg from '../assets/Logo.png';
 import imgVDO from '../assets/locobackgroudewhite.png';
+import Navbar from '../components/Navbar';
+import { useCart } from '../contexts/CartContext';
 
 // 📌 Types
 interface Lesson {
@@ -34,20 +35,12 @@ interface CourseDetailData {
 export default function CourseDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { addToCart } = useCart();
 
   // 📌 States
   const [course, setCourse] = useState<CourseDetailData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentUser, setCurrentUser] = useState<any>(null);
-
-  // 🔍 ตรวจสอบ User เหมือนหน้า HomePage
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setCurrentUser(JSON.parse(storedUser));
-    }
-  }, []);
 
   // 🌟 ดึงข้อมูลจาก API
   useEffect(() => {
@@ -66,15 +59,6 @@ export default function CourseDetail() {
 
     if (id) fetchCourseDetail();
   }, [id]);
-
-  // 🚪 Logout function
-  const handleLogout = (e: React.MouseEvent) => {
-    e.preventDefault();
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('user');
-    setCurrentUser(null);
-    window.location.href = '/landing';
-  };
 
   // 🌟 ฟังก์ชันดึงรูปภาพ (ใช้รูป Logo.png จาก assets เป็นรูปเริ่มต้น)
   const getImageUrl = (url?: string, type: 'course' | 'user' = 'course') => {
@@ -97,38 +81,7 @@ export default function CourseDetail() {
 
   return (
     <div className="page-wrapper">
-
-      {/* ================= Navbar (เหมือนหน้าหลัก 100%) ================= */}
-      <nav className="navbar">
-        <div className="container navbar-container">
-          <Link to="/" className="navbar-left">
-            <img src={logoImg} alt="Logo" className="navbar-logo" />
-            <div className="brand-text">
-              <span className="brand-title">New Learning Academy</span>
-              <span className="brand-subtitle">สถาบันกวดวิชานิวเลิร์นนิง</span>
-            </div>
-          </Link>
-
-          <div className="navbar-menu">
-            <Link to="/home" className="menu-item"><Home size={18} /> หน้าหลัก</Link>
-            <Link to="/courses" className="menu-item active"><Book size={18} /> คอร์สเรียน</Link>
-            {currentUser ? (
-              <>
-                <Link to="/my-courses" className="menu-item"><User size={18} /> คอร์สของฉัน</Link>
-                <a onClick={handleLogout} className="menu-item" style={{ cursor: 'pointer' }}><LogOut size={18} /> ออกจากระบบ</a>
-                <div className="user-pill" onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>
-                  {currentUser.full_name || currentUser.username}
-                </div>
-              </>
-            ) : (
-              <div className="nav-auth-buttons">
-                <Link to="/login" className="btn-nav-login"><LogIn size={18} /> เข้าสู่ระบบ</Link>
-                <Link to="/register" className="btn-nav-register"><UserPlus size={18} /> สมัครสมาชิก</Link>
-              </div>
-            )}
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* 🔵 Header Section */}
       <header className="page-header">
@@ -201,7 +154,15 @@ export default function CourseDetail() {
                   {course.price > 0 ? `฿${course.price.toLocaleString()}` : 'เรียนฟรี'}
                 </h1>
                 <p className="cd-price-subtitle">จ่ายครั้งเดียว เข้าถึงเนื้อหาได้ตลอดไป</p>
-                <button className="cd-enroll-bag">
+                <button 
+                  className="cd-enroll-bag"
+                  onClick={async () => {
+                    console.log('🛒 ปุ่มถูกกด!');
+                    console.log('course_id:', course.course_id);
+                    const result = await addToCart(course.course_id);
+                    console.log('ผลลัพธ์:', result);
+                  }}
+                >
                   + เพิ่มลงในตะกร้า
                 </button>
                 <button className="cd-enroll-btn" onClick={() => navigate(`/payment/${course.course_id}`)}>
