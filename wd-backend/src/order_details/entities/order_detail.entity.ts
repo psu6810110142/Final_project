@@ -15,7 +15,7 @@ export class OrderDetail {
   @JoinColumn({ name: 'order_id' })
   order: Order;
 
-  @ManyToOne(() => Course, (course) => course.order_details)
+  @ManyToOne(() => Course, (course) => course.order_details, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'course_id' })
-  course: Course;
+  course: Course | null;
 }

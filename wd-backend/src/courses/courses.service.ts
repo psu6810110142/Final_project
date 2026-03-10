@@ -4,12 +4,21 @@ import { Repository } from 'typeorm';
 import { Course } from './entities/course.entity';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
+import { Lesson } from '../lessons/entities/lesson.entity';
+import { OrderDetail } from '../order_details/entities/order_detail.entity';
+import { CartItem } from '../cart_items/entities/cart_item.entity';
 
 @Injectable()
 export class CoursesService {
   constructor(
     @InjectRepository(Course)
     private readonly courseRepo: Repository<Course>,
+    @InjectRepository(Lesson)
+    private readonly lessonRepo: Repository<Lesson>,
+    @InjectRepository(OrderDetail)
+    private readonly orderDetailRepo: Repository<OrderDetail>,
+    @InjectRepository(CartItem)
+    private readonly cartItemRepo: Repository<CartItem>,
   ) {}
 
   create(createCourseDto: CreateCourseDto) {
@@ -59,6 +68,18 @@ export class CoursesService {
 
   async remove(id: number) {
     const course = await this.findOne(id);
+
+    // ลบ child records ก่อนเพื่อหลีกเลี่ยง FK constraint
+    await this.lessonRepo.delete({ course: { course_id: id } });
+    await this.cartItemRepo.delete({ course: { course_id: id } });
+    // order_details ไม่ลบเพราะเป็นประวัติการซื้อ — set null แทน
+    await this.orderDetailRepo
+      .createQueryBuilder()
+      .update()
+      .set({ course: null as any })
+      .where('course_id = :id', { id })
+      .execute();
+
     return this.courseRepo.remove(course);
   }
 }

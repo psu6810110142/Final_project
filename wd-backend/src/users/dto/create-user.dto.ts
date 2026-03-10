@@ -1,4 +1,5 @@
 import { IsString, IsEmail, IsOptional, IsEnum, IsNumber } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateUserDto {
   @IsString()
@@ -21,7 +22,6 @@ export class CreateUserDto {
   @IsString()
   profile_picture_url?: string;
 
-  // ✨ ต้องใส่ Decorator นี้ เพื่อให้รับค่า "วิชาที่สนใจ" ได้
   @IsOptional()
   @IsString()
   interesting_subject?: string;
@@ -30,8 +30,8 @@ export class CreateUserDto {
   @IsEnum(['STUDENT', 'ADMIN'])
   role?: 'STUDENT' | 'ADMIN';
 
-  // ✨ ต้องใส่ Decorator นี้ เพื่อให้รับค่า "ระดับชั้น" ได้
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
-  level_id?: number; 
+  level_id?: number;
 }

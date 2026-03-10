@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Search, ChevronRight, X, Edit, Trash2, CheckCircle, User } from 'lucide-react';
 import api from '../../api';
+import { useConfirm } from './ConfirmDialog';
+
 import type { UserData, OrderData, CourseData, LearningProgressData } from './types';
 import { mockLevels, mockSubjects, getImageUrl, getLevelName } from './types';
 
@@ -14,6 +16,7 @@ interface Props {
 
 const StudentsTab: React.FC<Props> = ({ users, orders, courses, progressData, onRefresh }) => {
   const [searchText, setSearchText] = useState('');
+  const { confirm, ConfirmDialogComponent } = useConfirm();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<UserData | null>(null);
@@ -77,13 +80,15 @@ const StudentsTab: React.FC<Props> = ({ users, orders, courses, progressData, on
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('ยืนยันลบนักเรียนนี้?')) return;
+    const ok = await confirm({ title: 'ลบนักเรียน', message: 'คุณแน่ใจหรือไม่? ข้อมูลนักเรียนจะถูกลบถาวร', confirmText: 'ลบเลย', variant: 'danger' });
+    if (!ok) return;
     try { await api.delete(`/users/${id}`); setIsModalOpen(false); onRefresh(); }
     catch { alert('ลบไม่สำเร็จ'); }
   };
 
   const handleCancelCourse = async (orderId: number) => {
-    if (!confirm('ยืนยันยกเลิกสิทธิ์คอร์สนี้?')) return;
+    const ok2 = await confirm({ title: 'ยกเลิกสิทธิ์คอร์ส', message: 'ยืนยันการยกเลิกสิทธิ์คอร์สนี้?', confirmText: 'ยกเลิกสิทธิ์', variant: 'warning' });
+    if (!ok2) return;
     try {
       await api.delete(`/orders/${orderId}`);
       setLocalOrders(prev => prev.filter(o => o.order_id !== orderId));
@@ -299,8 +304,9 @@ const StudentsTab: React.FC<Props> = ({ users, orders, courses, progressData, on
           </div>
         </div>
       )}
+      {ConfirmDialogComponent}
     </div>
   );
-};  
+};
 
 export default StudentsTab;

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { CheckCircle, XCircle, Clock, Eye, X, Search } from 'lucide-react';
 import api from '../../api';
+import { useConfirm } from './ConfirmDialog';
+
 import { getImageUrl } from './types';
 
 interface PaymentData {
@@ -33,6 +35,7 @@ const statusConfig = {
 
 const PaymentsTab: React.FC = () => {
   const [payments, setPayments] = useState<PaymentData[]>([]);
+  const { confirm, ConfirmDialogComponent } = useConfirm();
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState('');
   const [filterStatus, setFilterStatus] = useState<'ALL' | 'PENDING' | 'PAID' | 'REJECTED'>('ALL');
@@ -54,7 +57,8 @@ const PaymentsTab: React.FC = () => {
   };
 
   const handleUpdateStatus = async (paymentId: number, newStatus: 'PAID' | 'REJECTED') => {
-    if (!confirm(`ยืนยัน${newStatus === 'PAID' ? 'อนุมัติ' : 'ปฏิเสธ'}การชำระเงินนี้?`)) return;
+    const ok = await confirm({ title: newStatus === 'PAID' ? 'อนุมัติการชำระเงิน' : 'ปฏิเสธการชำระเงิน', message: newStatus === 'PAID' ? 'ยืนยันการอนุมัติ? นักเรียนจะสามารถเข้าเรียนได้ทันที' : 'ยืนยันการปฏิเสธ? นักเรียนจะไม่สามารถเข้าเรียนได้', confirmText: newStatus === 'PAID' ? 'อนุมัติ' : 'ปฏิเสธ', variant: newStatus === 'PAID' ? 'success' : 'danger' });
+    if (!ok) return;
     setProcessing(true);
     try {
       // Step 1: อัปเดต payment status
@@ -293,6 +297,7 @@ const PaymentsTab: React.FC = () => {
       )}
     </div>
   );
+      {ConfirmDialogComponent}
 };
 
 export default PaymentsTab;

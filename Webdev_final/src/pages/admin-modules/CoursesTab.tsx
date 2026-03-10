@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Plus, Edit, Trash2, X, Upload } from 'lucide-react';
 import api from '../../api';
+import { useConfirm } from './ConfirmDialog';
+
 import type { CourseData, InstructorData } from './types';
 import { mockLevels, getImageUrl } from './types';
 
@@ -18,6 +20,7 @@ const emptyCourse: CourseData = {
 
 const CoursesTab: React.FC<Props> = ({ courses, instructors, onRefresh }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { confirm, ConfirmDialogComponent } = useConfirm();
   const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
   const [formData, setFormData] = useState<CourseData>(emptyCourse);
   // ✅ preview URLs for immediate display after file selection
@@ -72,7 +75,8 @@ const CoursesTab: React.FC<Props> = ({ courses, instructors, onRefresh }) => {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('ยืนยันลบคอร์สนี้?')) return;
+    const ok = await confirm({ title: 'ลบคอร์ส', message: 'คุณแน่ใจหรือไม่? การลบคอร์สจะลบบทเรียนทั้งหมดด้วย', confirmText: 'ลบเลย', variant: 'danger' });
+    if (!ok) return;
     try { await api.delete(`/courses/${id}`); onRefresh(); }
     catch { alert('ลบไม่สำเร็จ'); }
   };
@@ -208,6 +212,7 @@ const CoursesTab: React.FC<Props> = ({ courses, instructors, onRefresh }) => {
           </div>
         </div>
       )}
+      {ConfirmDialogComponent}
     </div>
   );
 };

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Plus, Edit, Trash2, X, User, BookOpen, Briefcase, Phone } from 'lucide-react';
 import api from '../../api';
+import { useConfirm } from './ConfirmDialog';
+
 import type { InstructorData } from './types';
 import { getImageUrl } from './types';
 
@@ -17,6 +19,7 @@ const emptyInstructor: InstructorData = {
 
 const InstructorsTab: React.FC<Props> = ({ instructors, onRefresh }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { confirm, ConfirmDialogComponent } = useConfirm();
   const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
   const [formData, setFormData] = useState<InstructorData>(emptyInstructor);
   const [profilePreview, setProfilePreview] = useState<string | null>(null);
@@ -94,7 +97,8 @@ const InstructorsTab: React.FC<Props> = ({ instructors, onRefresh }) => {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('ยืนยันลบผู้สอนนี้?')) return;
+    const ok = await confirm({ title: 'ลบผู้สอน', message: 'คุณแน่ใจหรือไม่? ข้อมูลผู้สอนจะถูกลบถาวร', confirmText: 'ลบเลย', variant: 'danger' });
+    if (!ok) return;
     try { await api.delete(`/instructors/${id}`); onRefresh(); }
     catch { alert('ไม่สามารถลบได้ อาจมีคอร์สที่ผูกอยู่'); }
   };
@@ -245,6 +249,7 @@ const InstructorsTab: React.FC<Props> = ({ instructors, onRefresh }) => {
           </div>
         </div>
       )}
+      {ConfirmDialogComponent}
     </div>
   );
 };

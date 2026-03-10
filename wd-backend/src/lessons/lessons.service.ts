@@ -48,7 +48,7 @@ export class LessonsService {
 
   async findByCourse(courseId: number, user: any) {
     console.log("👉 ค่า user ที่ส่งมาคือ:", user);
-    if (user.role == 'Admin') {
+    if (user.role === 'ADMIN') {
       return this.lessonRepo.find({
         where: { course: { course_id: courseId } },
         order: { sequence: 'ASC' }

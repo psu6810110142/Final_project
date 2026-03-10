@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, X, Video, ChevronLeft, Upload, Play } from 'lucide-react';
 import api from '../../api';
+import { useConfirm } from './ConfirmDialog';
+
 import type { CourseData } from './types';
 import { getImageUrl } from './types';
 
@@ -20,6 +22,7 @@ const emptyLesson = { lesson_id: 0, title: '', sequence: 1, video_url: '', video
 
 const LessonsTab: React.FC<Props> = ({ courses }) => {
   const [selectedCourse, setSelectedCourse] = useState<CourseData | null>(null);
+  const { confirm, ConfirmDialogComponent } = useConfirm();
   const [lessons, setLessons] = useState<LessonData[]>([]);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -83,7 +86,8 @@ const LessonsTab: React.FC<Props> = ({ courses }) => {
   };
 
   const handleDelete = async (lessonId: number) => {
-    if (!confirm('ยืนยันลบบทเรียนนี้?')) return;
+    const ok = await confirm({ title: 'ลบบทเรียน', message: 'คุณแน่ใจหรือไม่? บทเรียนและวิดีโอจะถูกลบถาวร', confirmText: 'ลบเลย', variant: 'danger' });
+    if (!ok) return;
     try {
       await api.delete(`/lessons/${lessonId}`);
       fetchLessons(selectedCourse!.course_id);
@@ -233,6 +237,7 @@ const LessonsTab: React.FC<Props> = ({ courses }) => {
       )}
     </div>
   );
+      {ConfirmDialogComponent}
 };
 
 export default LessonsTab;
