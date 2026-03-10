@@ -4,6 +4,7 @@ import { Home, Book, User, LogOut, ShoppingCart, LogIn, UserPlus } from 'lucide-
 import logoImage from '../assets/Logo.png'; 
 import '../pages/HomePage.css';
 import { useCart } from '../contexts/CartContext';
+import CartSidebar from './CartSidebar';
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ const Navbar: React.FC = () => {
   
   const [currentUser, setCurrentUser] = useState<any>(null);
   const { cartCount } = useCart();
+  const [isCartOpen, setIsCartOpen] = useState(false);
   
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -52,7 +54,7 @@ const Navbar: React.FC = () => {
           <div 
             className="menu-item" 
             style={{ position: 'relative', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}
-            onClick={() => alert('หน้าต่างตะกร้าจะโผล่มาตรงนี้!')}
+            onClick={() => setIsCartOpen(true)}
           >
             <ShoppingCart size={18} /> ตะกร้า
             
@@ -95,6 +97,7 @@ const Navbar: React.FC = () => {
           )}
         </div>
       </div>
+      <CartSidebar isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </nav>
   );
 };
