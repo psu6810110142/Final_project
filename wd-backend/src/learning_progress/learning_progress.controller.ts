@@ -15,7 +15,7 @@ export class LearningProgressController {
   @Post()
   create(@Body() createLearningProgressDto: CreateLearningProgressDto, @Req() req: any) {
     // แกะ ID จาก Token ให้ครอบคลุมทุกรูปแบบ (เหมือนที่ทำใน Lessons)
-    const userId = req.user.userId || req.user.user_id || req.user.id || req.user.sub;
+    const userId = req.user.sub || req.user.user_id || req.user.userId || req.user.id;
 
     // ยัด ID ของคนล็อกอินทับลงไปใน DTO เลย (ไม่สนใจว่า Postman จะส่ง user_id อะไรมา)
     createLearningProgressDto.user_id = userId;
@@ -40,7 +40,7 @@ export class LearningProgressController {
   @UseGuards(AuthGuard('jwt'))
   @Get('user/my-progress')
   findMyProgress(@Req() req: any) {
-    const userId = req.user.userId || req.user.user_id || req.user.id || req.user.sub;
+    const userId = req.user.sub || req.user.user_id || req.user.userId || req.user.id;
     return this.learningProgressService.findByUser(userId);
   }
 

@@ -1,3 +1,4 @@
+import usePing from './Useping';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './App.css';
 
@@ -15,6 +16,7 @@ import ProfilePage from './pages/ProfilePage';
 import PaymentPage from './pages/PaymentPage'; // ✨ 1. Import หน้า Payment เข้ามา
 
 function App() {
+  usePing();
   return (
     <BrowserRouter>
       <Routes>

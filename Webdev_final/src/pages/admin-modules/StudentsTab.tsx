@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, ChevronRight, X, Edit, Trash2, CheckCircle, User } from 'lucide-react';
+import { Search, ChevronRight, X, Edit, Trash2, CheckCircle, User, ShoppingCart } from 'lucide-react';
 import api from '../../api';
 import { useConfirm } from './ConfirmDialog';
 
@@ -20,6 +20,9 @@ const StudentsTab: React.FC<Props> = ({ users, orders, courses, progressData, on
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<UserData | null>(null);
+  const [cartItems, setCartItems] = useState<any[]>([]);
+  const [cartLoading, setCartLoading] = useState(false);
+  const [showCart, setShowCart] = useState(false);
   const [formData, setFormData] = useState<UserData | null>(null);
   // ✅ preview URL สำหรับรูปที่เพิ่งเลือก
   const [profilePreview, setProfilePreview] = useState<string | null>(null);
@@ -41,12 +44,24 @@ const StudentsTab: React.FC<Props> = ({ users, orders, courses, progressData, on
     });
   };
 
+  const fetchCart = async (userId: number) => {
+    setCartLoading(true);
+    try {
+      const res = await api.get(`/cart-items/user/${userId}`);
+      setCartItems(Array.isArray(res.data) ? res.data : []);
+    } catch { setCartItems([]); }
+    finally { setCartLoading(false); }
+  };
+
   const openDetail = (student: UserData) => {
     setSelectedStudent(student);
     setFormData({ ...student, level_id: student.level?.level_id || 0, profile_image_file: null });
     setIsEditing(false);
+    setShowCart(false);
+    setCartItems([]);
     setProfilePreview(null);
     setIsModalOpen(true);
+    fetchCart(student.user_id);
   };
 
   const handleProfileImageChange = (file: File | null) => {
@@ -116,6 +131,7 @@ const StudentsTab: React.FC<Props> = ({ users, orders, courses, progressData, on
           <thead style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
             <tr>
               <th style={{ padding: '16px 18px', textAlign: 'left', color: '#64748b', fontSize: '13px', fontWeight: '600' }}>นักเรียน</th>
+              <th style={{ padding: '16px 18px', textAlign: 'center', color: '#64748b', fontSize: '13px', fontWeight: '600' }}>ตะกร้า</th>
               <th style={{ padding: '16px 18px', textAlign: 'left', color: '#64748b', fontSize: '13px', fontWeight: '600' }}>ระดับชั้น</th>
               <th style={{ padding: '16px 18px', textAlign: 'left', color: '#64748b', fontSize: '13px', fontWeight: '600' }}>ความคืบหน้า</th>
               <th style={{ padding: '16px 18px', textAlign: 'right', color: '#64748b', fontSize: '13px', fontWeight: '600' }}>จัดการ</th>
@@ -146,6 +162,12 @@ const StudentsTab: React.FC<Props> = ({ users, orders, courses, progressData, on
                         <div style={{ fontWeight: '600', color: '#334155' }}>{student.full_name}</div>
                         <div style={{ fontSize: '12px', color: '#94a3b8' }}>{student.email}</div>
                       </div>
+                    </div>
+                  </td>
+                  <td style={{ padding: '16px 18px', textAlign: 'center' }} onClick={e => { e.stopPropagation(); openDetail(student); setTimeout(() => setShowCart(true), 0); }}>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '34px', height: '34px', borderRadius: '8px', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', cursor: 'pointer' }}
+                      title="ดูตะกร้าสินค้า">
+                      <ShoppingCart size={16} color="#10b981" />
                     </div>
                   </td>
                   <td style={{ padding: '16px 18px' }}>
@@ -203,10 +225,35 @@ const StudentsTab: React.FC<Props> = ({ users, orders, courses, progressData, on
             <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr', minHeight: '400px', backgroundColor: '#f8fafc' }}>
               {/* Left: Course history */}
               <div style={{ padding: '28px', borderRight: '1px solid #e2e8f0', backgroundColor: 'white' }}>
-                <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '18px', color: '#1e293b' }}>
-                  ประวัติการเรียนรู้ ({getStudentCourses(selectedStudent.user_id).length} คอร์ส)
-                </h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: '#1e293b', margin: 0 }}>
+                    {showCart ? `ตะกร้าสินค้า (${cartItems.length})` : `ประวัติการเรียนรู้ (${getStudentCourses(selectedStudent.user_id).length} คอร์ส)`}
+                  </h3>
+                  <button onClick={() => setShowCart(p => !p)}
+                    style={{ padding: '5px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', background: showCart ? '#eff6ff' : '#f8fafc', color: showCart ? '#3b82f6' : '#475569', fontSize: '12px', cursor: 'pointer', fontWeight: '500' }}>
+                    {showCart ? '📚 ประวัติ' : '🛒 ตะกร้า'}
+                  </button>
+                </div>
                 <div style={{ maxHeight: '360px', overflowY: 'auto', paddingRight: '4px' }}>
+                  {showCart ? (
+                    cartLoading ? (
+                      <div style={{ textAlign: 'center', color: '#94a3b8', padding: '40px 0' }}>กำลังโหลด...</div>
+                    ) : cartItems.length === 0 ? (
+                      <div style={{ textAlign: 'center', color: '#94a3b8', padding: '40px 0', fontSize: '14px' }}>ตะกร้าว่างเปล่า</div>
+                    ) : cartItems.map((item: any, idx: number) => (
+                      <div key={idx} style={{ backgroundColor: '#f8fafc', padding: '14px', borderRadius: '10px', marginBottom: '10px', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '8px', backgroundColor: '#e2e8f0', backgroundImage: item.course?.cover_image_url ? `url(http://localhost:3001${item.course.cover_image_url})` : undefined, backgroundSize: 'cover', backgroundPosition: 'center', flexShrink: 0 }} />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: '600', fontSize: '14px', color: '#1e293b' }}>{item.course?.title || 'ไม่ระบุ'}</div>
+                          <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>฿{Number(item.course?.price || 0).toLocaleString()}</div>
+                        </div>
+                        <div style={{ fontSize: '11px', color: '#94a3b8' }}>
+                          {new Date(item.added_at).toLocaleDateString('th-TH')}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                  <>
                   {getStudentCourses(selectedStudent.user_id).length === 0 && (
                     <div style={{ textAlign: 'center', color: '#94a3b8', padding: '40px 0', fontSize: '14px' }}>ยังไม่มีคอร์สที่ลงทะเบียน</div>
                   )}
@@ -228,6 +275,8 @@ const StudentsTab: React.FC<Props> = ({ users, orders, courses, progressData, on
                       </div>
                     </div>
                   ))}
+                  </>
+                  )}
                 </div>
               </div>
 

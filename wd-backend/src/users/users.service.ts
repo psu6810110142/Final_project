@@ -114,6 +114,17 @@ export class UsersService implements OnModuleInit {
     return this.userRepo.save(user);
   }
 
+  async updateLastSeen(userId: number) {
+    await this.userRepo.update(userId, { last_seen: new Date() } as any);
+    return { ok: true };
+  }
+
+  async getOnlineUsers() {
+    const threshold = new Date(Date.now() - 2 * 60 * 1000); // 2 นาที
+    const users = await this.userRepo.find({ where: { role: 'STUDENT' } });
+    return users.filter(u => (u as any).last_seen && new Date((u as any).last_seen) > threshold);
+  }
+
   async remove(id: number) {
     const user = await this.findOne(id);
     return this.userRepo.remove(user);
