@@ -3,14 +3,15 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Home, Book, User, LogOut, ShoppingCart, LogIn, UserPlus } from 'lucide-react';
 import logoImage from '../assets/Logo.png'; 
 import '../pages/HomePage.css';
+import { useCart } from '../contexts/CartContext';
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const cartItemCount = 0; // ตัวเลขตะกร้าจำลอง (เดี๋ยวเราค่อยเชื่อม API)
-
+  const { cartCount } = useCart();
+  
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
@@ -47,22 +48,26 @@ const Navbar: React.FC = () => {
             <Book size={18} /> คอร์สเรียน
           </Link>
 
-          {/* ไอคอนตะกร้า (แทรกไว้ก่อนเช็ค Login) */}
+          {/* ไอคอนตะกร้า */}
           <div 
             className="menu-item" 
             style={{ position: 'relative', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}
-            onClick={() => alert('หน้าต่างตะกร้าจะโผล่มาตรงนี้ครับ!')}
+            onClick={() => alert('หน้าต่างตะกร้าจะโผล่มาตรงนี้!')}
           >
             <ShoppingCart size={18} /> ตะกร้า
-            <span style={{
-              position: 'absolute', top: '-8px', right: '-15px',
-              backgroundColor: '#ef4444', color: 'white',
-              borderRadius: '50%', minWidth: '18px', height: '18px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '0.7rem', fontWeight: 'bold'
-            }}>
-              {cartItemCount}
-            </span>
+            
+            {/* โชว์วงกลมสีแดง เฉพาะตอนที่มีของในตะกร้า (> 0) */}
+            {cartCount > 0 && (
+              <span style={{
+                position: 'absolute', top: '-8px', right: '-15px',
+                backgroundColor: '#ef4444', color: 'white',
+                borderRadius: '50%', minWidth: '18px', height: '18px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '0.7rem', fontWeight: 'bold'
+              }}>
+                {cartCount}
+              </span>
+            )}
           </div>
 
           {/* ลอจิก Login/Register ใช้โครงสร้างเดิมของคุณ 100% */}

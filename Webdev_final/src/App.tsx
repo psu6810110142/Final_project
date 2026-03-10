@@ -13,48 +13,51 @@ import CourseDetail from './pages/CourseDetail';
 import LearningPage from './pages/LearningPage';
 import ProfilePage from './pages/ProfilePage';
 import PaymentPage from './pages/PaymentPage'; // ✨ 1. Import หน้า Payment เข้ามา
+import { CartProvider } from './contexts/CartContext';
 
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        {/* === กำหนดเส้นทาง (Route) === */}
+      <CartProvider>
+        <Routes>
+          {/* === กำหนดเส้นทาง (Route) === */}
 
-        {/* หน้าแรกสุด (localhost:5173/) -> ให้แสดง LandingPage */}
-        <Route path="/" element={<LandingPage />} />
+          {/* หน้าแรกสุด (localhost:5173/) -> ให้แสดง LandingPage */}
+          <Route path="/" element={<LandingPage />} />
 
-        {/* หน้าล็อกอิน (localhost:5173/login) -> ให้แสดง LoginPage */}
-        <Route path="/login" element={<LoginPage />} />
+          {/* หน้าล็อกอิน (localhost:5173/login) -> ให้แสดง LoginPage */}
+          <Route path="/login" element={<LoginPage />} />
 
-        {/* หน้าสมัครสมาชิก (localhost:5173/register) -> ให้แสดง RegisterPage */}
-        <Route path="/register" element={<RegisterPage />} />
+          {/* หน้าสมัครสมาชิก (localhost:5173/register) -> ให้แสดง RegisterPage */}
+          <Route path="/register" element={<RegisterPage />} />
 
-        {/* หน้าหลักหลังล็อกอิน (localhost:5173/home) -> ให้แสดง HomePage */}
-        <Route path="/home" element={<HomePage />} />
+          {/* หน้าหลักหลังล็อกอิน (localhost:5173/home) -> ให้แสดง HomePage */}
+          <Route path="/home" element={<HomePage />} />
 
-        {/* หน้าแสดงคอร์สลิส (localhost:5173/courses) -> ให้แสดง Courselist */}
-        <Route path="/courses" element={<CourseList />} />
+          {/* หน้าแสดงคอร์สลิส (localhost:5173/courses) -> ให้แสดง Courselist */}
+          <Route path="/courses" element={<CourseList />} />
 
-        {/* หน้าแสดงจัดการคอร์ส (localhost:5173/manage-course) -> ให้แสดง CourseManagement */}
-        <Route path="/manage-courses" element={<CourseManagement />} />
+          {/* หน้าแสดงจัดการคอร์ส (localhost:5173/manage-course) -> ให้แสดง CourseManagement */}
+          <Route path="/manage-courses" element={<CourseManagement />} />
 
-        {/* หน้าแสดงรายละเอียดคอร์ส (ใช้ :id เพื่อรับค่า Parameter) */}
-        <Route path="/course/:id" element={<CourseDetail />} />
+          {/* หน้าแสดงรายละเอียดคอร์ส (ใช้ :id เพื่อรับค่า Parameter) */}
+          <Route path="/course/:id" element={<CourseDetail />} />
 
-        {/* ✨ 2. เพิ่ม Route สำหรับหน้าชำระเงิน (รับ parameter courseId ด้วย) */}
-        <Route path="/payment/:courseId" element={<PaymentPage />} />
+          {/* ✨ 2. เพิ่ม Route สำหรับหน้าชำระเงิน (รับ parameter courseId ด้วย) */}
+          <Route path="/payment/:courseId" element={<PaymentPage />} />
 
-        {/* หน้าแสดงคอร์สของฉัน (localhost:5173/my-courses) -> ให้แสดง MyCourses */}
-        <Route path="/my-courses" element={<MyCourses />} />
+          {/* หน้าแสดงคอร์สของฉัน (localhost:5173/my-courses) -> ให้แสดง MyCourses */}
+          <Route path="/my-courses" element={<MyCourses />} />
 
-        {/* หน้าแสดงห้องเรียน (localhost:5173/learn) -> ให้แสดง LearningPage */}
-        <Route path="/learn/:courseId" element={<LearningPage />} />
+          {/* หน้าแสดงห้องเรียน (localhost:5173/learn) -> ให้แสดง LearningPage */}
+          <Route path="/learn/:courseId" element={<LearningPage />} />
 
-        <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/profile" element={<ProfilePage />} />
 
-        {/* กรณีพิมพ์มั่ว ให้เด้งกลับหน้าแรก */}
-        <Route path="*" element={<LandingPage />} />
-      </Routes>
+          {/* กรณีพิมพ์มั่ว ให้เด้งกลับหน้าแรก */}
+          <Route path="*" element={<LandingPage />} />
+        </Routes>
+      </CartProvider>
     </BrowserRouter>
   );
 }
