@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, OnModuleInit, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, OnModuleInit, ConflictException, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt'; 
@@ -13,9 +13,7 @@ export class UsersService implements OnModuleInit {
     private readonly userRepo: Repository<User>,
   ) {}
 
-  // 1. แก้ไขตรงนี้: ปล่อยฟังก์ชันว่างไว้ก่อน (ไม่ต้องทำอะไรตอนเริ่ม)
   async onModuleInit() {
-     // --- ปิดโค้ดส่วนนี้ชั่วคราว เพื่อแก้ปัญหาแอปค้าง ---
     const adminEmail = 'admin@newlearning.com';
     const existingAdmin = await this.userRepo.findOne({ where: { email: adminEmail } });
 
@@ -36,19 +34,14 @@ export class UsersService implements OnModuleInit {
       await this.userRepo.save(newAdmin);
       console.log('✅ สร้าง Admin สำเร็จ: admin@newlearning.com / admin123');
     }
-    // ------------------------------------------------
- 
   }
 
-  // 2. ฟังก์ชันสร้าง User ใหม่
   async create(createUserDto: CreateUserDto) {
-    // ✅ เช็ค email ซ้ำก่อน insert
     const existingEmail = await this.userRepo.findOne({ where: { email: createUserDto.email } });
     if (existingEmail) {
       throw new ConflictException('อีเมลนี้ถูกใช้งานแล้ว กรุณาใช้อีเมลอื่น');
     }
 
-    // ✅ เช็ค username ซ้ำ
     const existingUsername = await this.userRepo.findOne({ where: { username: createUserDto.username } });
     if (existingUsername) {
       throw new ConflictException('ชื่อผู้ใช้นี้ถูกใช้งานแล้ว กรุณาใช้ชื่ออื่น');
@@ -69,17 +62,15 @@ export class UsersService implements OnModuleInit {
     return this.userRepo.save(newUser);
   }
 
-  // 3. ฟังก์ชันค้นหาจาก Email (ยังคงเดิม)
- async findByEmail(email: string) {
+  async findByEmail(email: string) {
     return this.userRepo.findOne({ where: { email } });
   }
 
-  // ✨ เพิ่มฟังก์ชันใหม่: ค้นหาด้วย Email หรือ Username
   async findByUsernameOrEmail(identifier: string) {
     return this.userRepo.findOne({
       where: [
-        { email: identifier },      // เงื่อนไขที่ 1: ตรงกับ Email
-        { username: identifier }    // หรือ เงื่อนไขที่ 2: ตรงกับ Username
+        { email: identifier },
+        { username: identifier }
       ]
     });
   }
@@ -112,6 +103,34 @@ export class UsersService implements OnModuleInit {
     }
     
     return this.userRepo.save(user);
+  }
+
+  // ✅ เพิ่ม: เปลี่ยนรหัสผ่าน
+  async changePassword(id: number, currentPassword: string, newPassword: string) {
+    // ดึง user พร้อม password_hash (select เพิ่มเติมเพราะปกติอาจ exclude ไว้)
+    const user = await this.userRepo.findOne({
+      where: { user_id: id },
+      select: ['user_id', 'password_hash'],
+    });
+
+    if (!user) throw new NotFoundException('ไม่พบผู้ใช้งาน');
+
+    // เช็ครหัสผ่านปัจจุบันว่าถูกไหม
+    const isMatch = await bcrypt.compare(currentPassword, user.password_hash);
+    if (!isMatch) {
+      throw new UnauthorizedException('รหัสผ่านปัจจุบันไม่ถูกต้อง');
+    }
+
+    if (newPassword.length < 8) {
+      throw new BadRequestException('รหัสผ่านใหม่ต้องมีอย่างน้อย 8 ตัวอักษร');
+    }
+
+    // Hash รหัสผ่านใหม่แล้วบันทึก
+    const salt = await bcrypt.genSalt();
+    user.password_hash = await bcrypt.hash(newPassword, salt);
+    await this.userRepo.save(user);
+
+    return { message: 'เปลี่ยนรหัสผ่านเรียบร้อยแล้ว' };
   }
 
   async remove(id: number) {

@@ -106,7 +106,7 @@ const PaymentPage: React.FC = () => {
 
   return (
     <div className="page-wrapper" style={{ backgroundColor: '#f1f5f9', minHeight: '100vh' }}>
-      <nav className="navbar" style={{ background: 'linear-gradient(90deg, #3674B5 0%, #18334F 100%)' }}>
+      <nav className="navbar" style={{ background: 'linear-gradient(90deg, #3674B5 0%)' }}>
         <div className="container navbar-container">
           <a href="/home" className="navbar-left">
             <img src={logoImage} alt="Logo" className="navbar-logo" />
