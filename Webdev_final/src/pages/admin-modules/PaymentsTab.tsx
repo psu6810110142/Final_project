@@ -295,9 +295,9 @@ const PaymentsTab: React.FC = () => {
           </div>
         </div>
       )}
+      {ConfirmDialogComponent}
     </div>
   );
-      {ConfirmDialogComponent}
 };
 
 export default PaymentsTab;

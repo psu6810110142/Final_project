@@ -235,9 +235,9 @@ const LessonsTab: React.FC<Props> = ({ courses }) => {
           </div>
         </div>
       )}
+      {ConfirmDialogComponent}
     </div>
   );
-      {ConfirmDialogComponent}
 };
 
 export default LessonsTab;
