@@ -1,5 +1,16 @@
+import { Type } from 'class-transformer';
+import { IsBoolean, IsNumber, IsOptional } from 'class-validator';
+
 export class CreateLearningProgressDto {
+  @Type(() => Number)
+  @IsNumber()
   user_id: number;
+
+  @Type(() => Number)
+  @IsNumber()
   lesson_id: number;
-  is_completed?: boolean; // ส่งมาเป็น true ก็ได้ หรือไม่ส่งเดี๋ยวเรา default ให้
+
+  @IsOptional()
+  @IsBoolean()
+  is_completed?: boolean;
 }

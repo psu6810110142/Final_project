@@ -13,35 +13,38 @@ export class LearningProgressService {
   ) { }
 
   async create(createLearningProgressDto: CreateLearningProgressDto) {
-    const { user_id, lesson_id, is_completed = true } = createLearningProgressDto;
+  const { user_id, lesson_id, is_completed = true } = createLearningProgressDto;
 
-    // เช็คว่าเคยเรียนบทนี้ไปหรือยัง
-    const existing = await this.progressRepo.findOne({
-      where: {
-        user: { user_id: user_id },
-        lesson: { lesson_id: lesson_id }
-      }
-    });
-
-    if (existing) {
-      // ถ้าสถานะเหมือนเดิมเป๊ะๆ ให้ข้ามการเซฟไปเลย (ป้องกัน TypeORM Error)
-      if (existing.is_completed === Boolean(is_completed)) {
-        return existing;
-      }
-
-      // ถ้ามีการเปลี่ยนค่า (เช่น จาก false เป็น true) ถึงจะยอมให้เซฟ
-      existing.is_completed = Boolean(is_completed);
-      return this.progressRepo.save(existing);
+  // เช็คว่าเคยเรียนบทนี้ไปหรือยัง
+  const existing = await this.progressRepo.findOne({
+    where: {
+      user: { user_id },
+      lesson: { lesson_id }
     }
+  });
 
-    // ถ้ายังไม่เคยมีประวัติเลย ก็สร้างใหม่
-    const newProgress = this.progressRepo.create({
-      is_completed: is_completed,
-      user: { user_id: user_id },
-      lesson: { lesson_id: lesson_id }
+  if (existing) {
+    // ถ้าสถานะเหมือนเดิม ข้ามได้เลย
+    if (existing.is_completed === Boolean(is_completed)) {
+      return existing;
+    }
+    // ถ้าเปลี่ยนค่า ให้ update
+    await this.progressRepo.update(existing.progress_id, {
+      is_completed: Boolean(is_completed)
     });
-    return this.progressRepo.save(newProgress);
+    return this.progressRepo.findOne({ where: { progress_id: existing.progress_id } });
   }
+
+  // ยังไม่เคยมี → INSERT ใหม่
+  const result = await this.progressRepo.insert({
+    is_completed: Boolean(is_completed),
+    user: { user_id } as any,
+    lesson: { lesson_id } as any,
+  });
+
+  const newId = result.identifiers[0].progress_id;
+  return this.progressRepo.findOne({ where: { progress_id: newId } });
+}
 
 
   findAll() {

@@ -18,23 +18,22 @@ const LearningPage: React.FC = () => {
   const [courseDetail, setCourseDetail] = useState<any>(null);
 
   const handleVideoEnd = async () => {
-    if (!currentLessonId) return;
+  if (!currentLessonId || !currentUser) return;
 
-    try {
-      // ยิง API ไปบันทึกว่าเรียนจบแล้ว
-      await api.post('/learning-progress', {
-        lesson_id: currentLessonId,
-        is_completed: true
-      });
+  try {
+    await api.post('/learning-progress', {
+      user_id: currentUser.sub,  // ✅ เพิ่ม user_id
+      lesson_id: currentLessonId,
+      is_completed: true
+    });
 
-      // ถ้าบันทึกสำเร็จ ให้อัปเดต State หน้าจอให้เป็นติ๊กถูก (โดยไม่ต้องรีเฟรชหน้า)
-      if (!completedLessons.includes(currentLessonId)) {
-        setCompletedLessons(prev => [...prev, currentLessonId]);
-      }
-    } catch (error) {
-      console.error('Error saving progress:', error);
+    if (!completedLessons.includes(currentLessonId)) {
+      setCompletedLessons(prev => [...prev, currentLessonId]);
     }
-  };
+  } catch (error) {
+    console.error('Error saving progress:', error);
+  }
+};
 
   const handleDownload = (fileUrl: string | null | undefined) => {
     if (!fileUrl) {
