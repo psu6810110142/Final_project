@@ -43,7 +43,10 @@ function App() {
           {/* หน้าแสดงรายละเอียดคอร์ส (ใช้ :id เพื่อรับค่า Parameter) */}
           <Route path="/course/:id" element={<CourseDetail />} />
 
-          {/* ✨ 2. เพิ่ม Route สำหรับหน้าชำระเงิน (รับ parameter courseId ด้วย) */}
+          {/* เพิ่ม Route สำหรับหน้าชำระเงินหลายอันจากตะกร้า (รับ parameter courseId ด้วย) */}
+          <Route path="/payment" element={<PaymentPage />} />
+
+          {/* เพิ่ม Route สำหรับหน้าชำระเงินอันเดียว (รับ parameter courseId ด้วย) */}
           <Route path="/payment/:courseId" element={<PaymentPage />} />
 
           {/* หน้าแสดงคอร์สของฉัน (localhost:5173/my-courses) -> ให้แสดง MyCourses */}

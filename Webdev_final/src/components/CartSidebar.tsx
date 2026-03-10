@@ -15,12 +15,12 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
   // คำนวณยอดรวมของสินค้าทั้งหมดในตะกร้า
   const totalAmount = cartItems.reduce((sum, item) => sum + Number(item.course.price || 0), 0);
 
+  
   // ฟังก์ชันกดปุ่มชำระเงิน
   const handleCheckout = () => {
-    onClose(); // ปิดตะกร้าก่อน
-    // 🚀 เดี๋ยวเราจะพาย้ายไปหน้า Checkout ใน Step 5 ครับ ตอนนี้ให้ Alert ไปก่อน
-    alert('ระบบพร้อมพาสร้างบิลรวมในสเต็ปต่อไปครับ!'); 
-  };
+  onClose();
+  navigate('/payment'); // ไม่มี courseId = มาจากตะกร้า
+};
 
   // ดักจับรูปภาพพัง
   const getImageUrl = (url?: string) => {
