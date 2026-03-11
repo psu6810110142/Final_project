@@ -31,18 +31,18 @@ export class LearningProgressController {
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.learningProgressService.findOne(+id);
-  }
+@Get('user/my-progress')
+findMyProgress(@Req() req: any) {
+  const userId = req.user.userId || req.user.user_id || req.user.id || req.user.sub;
+  return this.learningProgressService.findByUser(userId);
+}
 
-  //2. เส้นทางใหม่สำหรับนักเรียน: ดึงประวัติการเรียนของตัวเอง
-  @UseGuards(AuthGuard('jwt'))
-  @Get('user/my-progress')
-  findMyProgress(@Req() req: any) {
-    const userId = req.user.userId || req.user.user_id || req.user.id || req.user.sub;
-    return this.learningProgressService.findByUser(userId);
-  }
+@UseGuards(AuthGuard('jwt'))
+@Get(':id')
+findOne(@Param('id') id: string) {
+  return this.learningProgressService.findOne(+id);
+}
+
 
   @UseGuards(AuthGuard('jwt'))
   @Patch(':id')
