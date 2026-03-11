@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './HomePage.css';
-import { Home, Book, User, LogOut, PlayCircle, CheckCircle } from 'lucide-react';
-import logoImage from '../assets/Logo.png';
+import { PlayCircle, CheckCircle } from 'lucide-react';
 import api from '../api';
+import Navbar from '../components/Navbar';
 
 interface Course {
   id: number;
@@ -132,13 +132,6 @@ const MyCourses: React.FC = () => {
     }
   };
 
-  const handleLogout = (e: React.MouseEvent) => {
-    e.preventDefault();
-    localStorage.clear();
-    setCurrentUser(null);
-    window.location.replace('/landing');
-  };
-
   const filteredCourses = myCourses.filter(course => {
     if (filter === "in-progress") return course.progress < 100;
     if (filter === "completed") return course.progress === 100;
@@ -147,26 +140,7 @@ const MyCourses: React.FC = () => {
 
   return (
     <div className="page-wrapper">
-      <nav className="navbar">
-        <div className="container navbar-container">
-          <a href="/home" className="navbar-left">
-            <img src={logoImage} alt="Logo" className="navbar-logo" />
-            <div className="brand-text">
-              <span className="brand-title">New Learning Academy</span>
-              <span className="brand-subtitle">สถาบันกวดวิชานิวเลิร์นนิง</span>
-            </div>
-          </a>
-          <div className="navbar-menu">
-            <a href="/home" className="menu-item"><Home size={18} /> หน้าหลัก</a>
-            <a href="/courses" className="menu-item"><Book size={18} /> คอร์สเรียน</a>
-            <a href="/mycourse" className="menu-item active"><User size={18} /> คอร์สของฉัน</a>
-            <a onClick={handleLogout} className="menu-item" style={{ cursor: 'pointer' }}><LogOut size={18} /> ออกจากระบบ</a>
-            <div className="user-pill" onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>
-              {currentUser?.full_name || currentUser?.username}
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navbar/>
 
       <div className="page-header">
         <div className="container">
