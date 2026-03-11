@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import './HomePage.css';
-import { Home, BookOpen, User, LogOut, ArrowRight, Book, Users, Star, Clock } from 'lucide-react';
-import logoImage from '../assets/Logo.png';
+import { BookOpen, ArrowRight, Users, Star, Clock } from 'lucide-react';
 import GrayLogo from '../assets/graylogo.png';
-import api from '../api'; // สมมติว่าไฟล์นี้มีการตั้งค่า Axios instance เอาไว้
-import { Link, useNavigate } from 'react-router-dom';
+import api from '../api'; 
+import { Link } from 'react-router-dom';
+import Navbar from '../components/Navbar';
 
 interface CourseData {
   course_id: number;
@@ -36,23 +36,9 @@ const getImageUrl = (url?: string, type: 'course' | 'user' = 'course') => {
 };
 
 const HomePage: React.FC = () => {
-  // State สำหรับผู้ใช้งาน
-  const [currentUser, setCurrentUser] = useState<any>(null);
-
   // State สำหรับคอร์สเรียน
   const [courses, setCourses] = useState<CourseData[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  // ตรวจสอบ Token และข้อมูล User
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    const token = localStorage.getItem('access_token');
-    if (!token || !storedUser) {
-      window.location.replace('/landing');
-      return;
-    }
-    setCurrentUser(JSON.parse(storedUser));
-  }, []);
 
   // ดึงข้อมูลคอร์สเรียนจาก Backend
   useEffect(() => {
@@ -70,65 +56,9 @@ const HomePage: React.FC = () => {
     fetchCourses();
   }, []);
 
-  // ฟังก์ชันออกจากระบบ
-  const handleLogout = (e: React.MouseEvent) => {
-    e.preventDefault();
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('user');
-    setCurrentUser(null);
-    window.location.href = '/landing';
-  };
-
-  const navigate = useNavigate();
-
   return (
     <div className="page-wrapper">
-      {/* ================= Navbar ================= */}
-      <nav className="navbar">
-        <div className="container navbar-container">
-          {/* Logo */}
-          <a href="/" className="navbar-left">
-            <img src={logoImage} alt="Logo" className="navbar-logo" />
-            <div className="brand-text">
-              <span className="brand-title">New Learning Academy</span>
-              <span className="brand-subtitle">สถาบันกวดวิชานิวเลิร์นนิง</span>
-            </div>
-          </a>
-
-          {/* Menu */}
-          <div className="navbar-menu">
-            <a href="/" className="menu-item active">
-              <Home size={18} /> หน้าหลัก
-            </a>
-            <a href="/courses" className="menu-item">
-              <Book size={18} /> คอร์สเรียน
-            </a>
-            {currentUser ? (
-              <>
-                <a href="/my-courses" className="menu-item">
-                  <User size={18} /> คอร์สของฉัน
-                </a>
-                <a onClick={handleLogout} className="menu-item">
-                  <LogOut size={18} /> ออกจากระบบ
-                </a>
-                {/* ================= ถ้าจะแก้ให้กดหน้า Profile ได้ ใส่ตรงนี้ href ลงไปใน classname ด้านล่าง ================= */}
-                <div 
-                  className="user-pill" 
-                  onClick={() => navigate('/profile')} 
-                  style={{ cursor: 'pointer' }}
-                >
-                  {currentUser.full_name || currentUser.username}
-                </div>
-              </>
-            ) : (
-              <>
-                <a href="/login" className="menu-item">เข้าสู่ระบบ</a>
-                <a href="/register" className="btn-register">สมัครสมาชิก</a>
-              </>
-            )}
-          </div>
-        </div>
-      </nav>
+      <Navbar/>
 
       {/* ================= Hero Section ================= */}
       <header className="page-header">
