@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './HomePage.css';
-import { PlayCircle, CheckCircle } from 'lucide-react';
+import { PlayCircle, CheckCircle, LockKeyhole } from 'lucide-react';
 import api from '../api';
 import Navbar from '../components/Navbar';
 
@@ -35,6 +35,13 @@ const MyCourses: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [myCourses, setMyCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
+  const location = useLocation();
+  
+  const [expiredPopup, setExpiredPopup] = useState<{ courseId: string; expiredAt: string } | null>(
+    location.state?.expiredCourseId 
+    ? { courseId: location.state.expiredCourseId, expiredAt: location.state.expiredAt }
+    : null
+);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -142,8 +149,26 @@ const MyCourses: React.FC = () => {
 
   return (
     <div className="page-wrapper">
-      <Navbar/>
-
+      {expiredPopup && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ backgroundColor: 'white', borderRadius: '16px', padding: '40px', maxWidth: '420px', width: '90%', textAlign: 'center' }}>
+            <LockKeyhole size={56} color="#eb2525" />
+            <h2 style={{ color: '#1e293b', margin: '16px 0 8px' }}>คอร์สหมดอายุแล้ว</h2>
+            <p style={{ color: '#64748b', marginBottom: '24px' }}>
+              คอร์สนี้หมดอายุเมื่อ <strong>{expiredPopup.expiredAt}</strong><br/>
+              </p>
+              <button
+              onClick={() => setExpiredPopup(null)}
+              style={{ padding: '10px 32px', backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '1rem', fontWeight: '600' }}
+              >
+                รับทราบ
+                </button>
+              </div>
+            </div>
+          )}
+              
+              <Navbar/>
+              
       <div className="page-header">
         <div className="container">
           <h1 className="my-courses-header">คอร์สเรียนของฉัน</h1>
