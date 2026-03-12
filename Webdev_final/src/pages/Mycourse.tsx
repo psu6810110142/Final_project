@@ -14,6 +14,7 @@ interface Course {
   orderStatus: string;
   tagColor: string;
   textColor: string;
+  expireDate: Date | null;
 }
 
 const getImageUrl = (url?: string): string => {
@@ -113,6 +114,7 @@ const MyCourses: React.FC = () => {
             orderStatus: order.status,
             tagColor: statusStyle.tagColor,
             textColor: statusStyle.textColor,
+            expireDate: order.access_expire_date ? new Date(order.access_expire_date) : null,
           });
         });
       });
@@ -261,6 +263,22 @@ const MyCourseCard = ({ course }: { course: Course }) => {
             {isCompleted ? 'ทบทวนเนื้อหา' : <><PlayCircle size={18} /> เรียนต่อ</>}
           </button>
         )}
+
+        {isApproved && course.expireDate && (
+          <div style={{ 
+            fontSize: '12px', 
+            color: course.expireDate < new Date() ? '#991b1b' : '#64748b',
+            backgroundColor: course.expireDate < new Date() ? '#fee2e2' : '#f1f5f9',
+            padding: '6px 10px', 
+            borderRadius: '6px', 
+            marginTop: '8px' 
+            }}>
+              {course.expireDate < new Date()
+              ? `หมดอายุแล้วเมื่อ ${course.expireDate.toLocaleDateString('th-TH')}`
+              : `หมดอายุ ${course.expireDate.toLocaleDateString('th-TH')}`
+    }
+  </div>
+)}
       </div>
     </div>
   );

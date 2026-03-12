@@ -66,18 +66,37 @@ export class OrdersService {
     return order;
   }
 
-  // อัปเดตสถานะ (เช่น Admin กดยืนยันการโอนเงิน)
+  // อัปเดตสถานะ (เช่น Admin กดยืนยันการโอนเงิน และเริ่มบันทึกเวลาการเรียนเมื่อยืนยีนสลิป)
   async update(id: number, updateOrderDto: UpdateOrderDto) {
-    const order = await this.findOne(id);
+  const order = await this.orderRepo.findOne({
+    where: { order_id: id },
+    relations: ['user', 'order_details', 'order_details.course'],
+  });
+  if (!order) throw new NotFoundException(`ไม่พบคำสั่งซื้อรหัส ${id}`);
 
-    if (updateOrderDto.status) {
-      order.status = updateOrderDto.status;
+  if (updateOrderDto.status) {
+    order.status = updateOrderDto.status;
+
+    // ✅ ถ้า Admin อนุมัติ → set วันเริ่มและวันหมดอายุ
+    if (updateOrderDto.status === 'COMPLETED') {
+      const startDate = new Date();
+      order.access_start_date = startDate;
+
+      // หา duration_weeks จาก course ใน order_details (เอา max ถ้ามีหลาย course)
+      const maxWeeks = order.order_details?.reduce((max, detail) => {
+        return Math.max(max, detail.course?.duration_weeks ?? 0);
+      }, 0) ?? 0;
+
+      const expireDate = new Date(startDate);
+      expireDate.setDate(expireDate.getDate() + maxWeeks * 7);
+      order.access_expire_date = expireDate;
     }
-
-    const saved = await this.orderRepo.save(order);
-    console.log('Order saved:', saved.order_id, 'status:', saved.status);
-    return saved;
   }
+
+  const saved = await this.orderRepo.save(order);
+  console.log('Order saved:', saved.order_id, 'status:', saved.status, 'expires:', saved.access_expire_date);
+  return saved;
+}
 
   async remove(id: number) {
     const order = await this.findOne(id);

@@ -16,6 +16,7 @@ const LearningPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [completedLessons, setCompletedLessons] = useState<number[]>([]);
   const [courseDetail, setCourseDetail] = useState<any>(null);
+  const [accessExpireDate, setAccessExpireDate] = useState<Date | null>(null);
 
   const handleVideoEnd = async () => {
   if (!currentLessonId || !currentUser) return;
@@ -61,18 +62,25 @@ const LearningPage: React.FC = () => {
 
     const fetchData = async () => {
       try {
-        // ✅ เช็คสิทธิ์ก่อน — ดูว่า user มี order COMPLETED สำหรับคอร์สนี้ไหม
-        const userId = currentUser?.sub || currentUser?.user_id;
+        const userId = currentUser?.sub || currentUser?.user_id
         const ordersRes = await api.get(`/orders/user/${userId}`);
-        const hasAccess = ordersRes.data.some((o: any) =>
-          o.status === 'COMPLETED' &&
-          o.order_details?.some((d: any) => String(d.course?.course_id) === String(courseId))
-        );
 
-        if (!hasAccess) {
-          setAccessDenied(true);
-          return;
-        }
+        const completedOrder = ordersRes.data.find((o: any) =>
+          o.status === 'COMPLETED' &&
+        o.order_details?.some((d: any) => String(d.course?.course_id) === String(courseId))
+      );
+      
+      const now = new Date();
+      const expireDate = completedOrder?.access_expire_date ? new Date(completedOrder.access_expire_date) : null;
+      const hasAccess = !!completedOrder && (!expireDate || expireDate > now);
+      
+      if (expireDate) setAccessExpireDate(expireDate);
+
+      if (!hasAccess) {
+        setAccessDenied(true);
+        return;
+      }
+      
 
         // ดึงรายชื่อบทเรียน
         const lessonsRes = await api.get(`/lessons/course/${courseId}`);
@@ -124,6 +132,26 @@ const LearningPage: React.FC = () => {
       </div>
     );
   }
+
+  if (accessDenied) {
+  return (
+    <div className="page-wrapper" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#f1f5f9', flexDirection: 'column', gap: '16px' }}>
+      <span style={{ fontSize: '64px' }}>🔒</span>
+      <h2 style={{ color: '#1e293b' }}>หมดสิทธิ์การเข้าเรียน</h2>
+      <p style={{ color: '#64748b' }}>
+        {accessExpireDate
+          ? `คอร์สนี้หมดอายุแล้วเมื่อ ${accessExpireDate.toLocaleDateString('th-TH')}`
+          : 'คุณยังไม่ได้ซื้อคอร์สเรียนนี้'}
+      </p>
+      <button
+        onClick={() => navigate('/my-courses')}
+        style={{ padding: '10px 24px', backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '1rem' }}
+      >
+        กลับหน้าคอร์สของฉัน
+      </button>
+    </div>
+  );
+}
 
   const currentLesson = lessons.find(l => l.lesson_id === currentLessonId) || null;
   const progressPercent = lessons.length > 0 ? Math.round((completedLessons.length / lessons.length) * 100) : 0;
