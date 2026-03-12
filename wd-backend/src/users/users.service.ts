@@ -5,36 +5,41 @@ import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UsersService implements OnModuleInit {
   constructor(
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+    private readonly configService: ConfigService,
   ) {}
 
   async onModuleInit() {
-    const adminEmail = 'admin@newlearning.com';
-    const existingAdmin = await this.userRepo.findOne({ where: { email: adminEmail } });
+  const adminEmail = this.configService.getOrThrow<string>('ADMIN_EMAIL');
+  const existingAdmin = await this.userRepo.findOne({ where: { email: adminEmail } });
 
-    if (!existingAdmin) {
-      console.log('🚀 กำลังสร้างบัญชี Admin เริ่มต้น...');
-      const salt = await bcrypt.genSalt();
-      const hashedPassword = await bcrypt.hash('admin123', salt);
+  if (!existingAdmin) {
+    console.log('🚀 กำลังสร้างบัญชี Admin เริ่มต้น...');
 
-      const newAdmin = this.userRepo.create({
-        username: 'AdminMaster',
-        password_hash: hashedPassword, 
-        full_name: 'System Administrator',
-        email: adminEmail,
-        phone: '000-000-0000',
-        role: 'ADMIN', 
-      });
+    const adminPassword = this.configService.getOrThrow<string>('ADMIN_PASSWORD');
+    const adminUsername = this.configService.getOrThrow<string>('ADMIN_USERNAME');
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(adminPassword, salt);
 
-      await this.userRepo.save(newAdmin);
-      console.log('✅ สร้าง Admin สำเร็จ: admin@newlearning.com / admin123');
-    }
+    const newAdmin = this.userRepo.create({
+      username: adminUsername,
+      password_hash: hashedPassword,
+      full_name: 'System Administrator',
+      email: adminEmail,
+      phone: '000-000-0000',
+      role: 'ADMIN',
+    });
+
+    await this.userRepo.save(newAdmin);
+    console.log(`✅ สร้าง Admin สำเร็จ: ${adminEmail}`);
   }
+}
 
   async create(createUserDto: CreateUserDto) {
     const existingEmail = await this.userRepo.findOne({ where: { email: createUserDto.email } });
