@@ -77,14 +77,10 @@ const LearningPage: React.FC = () => {
       if (expireDate) setAccessExpireDate(expireDate);
 
       if (!hasAccess) {
-        navigate('/my-courses', { 
-          state: { 
-            expiredCourseId: courseId,
-            expiredAt: expireDate?.toLocaleDateString('th-TH') 
-          } 
-        });
+        setAccessDenied(true);
         return;
       }
+
 
         // ดึงรายชื่อบทเรียน
         const lessonsRes = await api.get(`/lessons/course/${courseId}`);

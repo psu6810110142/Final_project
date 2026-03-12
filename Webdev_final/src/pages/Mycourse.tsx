@@ -31,11 +31,11 @@ const statusStyleMap: Record<string, { tagColor: string; textColor: string }> = 
 
 const MyCourses: React.FC = () => {
   const navigate = useNavigate();
-  const [filter, setFilter] = useState("all");
+  const location = useLocation();
+  const [filter, setFilter] = useState("in-progress");
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [myCourses, setMyCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
-  const location = useLocation();
   
   const [expiredPopup, setExpiredPopup] = useState<{ courseId: string; expiredAt: string } | null>(
     location.state?.expiredCourseId 
@@ -142,8 +142,10 @@ const MyCourses: React.FC = () => {
   };
 
   const filteredCourses = myCourses.filter(course => {
-    if (filter === "in-progress") return course.progress < 100;
+    const isExpired = course.expireDate ? course.expireDate < new Date() : false;
+    if (filter === "in-progress") return course.progress < 100 && !isExpired;
     if (filter === "completed") return course.progress === 100;
+    if (filter === "expired") return isExpired;
     return true;
   });
 
@@ -179,9 +181,10 @@ const MyCourses: React.FC = () => {
       <section className="section my-courses-section">
         <div className="container">
           <div className="tabs-container">
-            <button className={`tab-button ${filter === "all" ? "active" : ""}`} onClick={() => setFilter("all")}>ทั้งหมด</button>
             <button className={`tab-button ${filter === "in-progress" ? "active" : ""}`} onClick={() => setFilter("in-progress")}>กำลังเรียน</button>
             <button className={`tab-button ${filter === "completed" ? "active" : ""}`} onClick={() => setFilter("completed")}>เรียนจบแล้ว</button>
+            <button className={`tab-button ${filter === "expired" ? "active" : ""}`} onClick={() => setFilter("expired")}>หมดเขตเรียน</button>
+            <button className={`tab-button ${filter === "all" ? "active" : ""}`} onClick={() => setFilter("all")}>ทั้งหมด</button>
           </div>
 
           {loading ? (
@@ -190,7 +193,13 @@ const MyCourses: React.FC = () => {
             <div className="courses-grid">
               {filteredCourses.length > 0 ? (
                 filteredCourses.map((course) => (
-                  <div key={course.id} onClick={() => navigate(`/learn/${course.id}`)} style={{ cursor: 'pointer' }}>
+                  <div key={course.id} onClick={() => { 
+                    const isExpired = course.expireDate ? course.expireDate < new Date() : false;
+                    if (isExpired) {
+                      setExpiredPopup({ courseId: String(course.id), expiredAt: course.expireDate!.toLocaleDateString('th-TH') });
+                      return;
+                    }
+                    navigate(`/learn/${course.id}`);}} style={{ cursor: 'pointer' }}>
                     <MyCourseCard course={course} />
                   </div>
                 ))
