@@ -1,3 +1,4 @@
+import usePing from './Useping';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './App.css';
 
@@ -16,6 +17,7 @@ import PaymentPage from './pages/PaymentPage'; // ✨ 1. Import หน้า Pay
 import { CartProvider } from './contexts/CartContext';
 
 function App() {
+  usePing();
   return (
     <BrowserRouter>
       <CartProvider>

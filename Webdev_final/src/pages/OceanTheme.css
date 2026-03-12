@@ -1,0 +1,315 @@
+/* ============================================================
+   🏖️ DEEP BLUE BEACH THEME — New Learning Academy
+   Import ต่อจาก HomePage.css ใน LandingPage เท่านั้น
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+
+:root {
+  --db-abyss:   #020b18;
+  --db-deep:    #0a1f44;
+  --db-navy:    #0d3166;
+  --db-ocean:   #1565c0;
+  --db-mid:     #1e88e5;
+  --db-bright:  #42a5f5;
+  --db-shimmer: #90caf9;
+  --db-foam:    #e3f2fd;
+  --db-sand:    #fdf3d9;
+  --db-sand2:   #f5dfa0;
+  --db-coral:   #ff7043;
+  --db-sunset:  #ff9800;
+  --db-sun:     #ffd54f;
+  --db-white:   #ffffff;
+}
+
+/* BASE */
+.ocean-page {
+  font-family: 'Nunito', 'Kanit', sans-serif;
+  background: var(--db-foam);
+}
+
+/* NAVBAR */
+.ocean-page .navbar {
+  background: linear-gradient(135deg, var(--db-abyss) 0%, var(--db-deep) 60%, var(--db-navy) 100%) !important;
+  box-shadow: 0 4px 24px rgba(2,11,24,0.5) !important;
+}
+.ocean-page .btn-nav-register {
+  background: linear-gradient(135deg, var(--db-sun), var(--db-sunset)) !important;
+  color: var(--db-deep) !important;
+  font-weight: 800 !important;
+}
+.ocean-page .btn-nav-register:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(255,213,79,0.5) !important;
+}
+
+/* ============================================================
+   HERO — sky → ocean → beach gradient
+   ============================================================ */
+.ocean-page .page-header:first-of-type {
+  background: linear-gradient(180deg,
+    #071428 0%,
+    #0d2b5e 20%,
+    #1565c0 42%,
+    #1e88e5 58%,
+    #29b6f6 72%,
+    #4dd0e1 82%,
+    #b2dfdb 90%,
+    #fdf3d9 96%,
+    #f5dfa0 100%
+  ) !important;
+  padding-bottom: 200px !important;
+  position: relative;
+  overflow: hidden;
+  min-height: 520px;
+}
+
+/* ดวงอาทิตย์ */
+.ocean-page .page-header:first-of-type::before {
+  content: '';
+  position: absolute;
+  top: 36px; right: 10%;
+  width: 88px; height: 88px;
+  background: radial-gradient(circle, #fffde7 0%, #ffd54f 40%, #ff9800 72%, transparent 100%);
+  border-radius: 50%;
+  box-shadow: 0 0 50px 22px rgba(255,213,79,0.35), 0 0 100px 50px rgba(255,152,0,0.12);
+  animation: sunPulse 4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 2;
+}
+@keyframes sunPulse {
+  0%,100% { box-shadow: 0 0 50px 22px rgba(255,213,79,0.35), 0 0 100px 50px rgba(255,152,0,0.12); }
+  50%     { box-shadow: 0 0 70px 32px rgba(255,213,79,0.5),  0 0 140px 70px rgba(255,152,0,0.2); }
+}
+
+/* คลื่นชั้น 1 */
+.wave-layer-1 {
+  position: absolute;
+  bottom: 138px; left: 0;
+  width: 200%; height: 60px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 60'%3E%3Cpath fill='%231976d2' fill-opacity='0.55' d='M0,30 C100,0 200,60 300,30 C400,0 500,60 600,30 C700,0 800,60 800,30 L800,60 L0,60 Z'/%3E%3C/svg%3E")
+    repeat-x bottom / 800px 60px;
+  animation: waveSlide 9s linear infinite;
+  pointer-events: none; z-index: 3;
+}
+/* คลื่นชั้น 2 */
+.wave-layer-2 {
+  position: absolute;
+  bottom: 108px; left: 0;
+  width: 200%; height: 55px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 55'%3E%3Cpath fill='%2329b6f6' fill-opacity='0.65' d='M0,25 C150,55 250,0 400,25 C550,50 650,5 800,25 L800,55 L0,55 Z'/%3E%3C/svg%3E")
+    repeat-x bottom / 800px 55px;
+  animation: waveSlide 6.5s linear infinite reverse;
+  pointer-events: none; z-index: 4;
+}
+/* คลื่นชั้น 3 ฟอง */
+.wave-layer-3 {
+  position: absolute;
+  bottom: 80px; left: 0;
+  width: 200%; height: 48px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 48'%3E%3Cpath fill='%23e1f5fe' fill-opacity='0.85' d='M0,20 C80,40 160,5 240,20 C320,35 400,8 480,22 C560,36 640,6 720,18 C760,24 785,20 800,20 L800,48 L0,48 Z'/%3E%3C/svg%3E")
+    repeat-x bottom / 800px 48px;
+  animation: waveSlide 4.2s linear infinite;
+  pointer-events: none; z-index: 5;
+}
+/* ผืนทราย */
+.wave-layer-sand {
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 100%; height: 98px;
+  background: linear-gradient(180deg, #fdf3d9 0%, #f5dfa0 55%, #e8c97a 100%);
+  z-index: 6; pointer-events: none;
+}
+.wave-layer-sand::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    radial-gradient(circle, rgba(180,140,60,0.28) 1px, transparent 1px),
+    radial-gradient(circle, rgba(200,160,80,0.18) 1px, transparent 1px);
+  background-size: 11px 11px, 7px 7px;
+  background-position: 0 0, 5px 5px;
+  opacity: 0.55;
+}
+.wave-layer-sand::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 22px;
+  background: linear-gradient(180deg, rgba(178,223,219,0.55) 0%, transparent 100%);
+}
+@keyframes waveSlide {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* ต้นปาล์ม */
+.palm-left, .palm-right {
+  position: absolute; bottom: 0;
+  z-index: 8; pointer-events: none;
+  line-height: 1;
+  filter: drop-shadow(4px 8px 14px rgba(0,0,0,0.35));
+  transform-origin: bottom center;
+}
+.palm-left  { left: 1.5%;  font-size: 8rem;  animation: palmSwayL 5s ease-in-out infinite; }
+.palm-right { right: 1.5%; font-size: 7rem;  animation: palmSwayR 5s ease-in-out infinite; animation-delay: 1.5s; }
+@keyframes palmSwayL { 0%,100%{transform:rotate(-4deg)} 50%{transform:rotate(4deg)} }
+@keyframes palmSwayR { 0%,100%{transform:scaleX(-1) rotate(-4deg)} 50%{transform:scaleX(-1) rotate(4deg)} }
+
+/* ============================================================
+   ฟองอากาศ + ปลา + นกนางนวล
+   ============================================================ */
+.ocean-bubbles { position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:2; }
+.bubble {
+  position:absolute; bottom:80px; border-radius:50%;
+  background:rgba(255,255,255,0.1);
+  border:1px solid rgba(255,255,255,0.25);
+  animation: bubbleRise linear infinite;
+}
+.bubble:nth-child(1){width:16px;height:16px;left:6%;  animation-duration:8s; animation-delay:0s;}
+.bubble:nth-child(2){width:9px; height:9px; left:14%; animation-duration:10s;animation-delay:1s;}
+.bubble:nth-child(3){width:22px;height:22px;left:25%; animation-duration:9s; animation-delay:3s;}
+.bubble:nth-child(4){width:12px;height:12px;left:36%; animation-duration:12s;animation-delay:.5s;}
+.bubble:nth-child(5){width:18px;height:18px;left:48%; animation-duration:7s; animation-delay:2s;}
+.bubble:nth-child(6){width:7px; height:7px; left:58%; animation-duration:11s;animation-delay:4s;}
+.bubble:nth-child(7){width:28px;height:28px;left:67%; animation-duration:10s;animation-delay:1s;}
+.bubble:nth-child(8){width:11px;height:11px;left:77%; animation-duration:8s; animation-delay:2.5s;}
+.bubble:nth-child(9){width:20px;height:20px;left:85%; animation-duration:13s;animation-delay:0s;}
+.bubble:nth-child(10){width:14px;height:14px;left:92%;animation-duration:9s; animation-delay:3.5s;}
+@keyframes bubbleRise {
+  0%  {transform:translateY(0) translateX(0);  opacity:0;}
+  8%  {opacity:.65;}
+  50% {transform:translateY(-280px) translateX(18px);}
+  92% {opacity:.2;}
+  100%{transform:translateY(-560px) translateX(-12px);opacity:0;}
+}
+
+.fish { position:absolute; animation:fishSwim linear infinite; pointer-events:none; z-index:3; filter:drop-shadow(0 2px 6px rgba(0,0,0,0.25)); }
+.fish-1{bottom:38%;font-size:1.8rem;animation-duration:20s;animation-delay:0s;}
+.fish-2{bottom:55%;font-size:2.2rem;animation-duration:28s;animation-delay:7s;}
+.fish-3{bottom:28%;font-size:1.4rem;animation-duration:22s;animation-delay:14s;}
+@keyframes fishSwim {
+  0%  {left:-80px; transform:scaleX(1);}
+  49% {transform:scaleX(1);}
+  50% {left:110%;  transform:scaleX(-1);}
+  100%{left:-80px; transform:scaleX(-1);}
+}
+
+.seagull{position:absolute;pointer-events:none;animation:soar linear infinite;z-index:9;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2));}
+.seagull-1{top:12%;font-size:1.6rem;animation-duration:32s;animation-delay:0s;}
+.seagull-2{top:22%;font-size:1rem;  animation-duration:45s;animation-delay:10s;}
+@keyframes soar {
+  0%  {left:-60px; opacity:0; transform:translateY(0);}
+  5%  {opacity:1;}
+  50% {transform:translateY(-18px);}
+  95% {opacity:1;}
+  100%{left:110%;  opacity:0; transform:translateY(8px);}
+}
+
+/* HERO TEXT */
+.ocean-page .page-header:first-of-type .hero-text h1 {
+  color:white !important;
+  text-shadow:0 3px 18px rgba(0,0,0,0.45), 0 1px 5px rgba(0,0,0,0.3);
+  font-weight:900 !important; font-size:3.2rem !important; line-height:1.15 !important;
+}
+.ocean-page .page-header:first-of-type .hero-text p {
+  color:rgba(255,255,255,0.92) !important;
+  text-shadow:0 1px 8px rgba(0,0,0,0.3);
+}
+
+/* HERO BUTTON */
+.ocean-page .btn-hero {
+  background:linear-gradient(135deg,var(--db-sun),var(--db-sunset)) !important;
+  color:white !important; font-weight:800 !important; font-size:1.1rem !important;
+  padding:16px 38px !important; border-radius:50px !important;
+  box-shadow:0 8px 26px rgba(255,152,0,0.45) !important;
+  text-decoration:none !important;
+  transition:transform .2s, box-shadow .2s !important;
+}
+.ocean-page .btn-hero:hover {
+  transform:translateY(-4px) scale(1.03) !important;
+  box-shadow:0 14px 34px rgba(255,152,0,0.55) !important;
+}
+
+/* STAT CARDS */
+.ocean-page .stat-card {
+  background:rgba(255,255,255,0.88) !important; backdrop-filter:blur(10px) !important;
+  border:1px solid rgba(255,255,255,0.5) !important; border-radius:20px !important;
+  box-shadow:0 8px 28px rgba(2,11,24,0.22) !important; transition:transform .2s !important;
+}
+.ocean-page .stat-card:hover{transform:translateY(-4px) !important;}
+.ocean-page .stat-number{color:var(--db-navy) !important; font-weight:900 !important;}
+
+/* SECTIONS */
+.ocean-page .section:nth-child(odd) {background:var(--db-foam) !important;}
+.ocean-page .section:nth-child(even){background:var(--db-sand) !important;}
+.ocean-page .section-title{color:var(--db-navy) !important; font-weight:900 !important;}
+.ocean-page .section-title::after{
+  content:''; display:block; height:4px; width:55%;
+  background:linear-gradient(90deg,var(--db-mid),transparent);
+  border-radius:2px; margin-top:8px;
+}
+
+/* FEATURE CARDS */
+.ocean-page .feature-card {
+  background:white !important; border-radius:22px !important;
+  border:1px solid rgba(21,101,192,0.12) !important;
+  box-shadow:0 8px 28px rgba(10,31,68,0.08) !important;
+  overflow:hidden; position:relative;
+  transition:transform .25s, box-shadow .25s !important;
+}
+.ocean-page .feature-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:5px;
+  background:linear-gradient(90deg,var(--db-ocean),var(--db-bright));
+}
+.ocean-page .feature-card:hover{
+  transform:translateY(-7px) rotate(.4deg) !important;
+  box-shadow:0 20px 46px rgba(10,31,68,0.16) !important;
+}
+.ocean-feature-icon{font-size:3rem; display:block; margin-bottom:10px;}
+
+/* COURSE CARDS */
+.ocean-page .course-card {
+  border-radius:20px !important;
+  border:1px solid rgba(21,101,192,0.15) !important;
+  box-shadow:0 6px 22px rgba(10,31,68,0.08) !important;
+  transition:transform .25s, box-shadow .25s, border-color .25s !important;
+  overflow:hidden;
+}
+.ocean-page .course-card:hover{
+  transform:translateY(-7px) !important;
+  box-shadow:0 18px 42px rgba(10,31,68,0.16) !important;
+  border-color:var(--db-bright) !important;
+}
+.ocean-page .badge{
+  background:linear-gradient(135deg,var(--db-navy),var(--db-ocean)) !important;
+  color:white !important; font-weight:700 !important; border-radius:20px !important;
+}
+.ocean-page .course-price{color:var(--db-coral) !important; font-weight:800 !important;}
+
+/* CTA section */
+.ocean-page section.page-header {
+  background:linear-gradient(160deg,var(--db-abyss) 0%,var(--db-deep) 40%,var(--db-navy) 70%,var(--db-ocean) 100%) !important;
+  position:relative; overflow:hidden;
+}
+.ocean-page section.page-header::before {
+  content:''; position:absolute; inset:0;
+  background:radial-gradient(ellipse at 30% 50%,rgba(66,165,245,.2) 0%,transparent 55%);
+  pointer-events:none;
+}
+
+/* FOOTER */
+.ocean-page .footer{background:var(--db-abyss) !important; border-top:3px solid var(--db-navy) !important;}
+.ocean-page .footer h3{color:var(--db-shimmer) !important; font-weight:800 !important;}
+.ocean-page .footer p{color:rgba(144,202,249,.7) !important;}
+.ocean-page .copyright{color:rgba(144,202,249,.4) !important; border-top-color:rgba(255,255,255,.08) !important;}
+
+/* SCROLLBAR */
+.ocean-page .courses-scroll-container::-webkit-scrollbar-thumb{background:var(--db-ocean) !important;}
+.ocean-page .courses-scroll-container::-webkit-scrollbar-track{background:var(--db-foam) !important;}
+
+/* FADE IN */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(28px);}to{opacity:1;transform:translateY(0);}}
+.ocean-page .hero-text{animation:fadeInUp .7s ease-out both;}
+.ocean-page .stats-grid{animation:fadeInUp .7s ease-out .2s both;}
+.ocean-page .feature-card:nth-child(1){animation:fadeInUp .55s ease-out .05s both;}
+.ocean-page .feature-card:nth-child(2){animation:fadeInUp .55s ease-out .2s both;}
+.ocean-page .feature-card:nth-child(3){animation:fadeInUp .55s ease-out .35s both;}

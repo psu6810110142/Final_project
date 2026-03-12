@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './HomePage.css'; // ใช้ CSS เดิม
+import './OceanTheme.css'; // 🌊 Ocean Theme Overlay
 import { Home, BookOpen, Users, Star, ArrowRight, Clock, LogIn, UserPlus, Book } from 'lucide-react';
 import logoImage from '../assets/Logo.png';
 import api from '../api';
@@ -58,7 +59,7 @@ const LandingPage: React.FC = () => {
   }, []);
 
   return (
-    <div className="page-wrapper">
+    <div className="page-wrapper ocean-page">
       {/* ================= Navbar (เวอร์ชันยังไม่ล็อกอิน) ================= */}
       <nav className="navbar">
         <div className="container navbar-container">
@@ -95,6 +96,22 @@ const LandingPage: React.FC = () => {
 
       {/* ================= Hero Section ================= */}
       <header className="page-header">
+        {/* 🌊 Ocean Decorations */}
+        <div className="ocean-bubbles">
+          {[...Array(10)].map((_, i) => <div key={i} className="bubble" />)}
+        </div>
+        <span className="fish fish-1">🐠</span>
+        <span className="fish fish-2">🐟</span>
+        <span className="fish fish-3">🦑</span>
+        <span className="seagull seagull-1">🕊️</span>
+        <span className="seagull seagull-2">🦅</span>
+        {/* 🏖️ Beach layers */}
+        <div className="wave-layer-1" />
+        <div className="wave-layer-2" />
+        <div className="wave-layer-3" />
+        <div className="wave-layer-sand" />
+        <span className="palm-left">🌴</span>
+        <span className="palm-right">🌴</span>
         <div className="container hero-content">
           <div className="hero-text" style={{ marginLeft: '5%' }}>
             <h1>เรียนออนไลน์ <br />ที่บ้าน สะดวก สบาย</h1>
@@ -120,20 +137,20 @@ const LandingPage: React.FC = () => {
           <h2 className="section-title">ทำไมต้องเลือกเรียนกับเรา?</h2>
           <div className="features-grid">
             <FeatureCard
-              icon={<Star size={40} color="#2563eb" />}
-              bg="#dbeafe"
+              icon={<span className="ocean-feature-icon">🏆</span>}
+              bg="linear-gradient(135deg,#e0f7fa,#b2ebf2)"
               title="คุณภาพการสอน"
               desc="อาจารย์ผู้เชี่ยวชาญที่มีประสบการณ์การสอนมากกว่า 10 ปี"
             />
             <FeatureCard
-              icon={<BookOpen size={40} color="#059669" />}
-              bg="#d1fae5"
+              icon={<span className="ocean-feature-icon">🌊</span>}
+              bg="linear-gradient(135deg,#e3f2fd,#bbdefb)"
               title="เรียนได้ทุกที่"
               desc="เรียนออนไลน์ได้ทุกที่ทุกเวลา เหมาะกับนักเรียนที่อยู่ห่างไกล"
             />
             <FeatureCard
-              icon={<Users size={40} color="#ea580c" />}
-              bg="#ffedd5"
+              icon={<span className="ocean-feature-icon">🐚</span>}
+              bg="linear-gradient(135deg,#fff8e1,#ffe082)"
               title="ราคาเป็นกันเอง"
               desc="ราคาถูกกว่าเรียนพิเศษที่บ้าน แต่ได้คุณภาพเท่าเทียมกัน"
             />
