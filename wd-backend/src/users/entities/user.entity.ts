@@ -32,6 +32,9 @@ export class User {
   @Column({ type: 'enum', enum: ['STUDENT', 'ADMIN'], default: 'STUDENT' })
   role: string;
 
+  @Column({ type: 'timestamp', nullable: true })
+  last_seen: Date;
+
   @CreateDateColumn()
   created_at: Date;
 
