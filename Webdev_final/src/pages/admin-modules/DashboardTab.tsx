@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, BookOpen, Briefcase, DollarSign, ListChecks } from 'lucide-react';
+import { Users, BookOpen, Briefcase, DollarSign, TrendingUp, CreditCard, GraduationCap, Clock, XCircle, CheckCircle, AlertCircle, BarChart2, ListChecks } from 'lucide-react';
 import api from '../../api';
 import type { CourseData, OrderData, InstructorData, LearningProgressData } from './types';
 
@@ -12,173 +12,200 @@ interface Props {
   getCourseEnrolledCount: (course: CourseData) => number;
 }
 
+/* ---- Mini card ---- */
+const MiniCard = ({ icon, label, value, color, bg, border, pulse = false }: any) => (
+  <div style={{ backgroundColor: bg, border: `1.5px solid ${border}`, borderRadius: '14px', padding: '18px 20px', display: 'flex', alignItems: 'center', gap: '14px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', transition: 'transform .2s' }}
+    onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-3px)')}
+    onMouseLeave={e => (e.currentTarget.style.transform = 'translateY(0)')}>
+    <div style={{ backgroundColor: 'white', padding: '12px', borderRadius: '12px', color, position: 'relative', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+      {icon}
+      {pulse && <span style={{ position: 'absolute', top: 4, right: 4, width: 9, height: 9, borderRadius: '50%', backgroundColor: '#10b981', boxShadow: '0 0 0 3px rgba(16,185,129,.3)', display: 'inline-block' }} />}
+    </div>
+    <div>
+      <div style={{ fontSize: '22px', fontWeight: '800', color: '#1e293b', lineHeight: 1 }}>{value}</div>
+      <div style={{ fontSize: '13px', color: '#64748b', marginTop: '3px', fontWeight: '500' }}>{label}</div>
+    </div>
+  </div>
+);
+
+/* ---- Section wrapper ---- */
+const Section = ({ title, icon, color, children }: any) => (
+  <div style={{ backgroundColor: 'white', borderRadius: '18px', border: '1px solid #e2e8f0', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.04)' }}>
+    <div style={{ padding: '16px 22px', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: '#fafafa' }}>
+      <div style={{ backgroundColor: color + '18', padding: '8px', borderRadius: '10px', color, display: 'flex' }}>{icon}</div>
+      <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#1e293b', margin: 0 }}>{title}</h3>
+    </div>
+    <div style={{ padding: '20px 22px' }}>{children}</div>
+  </div>
+);
+
+/* ---- Status badge ---- */
+const StatusBadge = ({ count, label, color, bg, icon }: any) => (
+  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: '12px', backgroundColor: bg, marginBottom: '10px' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <span style={{ fontSize: '20px' }}>{icon}</span>
+      <span style={{ fontSize: '14px', fontWeight: '600', color: '#334155' }}>{label}</span>
+    </div>
+    <span style={{ fontSize: '20px', fontWeight: '800', color }}>{count}</span>
+  </div>
+);
+
+/* ---- Progress bar ---- */
+const ProgressBar = ({ label, value, max, color }: any) => {
+  const pct = max > 0 ? Math.round((value / max) * 100) : 0;
+  return (
+    <div style={{ marginBottom: '14px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+        <span style={{ fontSize: '13px', color: '#475569', fontWeight: '600' }}>{label}</span>
+        <span style={{ fontSize: '13px', color, fontWeight: '700' }}>{value} <span style={{ color: '#94a3b8', fontWeight: '400' }}>({pct}%)</span></span>
+      </div>
+      <div style={{ height: '8px', backgroundColor: '#f1f5f9', borderRadius: '99px', overflow: 'hidden' }}>
+        <div style={{ width: `${pct}%`, height: '100%', backgroundColor: color, borderRadius: '99px', transition: 'width .8s ease' }} />
+      </div>
+    </div>
+  );
+};
+
+/* ============================================================
+   DASHBOARD TAB
+   ============================================================ */
 const DashboardTab: React.FC<Props> = ({ courses, users, orders, instructors, progressData, getCourseEnrolledCount }) => {
   const [onlineUsers, setOnlineUsers] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchOnline = () => api.get('/users/online').then(r => setOnlineUsers(r.data)).catch(() => {});
     fetchOnline();
-    const interval = setInterval(fetchOnline, 30_000); // refresh ทุก 30 วิ
+    const interval = setInterval(fetchOnline, 30_000);
     return () => clearInterval(interval);
   }, []);
 
-  const totalRevenue = orders.filter(o => o.status === 'COMPLETED').reduce((sum, o) => sum + Number(o.total_amount), 0);
+  /* ---- คำนวณตัวเลข ---- */
+  const totalRevenue    = orders.filter(o => o.status === 'COMPLETED').reduce((s, o) => s + Number(o.total_amount), 0);
+  const pendingRevenue  = orders.filter(o => o.status === 'WAITING_PAYMENT').reduce((s, o) => s + Number(o.total_amount), 0);
 
-  const stats = [
-    { label: 'นักเรียนทั้งหมด', value: users.length, icon: Users, color: '#3b82f6', bg: '#eff6ff' },
-    { label: 'คอร์สเรียนเปิดสอน', value: courses.length, icon: BookOpen, color: '#10b981', bg: '#ecfdf5' },
-    { label: 'อาจารย์ผู้สอน', value: instructors.length, icon: Briefcase, color: '#8b5cf6', bg: '#f5f3ff' },
-    { label: 'รายได้รวม (ยอดขาย)', value: `฿${totalRevenue.toLocaleString()}`, icon: DollarSign, color: '#ec4899', bg: '#fdf2f8' },
-    { label: 'ออนไลน์ขณะนี้', value: onlineUsers.length, icon: Users, color: '#10b981', bg: '#f0fdf4', pulse: true },
-  ];
+  // สถานะการเรียน
+  const learning_active    = orders.filter(o => o.status === 'COMPLETED').length;
+  const learning_completed = progressData.filter(p => p.is_completed).length;
+  const learning_total     = learning_active;
+
+  // สถานะการจ่ายเงิน
+  const pay_completed = orders.filter(o => o.status === 'COMPLETED').length;
+  const pay_waiting   = orders.filter(o => o.status === 'WAITING_PAYMENT').length;
+  const pay_rejected  = orders.filter(o => o.status === 'REJECTED' || o.status === 'CANCELLED').length;
+  const pay_total     = orders.length;
 
   return (
-    <div className="animate-fade-in">
-      <h1 style={{ fontSize: '28px', marginBottom: '30px', fontWeight: 'bold', color: '#1e293b' }}>
-        ภาพรวมระบบ (Dashboard)
-      </h1>
+    <div className="animate-fade-in" style={{ paddingBottom: '40px' }}>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '24px' }}>
-        {stats.map((stat, idx) => (
-          <div key={idx} style={{ backgroundColor: 'white', padding: '24px', borderRadius: '16px', border: `1px solid ${(stat as any).pulse ? '#bbf7d0' : '#e2e8f0'}`, display: 'flex', alignItems: 'center', gap: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-            <div style={{ backgroundColor: stat.bg, padding: '16px', borderRadius: '12px', color: stat.color, position: 'relative' }}>
-              <stat.icon size={28} />
-              {(stat as any).pulse && (
-                <span style={{ position: 'absolute', top: 4, right: 4, width: 10, height: 10, borderRadius: '50%', backgroundColor: '#10b981', boxShadow: '0 0 0 3px rgba(16,185,129,0.3)', display: 'inline-block' }} />
-              )}
-            </div>
-            <div>
-              <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#1e293b' }}>{stat.value}</div>
-              <div style={{ fontSize: '14px', color: '#64748b', fontWeight: '500' }}>{stat.label}</div>
-            </div>
-          </div>
-        ))}
+      {/* ===== HEADER ===== */}
+      <div style={{ marginBottom: '28px' }}>
+        <h1 style={{ fontSize: '26px', fontWeight: '800', color: '#1e293b', margin: 0 }}>ภาพรวมระบบ</h1>
+        <p style={{ color: '#64748b', fontSize: '14px', margin: '4px 0 0' }}>Dashboard — อัปเดตแบบ real-time</p>
       </div>
 
-      {/* Online Users List */}
-      {onlineUsers.length > 0 && (
-        <div style={{ marginTop: '24px', backgroundColor: 'white', borderRadius: '16px', border: '1px solid #bbf7d0', padding: '20px' }}>
-          <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: '#1e293b', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: '#10b981', display: 'inline-block', boxShadow: '0 0 0 3px rgba(16,185,129,0.3)' }} />
-            ผู้เรียนออนไลน์ขณะนี้
-          </h3>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-            {onlineUsers.map((u: any) => (
-              <div key={u.user_id} style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '999px', padding: '6px 14px 6px 6px' }}>
-                <div style={{ width: 28, height: 28, borderRadius: '50%', backgroundColor: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '12px', fontWeight: 'bold', flexShrink: 0 }}>
-                  {u.full_name?.charAt(0) || '?'}
-                </div>
-                <div>
-                  <div style={{ fontSize: '13px', fontWeight: '600', color: '#1e293b' }}>{u.full_name}</div>
-                  <div style={{ fontSize: '11px', color: '#64748b' }}>{u.email}</div>
-                </div>
-              </div>
-            ))}
-          </div>
+      {/* ===== SECTION A — สรุปภาพรวม ===== */}
+      <div style={{ marginBottom: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
+          <BarChart2 size={18} color="#6366f1" />
+          <span style={{ fontSize: '15px', fontWeight: '700', color: '#6366f1' }}>ภาพรวมทั้งหมด</span>
         </div>
-      )}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+          <MiniCard icon={<Users size={24}/>}     label="นักเรียนทั้งหมด"    value={users.length}                      color="#3b82f6" bg="#eff6ff"  border="#bfdbfe" />
+          <MiniCard icon={<BookOpen size={24}/>}  label="คอร์สเรียน"         value={courses.length}                    color="#10b981" bg="#ecfdf5"  border="#a7f3d0" />
+          <MiniCard icon={<Briefcase size={24}/>} label="อาจารย์ผู้สอน"      value={instructors.length}                color="#8b5cf6" bg="#f5f3ff"  border="#ddd6fe" />
+          <MiniCard icon={<DollarSign size={24}/>} label="รายได้รวม"         value={`฿${totalRevenue.toLocaleString()}`} color="#ec4899" bg="#fdf2f8"  border="#fbcfe8" />
+          <MiniCard icon={<Users size={24}/>}     label="ออนไลน์ขณะนี้"     value={onlineUsers.length}                color="#10b981" bg="#f0fdf4"  border="#bbf7d0" pulse />
+        </div>
+      </div>
 
-      <div style={{ marginTop: '40px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '24px' }}>
-        <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
-          <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '20px', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <ListChecks size={20} color="#3b82f6" /> คอร์สยอดนิยม
-          </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {[...courses]
-              .sort((a, b) => getCourseEnrolledCount(b) - getCourseEnrolledCount(a))
-              .slice(0, 5)
-              .map((course, idx) => (
-                <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', borderRadius: '8px', backgroundColor: '#f8fafc' }}>
-                  <span style={{ fontWeight: '500', color: '#334155' }}>{course.title}</span>
-                  <span style={{ backgroundColor: '#eff6ff', color: '#3b82f6', fontSize: '12px', padding: '4px 10px', borderRadius: '999px' }}>
-                    {getCourseEnrolledCount(course)} คน
-                  </span>
+      {/* ===== SECTION B — 3 คอลัมน์หลัก ===== */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px', marginTop: '28px' }}>
+
+        {/* B1 — สถานะการเรียนรู้ */}
+        <Section title="สถานะการเรียนรู้" icon={<GraduationCap size={18}/>} color="#3b82f6">
+          <StatusBadge icon="📖" label="กำลังเรียนอยู่"   count={learning_active}    color="#3b82f6" bg="#eff6ff" />
+          <StatusBadge icon="🎓" label="เรียนจบแล้ว"      count={learning_completed} color="#10b981" bg="#f0fdf4" />
+          <StatusBadge icon="⏸️" label="ยังไม่เริ่มเรียน" count={Math.max(0, learning_active - learning_completed)} color="#f59e0b" bg="#fffbeb" />
+          <div style={{ marginTop: '18px' }}>
+            <ProgressBar label="อัตราเรียนจบ" value={learning_completed} max={learning_total} color="#10b981" />
+          </div>
+        </Section>
+
+        {/* B2 — สถานะการชำระเงิน */}
+        <Section title="สถานะการชำระเงิน" icon={<CreditCard size={18}/>} color="#ec4899">
+          <StatusBadge icon="✅" label="ชำระเงินสำเร็จ"  count={pay_completed} color="#10b981" bg="#f0fdf4" />
+          <StatusBadge icon="⏳" label="รอการอนุมัติ"    count={pay_waiting}   color="#f59e0b" bg="#fffbeb" />
+          <StatusBadge icon="❌" label="ถูกปฏิเสธ/ยกเลิก" count={pay_rejected} color="#ef4444" bg="#fef2f2" />
+          <div style={{ marginTop: '18px', padding: '14px', backgroundColor: '#fdf2f8', borderRadius: '12px', border: '1px solid #fbcfe8' }}>
+            <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>รายได้รอดำเนินการ</div>
+            <div style={{ fontSize: '20px', fontWeight: '800', color: '#ec4899' }}>฿{pendingRevenue.toLocaleString()}</div>
+          </div>
+          <div style={{ marginTop: '12px' }}>
+            <ProgressBar label="อัตราสำเร็จ" value={pay_completed} max={pay_total} color="#10b981" />
+          </div>
+        </Section>
+
+        {/* B3 — คอร์สยอดนิยม */}
+        <Section title="คอร์สยอดนิยม" icon={<TrendingUp size={18}/>} color="#f59e0b">
+          {[...courses]
+            .sort((a, b) => getCourseEnrolledCount(b) - getCourseEnrolledCount(a))
+            .slice(0, 5)
+            .map((course, idx) => {
+              const count = getCourseEnrolledCount(course);
+              const max   = getCourseEnrolledCount(courses[0]) || 1;
+              const pct   = Math.round((count / max) * 100);
+              return (
+                <div key={idx} style={{ marginBottom: '14px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                    <span style={{ fontSize: '13px', fontWeight: '600', color: '#334155' }}>
+                      {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `${idx+1}.`} {course.title}
+                    </span>
+                    <span style={{ fontSize: '12px', backgroundColor: '#fef3c7', color: '#92400e', padding: '2px 8px', borderRadius: '99px', fontWeight: '700', whiteSpace: 'nowrap' }}>
+                      {count} คน
+                    </span>
+                  </div>
+                  <div style={{ height: '6px', backgroundColor: '#f1f5f9', borderRadius: '99px', overflow: 'hidden' }}>
+                    <div style={{ width: `${pct}%`, height: '100%', background: `linear-gradient(90deg, #f59e0b, #fbbf24)`, borderRadius: '99px', transition: 'width .8s ease' }} />
+                  </div>
+                </div>
+              );
+            })}
+        </Section>
+      </div>
+
+      {/* ===== SECTION C — ออนไลน์ขณะนี้ ===== */}
+      <div style={{ marginTop: '20px' }}>
+        <Section title={`นักเรียนออนไลน์ขณะนี้ · ${onlineUsers.length} คน`} icon={<Users size={18}/>} color="#10b981">
+          {onlineUsers.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '28px', color: '#94a3b8', fontSize: '14px' }}>
+              ไม่มีนักเรียนออนไลน์ขณะนี้
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+              {onlineUsers.map((u: any) => (
+                <div key={u.user_id} style={{ display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px', padding: '10px 14px' }}>
+                  <div style={{ position: 'relative' }}>
+                    {u.profile_picture_url ? (
+                      <img src={`http://localhost:3001${u.profile_picture_url}`} alt={u.full_name}
+                        style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }} />
+                    ) : (
+                      <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold', fontSize: '14px' }}>
+                        {u.full_name?.charAt(0) || '?'}
+                      </div>
+                    )}
+                    <div style={{ position: 'absolute', bottom: 0, right: 0, width: '10px', height: '10px', backgroundColor: '#10b981', borderRadius: '50%', border: '2px solid white' }} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: '600', color: '#1e293b' }}>{u.full_name}</div>
+                    <div style={{ fontSize: '11px', color: '#64748b' }}>{u.email}</div>
+                  </div>
                 </div>
               ))}
-          </div>
-        </div>
-
-        <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
-          <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '20px', color: '#1e293b' }}>สถานะการเรียนรู้</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            {[
-              {
-                label: 'กำลังเรียน',
-                value: orders.filter(o => o.status === 'COMPLETED').length,
-                color: '#3b82f6', bg: '#eff6ff', border: '#bfdbfe',
-                icon: '📖',
-              },
-              {
-                label: 'เรียนจบแล้ว',
-                value: progressData.filter(p => p.is_completed).length,
-                color: '#10b981', bg: '#f0fdf4', border: '#bbf7d0',
-                icon: '🎓',
-              },
-              {
-                label: 'รออนุมัติ',
-                value: orders.filter(o => o.status === 'WAITING_PAYMENT').length,
-                color: '#f59e0b', bg: '#fffbeb', border: '#fde68a',
-                icon: '⏳',
-              },
-              {
-                label: 'ถูกปฏิเสธ',
-                value: orders.filter(o => o.status === 'REJECTED' || o.status === 'CANCELLED').length,
-                color: '#ef4444', bg: '#fef2f2', border: '#fecaca',
-                icon: '❌',
-              },
-            ].map((item, i) => (
-              <div key={i} style={{ backgroundColor: item.bg, border: `1px solid ${item.border}`, borderRadius: '12px', padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ fontSize: '28px' }}>{item.icon}</span>
-                <div>
-                  <div style={{ fontSize: '24px', fontWeight: '700', color: item.color, lineHeight: 1 }}>{item.value}</div>
-                  <div style={{ fontSize: '12px', color: '#64748b', marginTop: '3px' }}>{item.label}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+            </div>
+          )}
+        </Section>
       </div>
-      {/* Online Users */}
-      <div style={{ marginTop: '24px', backgroundColor: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '24px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-          <Users size={20} color="#10b981" />
-          <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1e293b', margin: 0 }}>
-            นักเรียนออนไลน์ขณะนี้
-          </h3>
-          <span style={{ backgroundColor: '#dcfce7', color: '#166534', fontSize: '12px', fontWeight: '700', padding: '2px 10px', borderRadius: '999px' }}>
-            {onlineUsers.length} คน
-          </span>
-          <span style={{ fontSize: '11px', color: '#94a3b8', marginLeft: 'auto' }}>อัปเดตทุก 15 วินาที</span>
-        </div>
 
-        {onlineUsers.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '32px', color: '#94a3b8', fontSize: '14px' }}>
-            ไม่มีนักเรียนออนไลน์ขณะนี้
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-            {onlineUsers.map((u: any) => (
-              <div key={u.user_id} style={{ display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px', padding: '10px 14px' }}>
-                <div style={{ position: 'relative' }}>
-                  {u.profile_picture_url ? (
-                    <img src={`http://localhost:3001${u.profile_picture_url}`} alt={u.full_name}
-                      style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }} />
-                  ) : (
-                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold', fontSize: '14px' }}>
-                      {u.full_name?.charAt(0) || '?'}
-                    </div>
-                  )}
-                  <div style={{ position: 'absolute', bottom: 0, right: 0, width: '10px', height: '10px', backgroundColor: '#10b981', borderRadius: '50%', border: '2px solid white' }} />
-                </div>
-                <div>
-                  <div style={{ fontSize: '13px', fontWeight: '600', color: '#1e293b' }}>{u.full_name}</div>
-                  <div style={{ fontSize: '11px', color: '#64748b' }}>{u.email}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
     </div>
   );
 };

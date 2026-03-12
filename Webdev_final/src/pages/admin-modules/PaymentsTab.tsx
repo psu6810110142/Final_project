@@ -65,13 +65,12 @@ const PaymentsTab: React.FC = () => {
       const res = await api.patch(`/payments/${paymentId}`, { status: newStatus });
       console.log('payment update result:', res.data);
 
-      // Step 2: ถ้า PAID → อัปเดต order status เป็น COMPLETED
-      if (newStatus === 'PAID' && selectedPayment) {
+      // Step 2: sync order status ให้ตรงกับ payment เสมอ
+      if (selectedPayment) {
         const orderId = selectedPayment.order?.order_id;
-        console.log('updating order id:', orderId);
         if (orderId) {
-          const orderRes = await api.patch(`/orders/${orderId}`, { status: 'COMPLETED' });
-          console.log('order update result:', orderRes.data);
+          const orderStatus = newStatus === 'PAID' ? 'COMPLETED' : 'REJECTED';
+          await api.patch(`/orders/${orderId}`, { status: orderStatus });
         }
       }
 
@@ -100,6 +99,7 @@ const PaymentsTab: React.FC = () => {
 
   return (
     <div className="animate-fade-in">
+      {ConfirmDialogComponent}
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px', alignItems: 'center' }}>
         <div>
@@ -107,9 +107,10 @@ const PaymentsTab: React.FC = () => {
             ตรวจสอบการชำระเงิน
           </h1>
           {pendingCount > 0 && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#92400e', fontSize: '14px' }}>
-              <Clock size={14} />
-              <span>รอตรวจสอบ <strong>{pendingCount}</strong> รายการ</span>
+            <div onClick={() => setFilterStatus('PENDING')}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: '#fef3c7', border: '1.5px solid #f59e0b', color: '#92400e', fontSize: '14px', fontWeight: '700', padding: '8px 16px', borderRadius: '999px', cursor: 'pointer', animation: 'pulse 2s infinite' }}>
+              <Clock size={15} />
+              <span>⚠️ รอตรวจสอบ <strong>{pendingCount}</strong> รายการ — คลิกเพื่อดู</span>
             </div>
           )}
         </div>
@@ -295,7 +296,6 @@ const PaymentsTab: React.FC = () => {
           </div>
         </div>
       )}
-      {ConfirmDialogComponent}
     </div>
   );
 };

@@ -23,13 +23,35 @@ const StudentsTab: React.FC<Props> = ({ users, orders, courses, progressData, on
   const [cartItems, setCartItems] = useState<any[]>([]);
   const [cartLoading, setCartLoading] = useState(false);
   const [showCart, setShowCart] = useState(false);
+  // ✅ เก็บจำนวน cart ของแต่ละ user สำหรับแสดง badge
+  const [cartCounts, setCartCounts] = useState<Record<number, number>>({});
   const [formData, setFormData] = useState<UserData | null>(null);
-  // ✅ preview URL สำหรับรูปที่เพิ่งเลือก
   const [profilePreview, setProfilePreview] = useState<string | null>(null);
   const [localOrders, setLocalOrders] = useState<OrderData[]>(orders);
 
   // sync orders from props
   React.useEffect(() => { setLocalOrders(orders); }, [orders]);
+
+  // ✅ โหลด cart count ของทุก user เมื่อ users เปลี่ยน
+  React.useEffect(() => {
+    if (!users.length) return;
+    const fetchAllCartCounts = async () => {
+      const results = await Promise.allSettled(
+        users.map(u => api.get(`/cart-items/user/${u.user_id}`))
+      );
+      const counts: Record<number, number> = {};
+      results.forEach((result, idx) => {
+        if (result.status === 'fulfilled') {
+          const data = result.value.data;
+          counts[users[idx].user_id] = Array.isArray(data) ? data.length : 0;
+        } else {
+          counts[users[idx].user_id] = 0;
+        }
+      });
+      setCartCounts(counts);
+    };
+    fetchAllCartCounts();
+  }, [users]);
 
   const getStudentCourses = (userId: number) => {
     return localOrders.filter(o => o.user_id === userId).map(order => {
@@ -48,7 +70,10 @@ const StudentsTab: React.FC<Props> = ({ users, orders, courses, progressData, on
     setCartLoading(true);
     try {
       const res = await api.get(`/cart-items/user/${userId}`);
-      setCartItems(Array.isArray(res.data) ? res.data : []);
+      const data = Array.isArray(res.data) ? res.data : [];
+      setCartItems(data);
+      // ✅ อัปเดต count ของ user นี้ด้วยหลัง fetch ล่าสุด
+      setCartCounts(prev => ({ ...prev, [userId]: data.length }));
     } catch { setCartItems([]); }
     finally { setCartLoading(false); }
   };
@@ -68,7 +93,6 @@ const StudentsTab: React.FC<Props> = ({ users, orders, courses, progressData, on
     if (!formData) return;
     setFormData(prev => prev ? { ...prev, profile_image_file: file } : prev);
     if (file) {
-      // ✅ แสดง preview ทันที
       setProfilePreview(URL.createObjectURL(file));
     } else {
       setProfilePreview(null);
@@ -141,6 +165,7 @@ const StudentsTab: React.FC<Props> = ({ users, orders, courses, progressData, on
             {filteredUsers.map(student => {
               const stdCourses = getStudentCourses(student.user_id);
               const completed = stdCourses.filter(c => c.is_completed).length;
+              const cartCount = cartCounts[student.user_id] ?? 0; // ✅ จำนวนในตะกร้า
               return (
                 <tr key={student.user_id} style={{ borderBottom: '1px solid #f1f5f9', cursor: 'pointer', transition: 'background 0.15s' }}
                   onClick={() => openDetail(student)}
@@ -164,12 +189,41 @@ const StudentsTab: React.FC<Props> = ({ users, orders, courses, progressData, on
                       </div>
                     </div>
                   </td>
-                  <td style={{ padding: '16px 18px', textAlign: 'center' }} onClick={e => { e.stopPropagation(); openDetail(student); setTimeout(() => setShowCart(true), 0); }}>
-                    <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '34px', height: '34px', borderRadius: '8px', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', cursor: 'pointer' }}
-                      title="ดูตะกร้าสินค้า">
-                      <ShoppingCart size={16} color="#10b981" />
+
+                  {/* ✅ ตะกร้า + badge จำนวน */}
+                  <td style={{ padding: '16px 18px', textAlign: 'center' }}
+                    onClick={e => { e.stopPropagation(); openDetail(student); setTimeout(() => setShowCart(true), 0); }}>
+                    <div style={{ position: 'relative', display: 'inline-flex' }}>
+                      <div style={{
+                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                        width: '34px', height: '34px', borderRadius: '8px',
+                        backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', cursor: 'pointer',
+                      }} title="ดูตะกร้าสินค้า">
+                        <ShoppingCart size={16} color="#10b981" />
+                      </div>
+                      {/* ✅ Badge — แสดงเฉพาะเมื่อ cartCount > 0 */}
+                      {cartCount > 0 && (
+                        <span style={{
+                          position: 'absolute',
+                          top: '-6px', right: '-6px',
+                          backgroundColor: '#ef4444',
+                          color: 'white',
+                          fontSize: '10px',
+                          fontWeight: '700',
+                          minWidth: '16px', height: '16px',
+                          borderRadius: '999px',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          padding: '0 3px',
+                          lineHeight: 1,
+                          boxShadow: '0 0 0 2px white',
+                          pointerEvents: 'none',
+                        }}>
+                          {cartCount > 99 ? '99+' : cartCount}
+                        </span>
+                      )}
                     </div>
                   </td>
+
                   <td style={{ padding: '16px 18px' }}>
                     <span style={{ backgroundColor: '#f1f5f9', color: '#475569', padding: '3px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: '500' }}>
                       {student.level?.level_name || getLevelName(student.level_id)}
@@ -200,7 +254,6 @@ const StudentsTab: React.FC<Props> = ({ users, orders, courses, progressData, on
                 <div style={{
                   width: '72px', height: '72px', borderRadius: '50%',
                   border: '3px solid #334155',
-                  // ✅ ใช้ preview ถ้ามี ไม่งั้นใช้จาก server
                   backgroundImage: profilePreview
                     ? `url(${profilePreview})`
                     : selectedStudent.profile_picture_url
@@ -287,7 +340,6 @@ const StudentsTab: React.FC<Props> = ({ users, orders, courses, progressData, on
                   <form onSubmit={handleUpdate}>
                     <div className="form-group">
                       <label style={{ fontSize: '12px' }}>รูปโปรไฟล์</label>
-                      {/* ✅ Preview รูปใหม่ที่กำลังจะอัปโหลด */}
                       {(profilePreview || formData.profile_picture_url) && (
                         <div style={{ marginBottom: '8px' }}>
                           <img

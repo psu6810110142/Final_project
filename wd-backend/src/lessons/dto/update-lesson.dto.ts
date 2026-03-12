@@ -11,6 +11,10 @@ export class UpdateLessonDto {
   video_url?: string;
 
   @IsOptional()
+  @IsString()
+  attachment_url?: string;
+
+  @IsOptional()
   @Type(() => Number)
   @IsNumber()
   sequence?: number;

@@ -2,6 +2,6 @@ import { IsEnum, IsOptional } from 'class-validator';
 
 export class UpdateOrderDto {
   @IsOptional()
-  @IsEnum(['WAITING_PAYMENT', 'COMPLETED', 'CANCELLED'])
+  @IsEnum(['WAITING_PAYMENT', 'COMPLETED', 'CANCELLED', 'REJECTED'])
   status?: string;
 }

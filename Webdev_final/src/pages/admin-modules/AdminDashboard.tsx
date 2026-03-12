@@ -28,6 +28,7 @@ const AdminDashboard: React.FC = () => {
   const [orders, setOrders] = useState<OrderData[]>([]);
   const [instructors, setInstructors] = useState<InstructorData[]>([]);
   const [progressData, setProgressData] = useState<LearningProgressData[]>([]);
+  const [pendingPaymentCount, setPendingPaymentCount] = useState(0);
 
   useEffect(() => { fetchAllData(); }, []);
 
@@ -67,6 +68,13 @@ const AdminDashboard: React.FC = () => {
       setOrders(normalizedOrders);
 
       setProgressData(Array.isArray(progressRes.data) ? progressRes.data : []);
+
+      // โหลด pending payments count สำหรับ badge
+      try {
+        const paymentsRes = await api.get('/payments');
+        const payments = Array.isArray(paymentsRes.data) ? paymentsRes.data : [];
+        setPendingPaymentCount(payments.filter((p: any) => p.status === 'PENDING').length);
+      } catch {}
 
     } catch (err) {
       console.error('fetchAllData error:', err);
@@ -116,9 +124,16 @@ const AdminDashboard: React.FC = () => {
         </div>
         <nav style={{ padding: '20px 0', flex: 1 }}>
           {navItems.map(({ tab, label, Icon }) => (
-            <div key={tab} onClick={() => setActiveTab(tab)} style={menuItem(activeTab === tab)}>
-              <Icon size={20} style={{ marginRight: '12px' }} />
-              {label}
+            <div key={tab} onClick={() => setActiveTab(tab)} style={{ ...menuItem(activeTab === tab), justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <Icon size={20} style={{ marginRight: '12px' }} />
+                {label}
+              </div>
+              {tab === 'payments' && pendingPaymentCount > 0 && (
+                <span style={{ backgroundColor: '#ef4444', color: 'white', fontSize: '11px', fontWeight: '800', minWidth: '20px', height: '20px', borderRadius: '999px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 5px', animation: 'pulse 2s infinite' }}>
+                  {pendingPaymentCount}
+                </span>
+              )}
             </div>
           ))}
         </nav>

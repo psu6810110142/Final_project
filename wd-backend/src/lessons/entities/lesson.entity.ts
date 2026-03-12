@@ -12,6 +12,9 @@ export class Lesson {
   @Column({ type: 'text', nullable: true })
   video_url: string;
 
+  @Column({ type: 'text', nullable: true })
+  attachment_url: string;
+
   @Column({ type: 'int' })
   sequence: number; // ลำดับบทเรียน
 

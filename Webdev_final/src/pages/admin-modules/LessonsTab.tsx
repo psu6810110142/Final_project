@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, X, Video, ChevronLeft, Upload, Play } from 'lucide-react';
+import { Plus, Edit, Trash2, X, Video, ChevronLeft, Upload, Play, Paperclip, FileText } from 'lucide-react';
 import api from '../../api';
 import { useConfirm } from './ConfirmDialog';
-
 import type { CourseData } from './types';
 import { getImageUrl } from './types';
 
@@ -10,6 +9,7 @@ interface LessonData {
   lesson_id: number;
   title: string;
   video_url?: string;
+  attachment_url?: string;
   sequence: number;
   course?: { course_id: number; title: string };
 }
@@ -18,7 +18,15 @@ interface Props {
   courses: CourseData[];
 }
 
-const emptyLesson = { lesson_id: 0, title: '', sequence: 1, video_url: '', video_file: null as File | null };
+const emptyLesson = {
+  lesson_id: 0,
+  title: '',
+  sequence: 1,
+  video_url: '',
+  attachment_url: '',
+  video_file: null as File | null,
+  attachment_file: null as File | null,
+};
 
 const LessonsTab: React.FC<Props> = ({ courses }) => {
   const [selectedCourse, setSelectedCourse] = useState<CourseData | null>(null);
@@ -56,7 +64,15 @@ const LessonsTab: React.FC<Props> = ({ courses }) => {
 
   const openEdit = (lesson: LessonData) => {
     setModalMode('edit');
-    setFormData({ lesson_id: lesson.lesson_id, title: lesson.title, sequence: lesson.sequence, video_url: lesson.video_url || '', video_file: null });
+    setFormData({
+      lesson_id: lesson.lesson_id,
+      title: lesson.title,
+      sequence: lesson.sequence,
+      video_url: lesson.video_url || '',
+      attachment_url: lesson.attachment_url || '',
+      video_file: null,
+      attachment_file: null,
+    });
     setIsModalOpen(true);
   };
 
@@ -69,6 +85,7 @@ const LessonsTab: React.FC<Props> = ({ courses }) => {
       fd.append('title', formData.title);
       fd.append('sequence', String(formData.sequence));
       if (formData.video_file) fd.append('video_file', formData.video_file);
+      if (formData.attachment_file) fd.append('attachment_file', formData.attachment_file);
 
       if (modalMode === 'add') {
         fd.append('course_id', String(selectedCourse.course_id));
@@ -86,7 +103,7 @@ const LessonsTab: React.FC<Props> = ({ courses }) => {
   };
 
   const handleDelete = async (lessonId: number) => {
-    const ok = await confirm({ title: 'ลบบทเรียน', message: 'คุณแน่ใจหรือไม่? บทเรียนและวิดีโอจะถูกลบถาวร', confirmText: 'ลบเลย', variant: 'danger' });
+    const ok = await confirm({ title: 'ลบบทเรียน', message: 'คุณแน่ใจหรือไม่? บทเรียนและไฟล์จะถูกลบถาวร', confirmText: 'ลบเลย', variant: 'danger' });
     if (!ok) return;
     try {
       await api.delete(`/lessons/${lessonId}`);
@@ -98,9 +115,9 @@ const LessonsTab: React.FC<Props> = ({ courses }) => {
   if (!selectedCourse) {
     return (
       <div className="animate-fade-in">
+        {ConfirmDialogComponent}
         <h1 style={{ fontSize: '26px', fontWeight: 'bold', color: '#1e293b', marginBottom: '8px' }}>จัดการบทเรียน</h1>
         <p style={{ color: '#64748b', marginBottom: '24px', fontSize: '14px' }}>เลือกคอร์สที่ต้องการจัดการบทเรียน</p>
-
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px' }}>
           {courses.map(course => (
             <div key={course.course_id}
@@ -129,6 +146,8 @@ const LessonsTab: React.FC<Props> = ({ courses }) => {
   // ===== LESSON LIST VIEW =====
   return (
     <div className="animate-fade-in">
+      {ConfirmDialogComponent}
+
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
         <button onClick={() => setSelectedCourse(null)}
@@ -154,27 +173,27 @@ const LessonsTab: React.FC<Props> = ({ courses }) => {
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {lessons.map((lesson, idx) => (
+          {lessons.map((lesson) => (
             <div key={lesson.lesson_id}
               style={{ background: 'white', borderRadius: '10px', border: '1px solid #e2e8f0', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-              {/* ลำดับ */}
               <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#eff6ff', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '14px', flexShrink: 0 }}>
                 {lesson.sequence}
               </div>
-
-              {/* ข้อมูล */}
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: '600', color: '#1e293b', fontSize: '15px' }}>{lesson.title}</div>
-                <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '3px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  {lesson.video_url ? (
-                    <><Video size={12} color="#10b981" /> มีวิดีโอ</>
-                  ) : (
-                    <><Video size={12} color="#cbd5e1" /> ยังไม่มีวิดีโอ</>
-                  )}
+                <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    {lesson.video_url
+                      ? <><Video size={12} color="#10b981" /> <span style={{ color: '#10b981' }}>มีวิดีโอ</span></>
+                      : <><Video size={12} color="#cbd5e1" /> ไม่มีวิดีโอ</>}
+                  </span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    {lesson.attachment_url
+                      ? <><Paperclip size={12} color="#f59e0b" /> <span style={{ color: '#f59e0b' }}>มีไฟล์แนบ</span></>
+                      : <><Paperclip size={12} color="#cbd5e1" /> ไม่มีไฟล์แนบ</>}
+                  </span>
                 </div>
               </div>
-
-              {/* Actions */}
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button onClick={() => openEdit(lesson)}
                   style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', background: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', color: '#334155' }}>
@@ -211,16 +230,33 @@ const LessonsTab: React.FC<Props> = ({ courses }) => {
               </div>
 
               {/* Video Upload */}
-              <div style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '10px', border: '1px dashed #cbd5e1', marginBottom: '20px' }}>
-                <h4 style={{ fontSize: '14px', marginBottom: '12px', color: '#334155', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Upload size={15} /> อัปโหลดวิดีโอ
+              <div style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '10px', border: '1px dashed #cbd5e1', marginBottom: '14px' }}>
+                <h4 style={{ fontSize: '14px', marginBottom: '10px', color: '#334155', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Video size={15} color="#3b82f6" /> อัปโหลดวิดีโอ
                 </h4>
-                <input type="file" accept="video/*" className="form-input"
+                <input type="file" accept="video/mp4,video/avi,video/mov,video/mkv" className="form-input"
                   onChange={e => setFormData({ ...formData, video_file: e.target.files?.[0] || null })}
                 />
+                <p style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>รองรับ: mp4, avi, mov, mkv (สูงสุด 100MB)</p>
                 {formData.video_url && !formData.video_file && (
-                  <div style={{ marginTop: '8px', fontSize: '12px', color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <div style={{ marginTop: '6px', fontSize: '12px', color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <Video size={12} /> มีวิดีโออยู่แล้ว (เลือกไฟล์ใหม่เพื่อแทนที่)
+                  </div>
+                )}
+              </div>
+
+              {/* Attachment Upload */}
+              <div style={{ backgroundColor: '#fffbeb', padding: '16px', borderRadius: '10px', border: '1px dashed #fcd34d', marginBottom: '20px' }}>
+                <h4 style={{ fontSize: '14px', marginBottom: '10px', color: '#334155', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Paperclip size={15} color="#f59e0b" /> แนบไฟล์เอกสาร
+                </h4>
+                <input type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.png,.jpg,.jpeg" className="form-input"
+                  onChange={e => setFormData({ ...formData, attachment_file: e.target.files?.[0] || null })}
+                />
+                <p style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>รองรับ: PDF, Word, PowerPoint, Excel, รูปภาพ</p>
+                {formData.attachment_url && !formData.attachment_file && (
+                  <div style={{ marginTop: '6px', fontSize: '12px', color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <FileText size={12} /> มีไฟล์แนบอยู่แล้ว (เลือกไฟล์ใหม่เพื่อแทนที่)
                   </div>
                 )}
               </div>
@@ -235,7 +271,6 @@ const LessonsTab: React.FC<Props> = ({ courses }) => {
           </div>
         </div>
       )}
-      {ConfirmDialogComponent}
     </div>
   );
 };

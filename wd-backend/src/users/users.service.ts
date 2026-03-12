@@ -106,7 +106,8 @@ export class UsersService implements OnModuleInit {
   }
 
   async updateLastSeen(userId: number) {
-    await this.userRepo.update(userId, { last_seen: new Date() } as any);
+    if (!userId) return { ok: false };
+    await this.userRepo.update({ user_id: userId } as any, { last_seen: new Date() } as any);
     return { ok: true };
   }
 

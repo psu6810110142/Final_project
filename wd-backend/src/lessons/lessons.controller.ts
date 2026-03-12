@@ -1,12 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFile, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFiles, Req } from '@nestjs/common';
 import { LessonsService } from './lessons.service';
 import { CreateLessonDto } from './dto/create-lesson.dto';
 import { UpdateLessonDto } from './dto/update-lesson.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/roles.decorator';
-import { getStorageConfig, videoFileFilter } from 'src/utils/file-upload.config';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { getStorageConfig } from 'src/utils/file-upload.config';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 
 @Controller('lessons')
 export class LessonsController {
@@ -16,19 +16,36 @@ export class LessonsController {
   @Roles('ADMIN')
   @Post()
   @UseInterceptors(
-    FileInterceptor('video_file', { // ✨ ชื่อ Key ใน Postman คือ video_file
-      storage: getStorageConfig('lessons'), // เก็บไว้ในโฟลเดอร์ uploads/lessons
-      limits: { fileSize: 100 * 1024 * 1024 }, // ✨ กำหนดขนาดสูงสุด 100MB (100 * 1024 KB * 1024 Bytes)
-      fileFilter: videoFileFilter,
+    FileFieldsInterceptor([
+      { name: 'video_file', maxCount: 1 },
+      { name: 'attachment_file', maxCount: 1 },
+    ], {
+      storage: getStorageConfig('lessons'),
+      limits: { fileSize: 100 * 1024 * 1024 },
+      fileFilter: (req, file, cb) => {
+        if (file.fieldname === 'video_file') {
+          if (!file.originalname.match(/\.(mp4|avi|mov|mkv)$/i)) {
+            return cb(new Error('อนุญาตเฉพาะไฟล์วิดีโอ (mp4, avi, mov, mkv)'), false);
+          }
+        }
+        if (file.fieldname === 'attachment_file') {
+          if (!file.originalname.match(/\.(pdf|doc|docx|ppt|pptx|xls|xlsx|png|jpg|jpeg)$/i)) {
+            return cb(new Error('อนุญาตเฉพาะ PDF, Word, PowerPoint, Excel, รูปภาพ'), false);
+          }
+        }
+        cb(null, true);
+      },
     }),
   )
   create(
     @Body() createLessonDto: CreateLessonDto,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFiles() files: { video_file?: Express.Multer.File[]; attachment_file?: Express.Multer.File[] },
   ) {
-    if (file) {
-      // ✨ เช็คชื่อฟิลด์ใน Lesson Entity ของคุณด้วยนะครับ ว่าใช้ชื่อ video_url หรือไม่
-      createLessonDto.video_url = `/uploads/lessons/${file.filename}`;
+    if (files?.video_file?.[0]) {
+      createLessonDto.video_url = `/uploads/lessons/${files.video_file[0].filename}`;
+    }
+    if (files?.attachment_file?.[0]) {
+      createLessonDto.attachment_url = `/uploads/lessons/${files.attachment_file[0].filename}`;
     }
     return this.lessonsService.create(createLessonDto);
   }
@@ -57,15 +74,37 @@ export class LessonsController {
   @Roles('ADMIN')
   @Patch(':id')
   @UseInterceptors(
-    FileInterceptor('video_file', {
+    FileFieldsInterceptor([
+      { name: 'video_file', maxCount: 1 },
+      { name: 'attachment_file', maxCount: 1 },
+    ], {
       storage: getStorageConfig('lessons'),
       limits: { fileSize: 100 * 1024 * 1024 },
-      fileFilter: videoFileFilter,
+      fileFilter: (req, file, cb) => {
+        if (file.fieldname === 'video_file') {
+          if (!file.originalname.match(/\.(mp4|avi|mov|mkv)$/i)) {
+            return cb(new Error('อนุญาตเฉพาะไฟล์วิดีโอ'), false);
+          }
+        }
+        if (file.fieldname === 'attachment_file') {
+          if (!file.originalname.match(/\.(pdf|doc|docx|ppt|pptx|xls|xlsx|png|jpg|jpeg)$/i)) {
+            return cb(new Error('อนุญาตเฉพาะ PDF, Word, PowerPoint, Excel, รูปภาพ'), false);
+          }
+        }
+        cb(null, true);
+      },
     }),
   )
-  update(@Param('id') id: string, @Body() updateLessonDto: UpdateLessonDto, @UploadedFile() file: Express.Multer.File) {
-    if (file) {
-      updateLessonDto.video_url = `/uploads/lessons/${file.filename}`;
+  update(
+    @Param('id') id: string,
+    @Body() updateLessonDto: UpdateLessonDto,
+    @UploadedFiles() files: { video_file?: Express.Multer.File[]; attachment_file?: Express.Multer.File[] },
+  ) {
+    if (files?.video_file?.[0]) {
+      updateLessonDto.video_url = `/uploads/lessons/${files.video_file[0].filename}`;
+    }
+    if (files?.attachment_file?.[0]) {
+      updateLessonDto.attachment_url = `/uploads/lessons/${files.attachment_file[0].filename}`;
     }
     return this.lessonsService.update(+id, updateLessonDto);
   }
