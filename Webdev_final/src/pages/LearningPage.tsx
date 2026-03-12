@@ -93,8 +93,12 @@ const LearningPage: React.FC = () => {
 
         // กรองเอาเฉพาะ ID บทเรียนที่ is_completed เป็น true
         const completedIds = myProgress
-          .filter((p: any) => p.is_completed === true)
-          .map((p: any) => p.lesson?.lesson_id);
+        .filter((p: any) => 
+          p.is_completed === true && 
+        String(p.lesson?.course?.course_id) === String(courseId)  // ✅ เพิ่มบรรทัดนี้
+        )
+        .map((p: any) => p.lesson?.lesson_id);
+
 
         setCompletedLessons(completedIds);
 
