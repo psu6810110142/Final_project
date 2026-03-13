@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import api from '../api';
 import { AxiosError } from 'axios';
-import './HomePage.css'; 
+import './HomeTheme.css'; 
 import { Home, UserPlus } from 'lucide-react'; 
 import logoImage from '../assets/Logo.png'; 
 import { useNavigate } from 'react-router-dom';

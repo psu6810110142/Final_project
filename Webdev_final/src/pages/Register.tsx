@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import './HomePage.css'; 
+import './HomeTheme.css'; 
 import { Home, LogIn } from 'lucide-react';
 import logoImage from '../assets/Logo.png'; 
 import api from '../api';
