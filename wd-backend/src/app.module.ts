@@ -31,12 +31,11 @@ import { join } from 'path';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
-        // ✨ ใส่ || เพื่อกำหนดค่าเริ่มต้น ถ้าหาใน .env ไม่เจอ
-        host: configService.get<string>('DB_HOST') || 'localhost',
-        port: configService.get<number>('DB_PORT') || 5436,
-        username: configService.get<string>('DB_USERNAME') || 'admin',
-        password: configService.get<string>('DB_PASSWORD') || 'password123', // 👈 จุดสำคัญที่แก้ Error
-        database: configService.get<string>('DB_NAME') || 'NewLearningAcademy_dev',
+        host: configService.getOrThrow<string>('DB_HOST'),
+        port: configService.getOrThrow<number>('DB_PORT'),
+        username: configService.getOrThrow<string>('DB_USERNAME'),
+        password: configService.getOrThrow<string>('DB_PASSWORD'),
+        database: configService.getOrThrow<string>('DB_NAME'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: true,
       }),
