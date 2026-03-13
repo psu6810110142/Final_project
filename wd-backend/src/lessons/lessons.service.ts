@@ -54,7 +54,7 @@ export class LessonsService {
         order: { sequence: 'ASC' }
       });
     }
-    const userId = user.userId || user.user_id || user.id || user.sub;
+    const userId = user.sub || user.user_id || user.userId || user.id;
     const hasPurchased = await this.orderDetailRepo.findOne({
       where: {
         course: { course_id: courseId },

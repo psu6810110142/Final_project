@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFile, Req } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -12,9 +12,23 @@ import { getStorageConfig, imageFileFilter } from 'src/utils/file-upload.config'
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @UseGuards(AuthGuard('jwt'))
+  @Post('ping')
+  ping(@Req() req: any) {
+    const userId = req.user.sub || req.user.user_id || req.user.id;
+    return this.usersService.updateLastSeen(userId);
+  }
+
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
+  }
+
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('ADMIN')
+  @Get('online')
+  getOnlineUsers() {
+    return this.usersService.getOnlineUsers();
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
