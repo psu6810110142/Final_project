@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import './HomePage.css';
+import './HomeTheme.css';
 import { PlayCircle, CheckCircle, LockKeyhole } from 'lucide-react';
 import api from '../api';
 import Navbar from '../components/Navbar';
+import { useTheme } from '../contexts/ThemeContext';
+import './OceanTheme.css';
 
 interface Course {
   id: number;
@@ -30,6 +32,7 @@ const statusStyleMap: Record<string, { tagColor: string; textColor: string }> = 
 };
 
 const MyCourses: React.FC = () => {
+  const { theme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [filter, setFilter] = useState("in-progress");
@@ -150,7 +153,7 @@ const MyCourses: React.FC = () => {
   });
 
   return (
-    <div className="page-wrapper">
+    <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-page' : ''}`}>
       {expiredPopup && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ backgroundColor: 'white', borderRadius: '16px', padding: '40px', maxWidth: '420px', width: '90%', textAlign: 'center' }}>

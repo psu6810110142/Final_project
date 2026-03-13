@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate} from 'react-router-dom';
 import {Book, Clock, Users, PlayCircle, CheckCircle } from 'lucide-react';
-import './HomePage.css';
+import './HomeTheme.css';
 import api from '../api';
 import imgVDO from '../assets/locobackgroudewhite.png';
 import Navbar from '../components/Navbar';
 import { useCart } from '../contexts/CartContext';
+import { useTheme } from '../contexts/ThemeContext';
+import './OceanTheme.css';
 
 // 📌 Types
 interface Lesson {
@@ -33,6 +35,7 @@ interface CourseDetailData {
 }
 
 export default function CourseDetail() {
+  const { theme } = useTheme();
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
@@ -80,7 +83,7 @@ export default function CourseDetail() {
   );
 
   return (
-    <div className="page-wrapper">
+    <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-page' : ''}`}>
       <Navbar />
 
       {/* 🔵 Header Section */}

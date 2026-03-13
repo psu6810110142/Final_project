@@ -2,9 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import api from '../../api';
-import '../HomePage.css';
+import '../HomeTheme.css';
 import ProfileSidebar from '../ProfilePage/ProfileSidebar';
 import ProfileTabs from '../ProfilePage/ProfileTabs';
+import '../OceanTheme.css';
+import { useTheme } from '../../contexts/ThemeContext';
+import ThemeToggleButton from '../../components/ThemeToggleButton';
 
 // ==================== Types ====================
 interface UserData {
@@ -40,6 +43,7 @@ type ActiveTab = 'personal' | 'account' | 'history';
  
 // ==================== Main Component ====================
 const ProfilePage: React.FC = () => {
+  const { theme } = useTheme();
   const navigate = useNavigate();
  
   const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
@@ -199,7 +203,7 @@ const ProfilePage: React.FC = () => {
     localStorage.removeItem('user');
     navigate('/landing');
   };
- 
+  
   // ==================== Helpers ====================
   const getAvatarSrc = () => {
     if (previewImage) return previewImage;
@@ -216,18 +220,18 @@ const ProfilePage: React.FC = () => {
   // ==================== Loading State ====================
   if (isLoadingProfile) {
     return (
-      <>
+      <div className={theme === 'ocean' ? 'ocean-page' : ''}>
         <Navbar />
         <div style={{ textAlign: 'center', padding: '120px 0', color: '#6b7280' }}>
           กำลังโหลดข้อมูล...
         </div>
-      </>
+      </div>
     );
   }
  
   // ==================== Render ====================
   return (
-    <>
+    <div className={theme === 'ocean' ? 'ocean-page' : ''}>
       <Navbar />
       <div className="profile-wrapper">
  
@@ -278,7 +282,8 @@ const ProfilePage: React.FC = () => {
           </div>
         </div>
       </div>
-    </>
+      <ThemeToggleButton />
+    </div>
   );
 };
  

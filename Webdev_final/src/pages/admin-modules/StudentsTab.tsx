@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, ChevronRight, X, Edit, Trash2, CheckCircle, User, ShoppingCart } from 'lucide-react';
+import { Search, ChevronRight, X, Edit, Trash2, CheckCircle, ShoppingCart } from 'lucide-react';
 import api from '../../api';
 import { useConfirm } from './ConfirmDialog';
 

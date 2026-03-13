@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api';
-import './HomePage.css';
+import './HomeTheme.css';
 import { Home, Book, User, LogOut, Info, Upload, CheckCircle, Clock } from 'lucide-react';
 import logoImage from '../assets/Logo.png';
 import defaultCourseImage from '../assets/locobackgroudewhite.png';
 import { useCart } from '../contexts/CartContext';
+import { useTheme } from '../contexts/ThemeContext';
+import './OceanTheme.css';
 
 const PaymentPage: React.FC = () => {
+  const { theme } = useTheme();
   const { courseId } = useParams(); // มีค่า = มาจากปุ่ม "ลงทะเบียนเรียนเลย", ไม่มี = มาจากตะกร้า
   const navigate = useNavigate();
   const { cartItems, fetchCart } = useCart();
@@ -145,7 +148,7 @@ const PaymentPage: React.FC = () => {
   );
 
   return (
-    <div className="page-wrapper" style={{ backgroundColor: '#f1f5f9', minHeight: '100vh' }}>
+    <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-page' : ''}`} style={{ backgroundColor: '#f1f5f9', minHeight: '100vh' }}>
       <nav className="navbar" style={{ background: 'linear-gradient(90deg, #3674B5 0%)' }}>
         <div className="container navbar-container">
           <a href="/home" className="navbar-left">
