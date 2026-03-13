@@ -11,7 +11,7 @@ import CourseManagement from './pages/admin-modules/AdminDashboard';
 import MyCourses from './pages/Mycourse';
 import CourseDetail from './pages/CourseDetail';
 import LearningPage from './pages/LearningPage';
-import ProfilePage from './pages/ProfilePage';
+import ProfilePage from './pages/ProfilePage/ProfilePage';
 import PaymentPage from './pages/PaymentPage'; // ✨ 1. Import หน้า Payment เข้ามา
 import { CartProvider } from './contexts/CartContext';
 
