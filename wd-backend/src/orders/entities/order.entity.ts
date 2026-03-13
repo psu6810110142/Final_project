@@ -14,6 +14,12 @@ export class Order {
   @Column({ type: 'enum', enum: ['WAITING_PAYMENT', 'COMPLETED', 'CANCELLED', 'REJECTED'], default: 'WAITING_PAYMENT' })
   status: string;
 
+  @Column({ type: 'timestamp', nullable: true })
+  access_start_date: Date | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  access_expire_date: Date | null;
+
   @CreateDateColumn()
   created_at: Date;
 

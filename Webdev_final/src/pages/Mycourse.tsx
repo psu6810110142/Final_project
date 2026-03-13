@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './HomePage.css';
-import { PlayCircle, CheckCircle } from 'lucide-react';
+import { PlayCircle, CheckCircle, LockKeyhole } from 'lucide-react';
 import api from '../api';
 import Navbar from '../components/Navbar';
 
@@ -14,6 +14,7 @@ interface Course {
   orderStatus: string;
   tagColor: string;
   textColor: string;
+  expireDate: Date | null;
 }
 
 const getImageUrl = (url?: string): string => {
@@ -30,10 +31,17 @@ const statusStyleMap: Record<string, { tagColor: string; textColor: string }> = 
 
 const MyCourses: React.FC = () => {
   const navigate = useNavigate();
-  const [filter, setFilter] = useState("all");
+  const location = useLocation();
+  const [filter, setFilter] = useState("in-progress");
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [myCourses, setMyCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  const [expiredPopup, setExpiredPopup] = useState<{ courseId: string; expiredAt: string } | null>(
+    location.state?.expiredCourseId 
+    ? { courseId: location.state.expiredCourseId, expiredAt: location.state.expiredAt }
+    : null
+);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -113,6 +121,7 @@ const MyCourses: React.FC = () => {
             orderStatus: order.status,
             tagColor: statusStyle.tagColor,
             textColor: statusStyle.textColor,
+            expireDate: order.access_expire_date ? new Date(order.access_expire_date) : null,
           });
         });
       });
@@ -133,15 +142,35 @@ const MyCourses: React.FC = () => {
   };
 
   const filteredCourses = myCourses.filter(course => {
-    if (filter === "in-progress") return course.progress < 100;
+    const isExpired = course.expireDate ? course.expireDate < new Date() : false;
+    if (filter === "in-progress") return course.progress < 100 && !isExpired;
     if (filter === "completed") return course.progress === 100;
+    if (filter === "expired") return isExpired;
     return true;
   });
 
   return (
     <div className="page-wrapper">
-      <Navbar/>
-
+      {expiredPopup && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ backgroundColor: 'white', borderRadius: '16px', padding: '40px', maxWidth: '420px', width: '90%', textAlign: 'center' }}>
+            <LockKeyhole size={56} color="#eb2525" />
+            <h2 style={{ color: '#1e293b', margin: '16px 0 8px' }}>คอร์สหมดอายุแล้ว</h2>
+            <p style={{ color: '#64748b', marginBottom: '24px' }}>
+              คอร์สนี้หมดอายุเมื่อ <strong>{expiredPopup.expiredAt}</strong><br/>
+              </p>
+              <button
+              onClick={() => setExpiredPopup(null)}
+              style={{ padding: '10px 32px', backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '1rem', fontWeight: '600' }}
+              >
+                รับทราบ
+                </button>
+              </div>
+            </div>
+          )}
+              
+              <Navbar/>
+              
       <div className="page-header">
         <div className="container">
           <h1 className="my-courses-header">คอร์สเรียนของฉัน</h1>
@@ -152,9 +181,10 @@ const MyCourses: React.FC = () => {
       <section className="section my-courses-section">
         <div className="container">
           <div className="tabs-container">
-            <button className={`tab-button ${filter === "all" ? "active" : ""}`} onClick={() => setFilter("all")}>ทั้งหมด</button>
             <button className={`tab-button ${filter === "in-progress" ? "active" : ""}`} onClick={() => setFilter("in-progress")}>กำลังเรียน</button>
             <button className={`tab-button ${filter === "completed" ? "active" : ""}`} onClick={() => setFilter("completed")}>เรียนจบแล้ว</button>
+            <button className={`tab-button ${filter === "expired" ? "active" : ""}`} onClick={() => setFilter("expired")}>หมดเขตเรียน</button>
+            <button className={`tab-button ${filter === "all" ? "active" : ""}`} onClick={() => setFilter("all")}>ทั้งหมด</button>
           </div>
 
           {loading ? (
@@ -163,7 +193,13 @@ const MyCourses: React.FC = () => {
             <div className="courses-grid">
               {filteredCourses.length > 0 ? (
                 filteredCourses.map((course) => (
-                  <div key={course.id} onClick={() => navigate(`/learn/${course.id}`)} style={{ cursor: 'pointer' }}>
+                  <div key={course.id} onClick={() => { 
+                    const isExpired = course.expireDate ? course.expireDate < new Date() : false;
+                    if (isExpired) {
+                      setExpiredPopup({ courseId: String(course.id), expiredAt: course.expireDate!.toLocaleDateString('th-TH') });
+                      return;
+                    }
+                    navigate(`/learn/${course.id}`);}} style={{ cursor: 'pointer' }}>
                     <MyCourseCard course={course} />
                   </div>
                 ))
@@ -261,6 +297,22 @@ const MyCourseCard = ({ course }: { course: Course }) => {
             {isCompleted ? 'ทบทวนเนื้อหา' : <><PlayCircle size={18} /> เรียนต่อ</>}
           </button>
         )}
+
+        {isApproved && course.expireDate && (
+          <div style={{ 
+            fontSize: '12px', 
+            color: course.expireDate < new Date() ? '#991b1b' : '#64748b',
+            backgroundColor: course.expireDate < new Date() ? '#fee2e2' : '#f1f5f9',
+            padding: '6px 10px', 
+            borderRadius: '6px', 
+            marginTop: '8px' 
+            }}>
+              {course.expireDate < new Date()
+              ? `หมดอายุแล้วเมื่อ ${course.expireDate.toLocaleDateString('th-TH')}`
+              : `หมดอายุ ${course.expireDate.toLocaleDateString('th-TH')}`
+    }
+  </div>
+)}
       </div>
     </div>
   );
