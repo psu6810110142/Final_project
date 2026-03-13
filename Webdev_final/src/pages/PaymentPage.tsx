@@ -2,17 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api';
 import './HomePage.css';
-import { Home, Book, User, LogOut, Info, Upload, CheckCircle, Clock } from 'lucide-react';
+import { Home, Book, User, LogOut, Info, Upload, CheckCircle, Clock, QrCode } from 'lucide-react';
 import logoImage from '../assets/Logo.png';
 import defaultCourseImage from '../assets/locobackgroudewhite.png';
 import { useCart } from '../contexts/CartContext';
 
 const PaymentPage: React.FC = () => {
-  const { courseId } = useParams(); // มีค่า = มาจากปุ่ม "ลงทะเบียนเรียนเลย", ไม่มี = มาจากตะกร้า
+  const { courseId } = useParams();
   const navigate = useNavigate();
   const { cartItems, fetchCart } = useCart();
 
-  const isCartMode = !courseId; // true = มาจากตะกร้า
+  const isCartMode = !courseId; 
 
   const [course, setCourse] = useState<any>(null);
   const [loadingCourse, setLoadingCourse] = useState(true);
@@ -24,21 +24,21 @@ const PaymentPage: React.FC = () => {
 
   useEffect(() => {
     if (!isCartMode && courseId) {
-      // โหมดคอร์สเดียว: ดึงข้อมูลคอร์สจาก API
       api.get(`/courses/${courseId}`)
         .then(r => setCourse(r.data))
         .catch(() => setMessage('ไม่พบข้อมูลคอร์สเรียน'))
         .finally(() => setLoadingCourse(false));
     } else {
-      // โหมดตะกร้า: ไม่ต้องดึง course เพราะมี cartItems อยู่แล้ว
       setLoadingCourse(false);
     }
   }, [courseId, isCartMode]);
 
-  // คำนวณยอดรวม
   const totalAmount = isCartMode
     ? cartItems.reduce((sum, item) => sum + Number(item.course.price || 0), 0)
     : Number(course?.price || 0);
+
+  // ✨ กำหนดคอร์สที่จะดึงข้อมูลบัญชีและ QR Code มาแสดง (ถ้าตะกร้ามีหลายวิชา จะยึดข้อมูลของวิชาแรก)
+  const displayCourse = isCartMode && cartItems.length > 0 ? cartItems[0].course : course;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
@@ -54,8 +54,6 @@ const PaymentPage: React.FC = () => {
       setMessage('กรุณาอัพโหลดรูปสลิปการโอนเงินก่อนส่งครับ');
       return;
     }
-
-    // ตรวจสอบ cartMode ว่ามีของในตะกร้าไหม
     if (isCartMode && cartItems.length === 0) {
       setMessage('ไม่มีคอร์สในตะกร้า');
       return;
@@ -74,17 +72,14 @@ const PaymentPage: React.FC = () => {
         return;
       }
 
-      // Step 1: สร้าง Order
       const orderRes = await api.post('/orders', {
         user_id: userId,
         total_amount: totalAmount,
-        ...(isCartMode ? {} : { course_id: Number(courseId) }), // เช็คซ้ำเฉพาะโหมดคอร์สเดียว
+        ...(isCartMode ? {} : { course_id: Number(courseId) }),
       });
       const orderId = orderRes.data.order_id;
 
-      // Step 2: สร้าง Order Details
       if (isCartMode) {
-        // หลายคอร์ส: สร้าง order_detail ทีละคอร์สใน cartItems
         await Promise.all(
           cartItems.map(item =>
             api.post('/order-details', {
@@ -95,7 +90,6 @@ const PaymentPage: React.FC = () => {
           )
         );
       } else {
-        // คอร์สเดียว
         await api.post('/order-details', {
           order_id: orderId,
           course_id: Number(courseId),
@@ -103,7 +97,6 @@ const PaymentPage: React.FC = () => {
         });
       }
 
-      // Step 3: Upload Payment + Slip
       const formData = new FormData();
       formData.append('slip_image', selectedFile);
       formData.append('order_id', String(orderId));
@@ -114,12 +107,11 @@ const PaymentPage: React.FC = () => {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
-      // Step 4: ล้างตะกร้า (เฉพาะโหมดตะกร้า)
       if (isCartMode) {
         await Promise.all(
           cartItems.map(item => api.delete(`/cart-items/${item.cart_item_id}`))
         );
-        await fetchCart(); // อัปเดตตัวเลขตะกร้าใน Navbar
+        await fetchCart(); 
       }
 
       setIsSuccess(true);
@@ -177,15 +169,33 @@ const PaymentPage: React.FC = () => {
           {/* ฝั่งซ้าย: ข้อมูลธนาคาร + อัปโหลดสลิป */}
           <div>
             <div className="payment-card">
-              <h2 className="payment-title">ข้อมูลการโอนเงิน</h2>
-              <div className="bank-info-box">
-                <div className="bank-row"><span className="bank-label">ธนาคาร:</span><span className="bank-value">ธนาคารกสิกรไทย</span></div>
-                <div className="bank-row"><span className="bank-label">ชื่อบัญชี:</span><span className="bank-value">New Learning Academy Co., Ltd.</span></div>
-                <div className="bank-row"><span className="bank-label">เลขที่บัญชี:</span><span className="bank-value">123-4-56789-0</span></div>
-                <div className="bank-row" style={{ marginTop: '20px' }}>
-                  <span className="bank-label">จำนวนเงิน:</span>
-                  <div className="bank-amount">฿{totalAmount.toLocaleString()}</div>
+              <h2 className="payment-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <QrCode size={20} /> ข้อมูลการโอนเงิน
+              </h2>
+              
+              {/* ✨ แสดงข้อมูลบัญชีและ QR Code ที่ดึงมาจาก Database */}
+              <div className="bank-info-box" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div>
+                  <div className="bank-row"><span className="bank-label">ธนาคาร:</span><span className="bank-value">{displayCourse?.bank_name || 'ไม่ระบุ (กรุณาติดต่อแอดมิน)'}</span></div>
+                  <div className="bank-row"><span className="bank-label">ชื่อบัญชี:</span><span className="bank-value">{displayCourse?.account_name || '-'}</span></div>
+                  <div className="bank-row"><span className="bank-label">เลขที่บัญชี:</span><span className="bank-value">{displayCourse?.account_number || '-'}</span></div>
+                  <div className="bank-row" style={{ marginTop: '15px', paddingTop: '15px', borderTop: '1px dashed #cbd5e1' }}>
+                    <span className="bank-label" style={{ fontSize: '1.1rem' }}>จำนวนเงินที่ต้องชำระ:</span>
+                    <div className="bank-amount">฿{totalAmount.toLocaleString()}</div>
+                  </div>
                 </div>
+
+                {/* แสดงรูป QR Code ถ้ามี */}
+                {displayCourse?.payment_qr_url && (
+                  <div style={{ textAlign: 'center', backgroundColor: 'white', padding: '15px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                    <p style={{ margin: '0 0 10px 0', fontSize: '0.9rem', color: '#64748b' }}>สแกน QR Code เพื่อชำระเงิน</p>
+                    <img 
+                      src={getImageUrl(displayCourse.payment_qr_url)} 
+                      alt="Payment QR Code" 
+                      style={{ maxWidth: '200px', width: '100%', borderRadius: '8px' }} 
+                    />
+                  </div>
+                )}
               </div>
               <div className="payment-alert"><Info size={18} /><span>กรุณาโอนเงินตามจำนวนที่ระบุและอัพโหลดหลักฐานการโอนเงิน</span></div>
             </div>
@@ -193,7 +203,7 @@ const PaymentPage: React.FC = () => {
             <div className="payment-card">
               <h2 className="payment-title">อัพโหลดสลิปการโอนเงิน</h2>
               <label style={{ display: 'block', marginBottom: '12px', fontSize: '0.9rem', fontWeight: 'bold', color: '#1e293b' }}>
-                รูปสลิปการโอนเงิน *
+                รูปสลิปของท่าน *
               </label>
               <input
                 type="file" accept="image/*"
@@ -230,7 +240,7 @@ const PaymentPage: React.FC = () => {
                   style={{ opacity: (isLoading || !selectedFile) ? 0.6 : 1, cursor: (isLoading || !selectedFile) ? 'not-allowed' : 'pointer' }}
                 >
                   <Upload size={18} />
-                  {isLoading ? 'กำลังส่งข้อมูล...' : 'ส่งหลักฐานการชำระเงิน'}
+                  {isLoading ? 'กำลังส่งข้อมูล...' : 'แจ้งโอนเงิน'}
                 </button>
               )}
             </div>
@@ -242,7 +252,6 @@ const PaymentPage: React.FC = () => {
               <h2 className="payment-title">สรุปการสั่งซื้อ</h2>
 
               {isCartMode ? (
-                // โหมดตะกร้า: แสดงรายการทุกคอร์ส
                 <>
                   {cartItems.map(item => (
                     <div key={item.cart_item_id} style={{ display: 'flex', gap: '12px', marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid #f1f5f9' }}>
@@ -260,7 +269,6 @@ const PaymentPage: React.FC = () => {
                   ))}
                 </>
               ) : (
-                // โหมดคอร์สเดียว: แสดงเหมือนเดิม
                 <>
                   <img
                     src={getImageUrl(course?.cover_image_url)}
@@ -287,14 +295,6 @@ const PaymentPage: React.FC = () => {
 
         </div>
       </div>
-
-      <footer className="footer" style={{ backgroundColor: '#3674B5', color: 'white', padding: '60px 0 30px' }}>
-        <div className="container">
-          <div style={{ textAlign: 'center', fontSize: '0.9rem', opacity: 0.9 }}>
-            © 2026 New Learning Academy. All rights reserved.
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };

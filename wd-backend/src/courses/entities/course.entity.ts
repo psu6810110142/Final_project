@@ -34,6 +34,19 @@ export class Course {
   @Column({ type: 'text', nullable: true })
   promo_video_url: string;
 
+  // ✨ เพิ่มคอลัมน์ใหม่สำหรับข้อมูลการชำระเงินของคอร์สนี้
+  @Column({ type: 'text', nullable: true })
+  payment_qr_url: string;
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  bank_name: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  account_name: string;
+
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  account_number: string;
+
   @Column({ type: 'int', default: 0 })
   total_enrolled: number;
 
@@ -44,20 +57,15 @@ export class Course {
   created_at: Date;
 
   // --- ความสัมพันธ์ (Foreign Keys) ---
-
-  // หลายคอร์ส อยู่ใน 1 ระดับชั้น (Many-to-One)
   @ManyToOne(() => Level, (level) => level.courses)
-  @JoinColumn({ name: 'level_id' }) // ระบุชื่อ FK ให้ตรงกับ ER Diagram
+  @JoinColumn({ name: 'level_id' })
   level: Level;
 
-  // หลายคอร์ส สอนโดยอาจารย์ 1 คน (Many-to-One)
   @ManyToOne(() => Instructor, (instructor) => instructor.courses)
   @JoinColumn({ name: 'instructor_id' })
   instructor: Instructor;
 
   @OneToMany(() => Lesson, (lesson) => lesson.course) lessons: Lesson[];
-
   @OneToMany(() => CartItem, (cartItem) => cartItem.course) cart_items: CartItem[];
-
   @OneToMany(() => OrderDetail, (orderDetail) => orderDetail.course) order_details: OrderDetail[];
 }
