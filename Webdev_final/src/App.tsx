@@ -14,7 +14,10 @@ import CourseDetail from './pages/CourseDetail';
 import LearningPage from './pages/LearningPage';
 import ProfilePage from './pages/ProfilePage';
 import PaymentPage from './pages/PaymentPage'; // ✨ 1. Import หน้า Payment เข้ามา
+import CompleteProfile from './pages/CompleteProfile';
+import AuthCallback from './pages/AuthCallback';
 import { CartProvider } from './contexts/CartContext';
+
 
 function App() {
   usePing();
@@ -61,6 +64,11 @@ function App() {
 
           {/* กรณีพิมพ์มั่ว ให้เด้งกลับหน้าแรก */}
           <Route path="*" element={<LandingPage />} />
+          
+          {/* OAuth System */}
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/complete-profile" element={<CompleteProfile />} />
+
         </Routes>
       </CartProvider>
     </BrowserRouter>
