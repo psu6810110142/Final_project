@@ -11,7 +11,7 @@ export class Order {
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   total_amount: number;
 
-  @Column({ type: 'enum', enum: ['WAITING_PAYMENT', 'COMPLETED', 'CANCELLED'], default: 'WAITING_PAYMENT' })
+  @Column({ type: 'enum', enum: ['WAITING_PAYMENT', 'COMPLETED', 'REJECTED'], default: 'WAITING_PAYMENT' })
   status: string;
 
   @Column({ type: 'timestamp', nullable: true })
