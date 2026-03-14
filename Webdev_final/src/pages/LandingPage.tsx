@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import './HomePage.css'; // ใช้ CSS เดิม
+import './HomeTheme.css'; // ใช้ CSS เดิม
 import './OceanTheme.css'; // 🌊 Ocean Theme Overlay
-import { Home, BookOpen, Users, Star, ArrowRight, Clock, LogIn, UserPlus, Book } from 'lucide-react';
+import { Home, BookOpen, Users, ArrowRight, Clock, LogIn, UserPlus, Book } from 'lucide-react';
 import logoImage from '../assets/Logo.png';
 import api from '../api';
 import { Link } from 'react-router-dom';
 import GrayLogo from '../assets/graylogo.png'
+import ThemeToggleButton from '../components/ThemeToggleButton';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface CourseData {
   course_id: number;
@@ -37,6 +39,7 @@ const getImageUrl = (url?: string, type: 'course' | 'user' = 'course') => {
 };
 
 const LandingPage: React.FC = () => {
+  const { theme } = useTheme();
 
   const [courses, setCourses] = useState<CourseData[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -59,7 +62,7 @@ const LandingPage: React.FC = () => {
   }, []);
 
   return (
-    <div className="page-wrapper ocean-page">
+    <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-page' : ''}`}>
       {/* ================= Navbar (เวอร์ชันยังไม่ล็อกอิน) ================= */}
       <nav className="navbar">
         <div className="container navbar-container">
@@ -96,22 +99,24 @@ const LandingPage: React.FC = () => {
 
       {/* ================= Hero Section ================= */}
       <header className="page-header">
-        {/* 🌊 Ocean Decorations */}
-        <div className="ocean-bubbles">
-          {[...Array(10)].map((_, i) => <div key={i} className="bubble" />)}
-        </div>
-        <span className="fish fish-1">🐠</span>
-        <span className="fish fish-2">🐟</span>
-        <span className="fish fish-3">🦑</span>
-        <span className="seagull seagull-1">🕊️</span>
-        <span className="seagull seagull-2">🦅</span>
-        {/* 🏖️ Beach layers */}
-        <div className="wave-layer-1" />
-        <div className="wave-layer-2" />
-        <div className="wave-layer-3" />
-        <div className="wave-layer-sand" />
-        <span className="palm-left">🌴</span>
-        <span className="palm-right">🌴</span>
+        {theme === 'ocean' && (
+          <>
+            <div className="ocean-bubbles">
+              {[...Array(10)].map((_, i) => <div key={i} className="bubble" />)}
+            </div>
+            <span className="fish fish-1">🐠</span>
+            <span className="fish fish-2">🐟</span>
+            <span className="fish fish-3">🦑</span>
+            <span className="seagull seagull-1">🕊️</span>
+            <span className="seagull seagull-2">🦅</span>
+            <div className="wave-layer-1" />
+            <div className="wave-layer-2" />
+            <div className="wave-layer-3" />
+            <div className="wave-layer-sand" />
+            <span className="palm-left">🌴</span>
+            <span className="palm-right">🌴</span>
+          </>
+        )}
         <div className="container hero-content">
           <div className="hero-text" style={{ marginLeft: '5%' }}>
             <h1>เรียนออนไลน์ <br />ที่บ้าน สะดวก สบาย</h1>
@@ -238,6 +243,7 @@ const LandingPage: React.FC = () => {
           </div>
         </div>
       </footer>
+      <ThemeToggleButton />
     </div>
   );
 };

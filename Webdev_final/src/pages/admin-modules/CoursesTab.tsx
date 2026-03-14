@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Edit, Trash2, X, Upload } from 'lucide-react';
+import { Plus, Edit, Trash2, X, Upload, QrCode } from 'lucide-react';
 import api from '../../api';
 import { useConfirm } from './ConfirmDialog';
 
@@ -12,43 +12,53 @@ interface Props {
   onRefresh: () => void;
 }
 
-const emptyCourse: CourseData = {
+// ✨ ปรับปรุง emptyCourse ให้รองรับข้อมูล payment (ใช้ any ชั่วคราวเพื่อเลี่ยง TS Error ถ้ายังไม่ได้แก้ไฟล์ types.ts)
+const emptyCourse: any = {
   course_id: 0, title: '', description: '', price: 0,
   duration_weeks: 0, level_id: 0, instructor_id: 0,
   cover_image_file: null, material_file: null, exercise_file: null,
+  payment_qr_file: null, bank_name: '', account_name: '', account_number: ''
 };
 
 const CoursesTab: React.FC<Props> = ({ courses, instructors, onRefresh }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { confirm, ConfirmDialogComponent } = useConfirm();
   const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
-  const [formData, setFormData] = useState<CourseData>(emptyCourse);
-  // ✅ preview URLs for immediate display after file selection
+  const [formData, setFormData] = useState<any>(emptyCourse);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [qrPreview, setQrPreview] = useState<string | null>(null); // ✨ State สำหรับ Preview QR
 
   const openAdd = () => {
     setModalMode('add');
     setFormData(emptyCourse);
     setCoverPreview(null);
+    setQrPreview(null);
     setIsModalOpen(true);
   };
 
-  const openEdit = (course: CourseData) => {
+  const openEdit = (course: any) => {
     setModalMode('edit');
-    setFormData({ ...course, level_id: course.level?.level_id || 0, instructor_id: course.instructor?.instructor_id || 0, cover_image_file: null, material_file: null, exercise_file: null });
-    setCoverPreview(null); // will fall back to existing URL
+    setFormData({ 
+      ...course, 
+      level_id: course.level?.level_id || 0, 
+      instructor_id: course.instructor?.instructor_id || 0, 
+      cover_image_file: null, 
+      payment_qr_file: null 
+    });
+    setCoverPreview(null);
+    setQrPreview(null);
     setIsModalOpen(true);
   };
 
   const handleCoverChange = (file: File | null) => {
-    setFormData(prev => ({ ...prev, cover_image_file: file }));
-    if (file) {
-      // ✅ สร้าง object URL เพื่อ preview ทันที
-      const objectUrl = URL.createObjectURL(file);
-      setCoverPreview(objectUrl);
-    } else {
-      setCoverPreview(null);
-    }
+    setFormData((prev: any) => ({ ...prev, cover_image_file: file }));
+    setCoverPreview(file ? URL.createObjectURL(file) : null);
+  };
+
+  // ✨ ฟังก์ชันจัดการรูป QR Code
+  const handleQrChange = (file: File | null) => {
+    setFormData((prev: any) => ({ ...prev, payment_qr_file: file }));
+    setQrPreview(file ? URL.createObjectURL(file) : null);
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -56,13 +66,21 @@ const CoursesTab: React.FC<Props> = ({ courses, instructors, onRefresh }) => {
     try {
       const fd = new FormData();
       fd.append('title', formData.title);
-      fd.append('description', formData.description);
+      fd.append('description', formData.description || '');
       fd.append('price', String(formData.price));
       fd.append('duration_weeks', String(formData.duration_weeks));
       if (formData.level_id && formData.level_id > 0) fd.append('level_id', String(formData.level_id));
       if (formData.instructor_id && formData.instructor_id > 0) fd.append('instructor_id', String(formData.instructor_id));
-      if (formData.cover_image_file) fd.append('cover_image', formData.cover_image_file);
+      
+      // ✨ เพิ่มข้อมูลการชำระเงินลงใน FormData
+      if (formData.bank_name) fd.append('bank_name', formData.bank_name);
+      if (formData.account_name) fd.append('account_name', formData.account_name);
+      if (formData.account_number) fd.append('account_number', formData.account_number);
 
+      if (formData.cover_image_file) fd.append('cover_image', formData.cover_image_file);
+      if (formData.payment_qr_file) fd.append('payment_qr', formData.payment_qr_file); // ส่งไฟล์ QR
+
+      // ถ้า Backend ของคุณใช้ multer, จะต้องอัปเดต Controller ให้รับ 'payment_qr' ด้วยนะครับ
       const config = { headers: { 'Content-Type': 'multipart/form-data' } };
       if (modalMode === 'add') await api.post('/courses', fd, config);
       else await api.patch(`/courses/${formData.course_id}`, fd, config);
@@ -70,7 +88,7 @@ const CoursesTab: React.FC<Props> = ({ courses, instructors, onRefresh }) => {
       setIsModalOpen(false);
       onRefresh();
     } catch {
-      alert('บันทึกคอร์สไม่สำเร็จ');
+      alert('บันทึกคอร์สไม่สำเร็จ (โปรดตรวจสอบ Backend Controller ว่ารองรับ payment_qr หรือไม่)');
     }
   };
 
@@ -81,8 +99,7 @@ const CoursesTab: React.FC<Props> = ({ courses, instructors, onRefresh }) => {
     catch { alert('ลบไม่สำเร็จ'); }
   };
 
-  // ✅ ฟังก์ชันหา URL รูปที่ถูกต้อง: ถ้ามี preview ใช้ preview, ไม่งั้นใช้จาก server
-  const getCoverDisplayUrl = (course: CourseData) => getImageUrl(course.cover_image_url);
+  const getCoverDisplayUrl = (course: any) => getImageUrl(course.cover_image_url);
 
   return (
     <div className="animate-fade-in">
@@ -96,18 +113,11 @@ const CoursesTab: React.FC<Props> = ({ courses, instructors, onRefresh }) => {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
         {courses.map(course => (
           <div key={course.course_id} style={{ background: 'white', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-            {/* ✅ รูปหน้าปกคอร์ส */}
             <div style={{
-              height: '160px',
-              backgroundColor: '#e2e8f0',
+              height: '160px', backgroundColor: '#e2e8f0',
               backgroundImage: getCoverDisplayUrl(course) ? `url(${getCoverDisplayUrl(course)})` : undefined,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#94a3b8',
-              fontSize: '13px',
+              backgroundSize: 'cover', backgroundPosition: 'center',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: '13px',
             }}>
               {!getCoverDisplayUrl(course) && 'ไม่มีรูปหน้าปก'}
             </div>
@@ -117,7 +127,6 @@ const CoursesTab: React.FC<Props> = ({ courses, instructors, onRefresh }) => {
               </span>
               <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '6px', color: '#1e293b' }}>{course.title}</h3>
               <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '4px' }}>สอนโดย: {course.instructor?.name || 'ไม่ระบุ'}</div>
-              <div style={{ fontSize: '12px', color: '#94a3b8' }}>{course.duration_weeks} สัปดาห์</div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px' }}>
                 <span style={{ fontSize: '18px', fontWeight: 'bold', color: '#10b981' }}>฿{Number(course.price).toLocaleString()}</span>
                 <div style={{ display: 'flex', gap: '8px' }}>
@@ -134,15 +143,16 @@ const CoursesTab: React.FC<Props> = ({ courses, instructors, onRefresh }) => {
         ))}
       </div>
 
-      {/* Modal */}
       {isModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content" style={{ maxWidth: '620px' }}>
+        <div className="modal-overlay" style={{ overflowY: 'auto', padding: '20px 0' }}>
+          <div className="modal-content" style={{ maxWidth: '620px', margin: 'auto' }}>
             <div className="modal-header">
               <h2>{modalMode === 'add' ? 'เพิ่มคอร์สใหม่' : 'แก้ไขคอร์ส'}</h2>
               <button onClick={() => setIsModalOpen(false)} className="btn-close"><X /></button>
             </div>
             <form onSubmit={handleSave} className="form-wrapper">
+              
+              {/* --- ข้อมูลคอร์สทั่วไป --- */}
               <div className="form-group">
                 <label>ชื่อคอร์ส *</label>
                 <input className="form-input" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} required />
@@ -178,30 +188,49 @@ const CoursesTab: React.FC<Props> = ({ courses, instructors, onRefresh }) => {
                 </div>
               </div>
 
-              {/* ✅ Upload section with preview */}
-              <div style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '10px', border: '1px dashed #cbd5e1', marginBottom: '20px' }}>
-                <h4 style={{ fontSize: '14px', marginBottom: '12px', color: '#334155', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Upload size={15} /> อัปโหลดไฟล์
+              {/* ✨ ข้อมูลการรับชำระเงินของคอร์สนี้ */}
+              <div style={{ backgroundColor: '#eff6ff', padding: '16px', borderRadius: '10px', border: '1px solid #bfdbfe', marginBottom: '20px' }}>
+                <h4 style={{ fontSize: '15px', marginBottom: '12px', color: '#1e3a8a', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <QrCode size={16} /> ข้อมูลการรับชำระเงิน (แสดงในหน้า Payment)
                 </h4>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>ธนาคาร (เช่น กสิกรไทย)</label>
+                    <input className="form-input" placeholder="ธนาคารกสิกรไทย" value={formData.bank_name || ''} onChange={e => setFormData({ ...formData, bank_name: e.target.value })} />
+                  </div>
+                  <div className="form-group">
+                    <label>เลขที่บัญชี</label>
+                    <input className="form-input" placeholder="123-4-56789-0" value={formData.account_number || ''} onChange={e => setFormData({ ...formData, account_number: e.target.value })} />
+                  </div>
+                </div>
                 <div className="form-group">
-                  <label>รูปหน้าปก</label>
-                  {/* ✅ Preview ทันทีหลังเลือกไฟล์ */}
-                  {(coverPreview || formData.cover_image_url) && (
+                  <label>ชื่อบัญชี</label>
+                  <input className="form-input" placeholder="นาย สมชาย ใจดี" value={formData.account_name || ''} onChange={e => setFormData({ ...formData, account_name: e.target.value })} />
+                </div>
+                <div className="form-group">
+                  <label>อัปโหลดรูป QR Code รับเงิน</label>
+                  {(qrPreview || formData.payment_qr_url) && (
                     <div style={{ marginBottom: '8px' }}>
-                      <img
-                        src={coverPreview || getImageUrl(formData.cover_image_url)}
-                        alt="preview"
-                        style={{ width: '100%', maxHeight: '120px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #e2e8f0' }}
-                      />
+                      <img src={qrPreview || getImageUrl(formData.payment_qr_url)} alt="QR preview" style={{ width: '150px', objectFit: 'contain', borderRadius: '8px', border: '1px solid #cbd5e1' }} />
                     </div>
                   )}
-                  <input type="file" accept="image/*" className="form-input"
-                    onChange={e => handleCoverChange(e.target.files?.[0] || null)}
-                  />
+                  <input type="file" accept="image/*" className="form-input" onChange={e => handleQrChange(e.target.files?.[0] || null)} />
                 </div>
-                <p style={{ fontSize: '12px', color: '#94a3b8', margin: '8px 0 0' }}>
-                  📁 ไฟล์เอกสารและแบบฝึกหัดจัดการได้ที่เมนู "จัดการบทเรียน"
-                </p>
+              </div>
+
+              {/* อัปโหลดไฟล์หน้าปก */}
+              <div style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '10px', border: '1px dashed #cbd5e1', marginBottom: '20px' }}>
+                <h4 style={{ fontSize: '14px', marginBottom: '12px', color: '#334155', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Upload size={15} /> รูปหน้าปกคอร์ส
+                </h4>
+                <div className="form-group">
+                  {(coverPreview || formData.cover_image_url) && (
+                    <div style={{ marginBottom: '8px' }}>
+                      <img src={coverPreview || getImageUrl(formData.cover_image_url)} alt="preview" style={{ width: '100%', maxHeight: '120px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #e2e8f0' }} />
+                    </div>
+                  )}
+                  <input type="file" accept="image/*" className="form-input" onChange={e => handleCoverChange(e.target.files?.[0] || null)} />
+                </div>
               </div>
 
               <div className="modal-footer">

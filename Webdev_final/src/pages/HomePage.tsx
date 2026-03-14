@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import './HomePage.css';
+import './HomeTheme.css';
 import { BookOpen, ArrowRight, Users, Star, Clock } from 'lucide-react';
 import GrayLogo from '../assets/graylogo.png';
 import api from '../api'; 
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import './OceanTheme.css';
+import { useTheme } from '../contexts/ThemeContext';
+import ThemeToggleButton from '../components/ThemeToggleButton';
 
 interface CourseData {
   course_id: number;
@@ -36,6 +39,7 @@ const getImageUrl = (url?: string, type: 'course' | 'user' = 'course') => {
 };
 
 const HomePage: React.FC = () => {
+  const { theme } = useTheme();
   // State สำหรับคอร์สเรียน
   const [courses, setCourses] = useState<CourseData[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -57,11 +61,29 @@ const HomePage: React.FC = () => {
   }, []);
 
   return (
-    <div className="page-wrapper">
+    <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-page' : ''}`}>
       <Navbar/>
 
       {/* ================= Hero Section ================= */}
       <header className="page-header">
+        {theme === 'ocean' && (
+          <>
+            <div className="ocean-bubbles">
+              {[...Array(10)].map((_, i) => <div key={i} className="bubble" />)}
+            </div>
+            <span className="fish fish-1">🐠</span>
+            <span className="fish fish-2">🐟</span>
+            <span className="fish fish-3">🦑</span>
+            <span className="seagull seagull-1">🕊️</span>
+            <span className="seagull seagull-2">🦅</span>
+            <div className="wave-layer-1" />
+            <div className="wave-layer-2" />
+            <div className="wave-layer-3" />
+            <div className="wave-layer-sand" />
+            <span className="palm-left">🌴</span>
+            <span className="palm-right">🌴</span>
+          </>
+        )}
         <div className="container hero-content">
           <div className="hero-text" style={{ marginLeft: '5%' }}>
             <h1>เรียนออนไลน์ <br />ที่บ้าน สะดวก สบาย</h1>
@@ -175,6 +197,7 @@ const HomePage: React.FC = () => {
           </div>
         </div>
       </footer>
+      <ThemeToggleButton />
     </div>
   );
 };
