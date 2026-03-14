@@ -14,19 +14,10 @@ import { GoogleStrategy } from './google.strategy';
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => {
-        const secret = configService.get<string>('JWT_SECRET');
-        
-        // ✨ เพิ่มการตรวจสอบ: ถ้าไม่มีค่าใน .env ให้ใช้ค่า Default ป้องกันแอปพัง
-        if (!secret) {
-          console.warn('⚠️ JWT_SECRET not found in .env, using default fallback!');
-        }
-
-        return {
-          secret: secret || 'NewLearningSecretKey2026!', // ใส่ค่าสำรองไว้ตรงนี้
-          signOptions: { expiresIn: '1h' },
-        };
-      },
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.getOrThrow<string>('JWT_SECRET'),
+        signOptions: { expiresIn: '1h' },
+      }),
       inject: [ConfigService],
     }),
   ],
