@@ -61,7 +61,11 @@
   padding-bottom: 200px !important;
   position: relative;
   overflow: hidden;
-  min-height: 520px;
+  min-height: 200px;
+}
+
+.ocean-page .my-courses-section {
+  background: #f9fafb !important;
 }
 
 /* ดวงอาทิตย์ */

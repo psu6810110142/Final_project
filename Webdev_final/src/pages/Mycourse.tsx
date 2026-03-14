@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './HomeTheme.css';
-import { PlayCircle, CheckCircle, LockKeyhole } from 'lucide-react';
+import { PlayCircle, CheckCircle, LockKeyhole, Search } from 'lucide-react';
 import api from '../api';
 import Navbar from '../components/Navbar';
 import { useTheme } from '../contexts/ThemeContext';
 import './OceanTheme.css';
+import OceanAnimations from '../components/OceanAnimations';
+import ThemeToggleButton from '../components/ThemeToggleButton';
 
 interface Course {
   id: number;
@@ -39,6 +41,8 @@ const MyCourses: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [myCourses, setMyCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+
   
   const [expiredPopup, setExpiredPopup] = useState<{ courseId: string; expiredAt: string } | null>(
     location.state?.expiredCourseId 
@@ -146,14 +150,16 @@ const MyCourses: React.FC = () => {
 
   const filteredCourses = myCourses.filter(course => {
     const isExpired = course.expireDate ? course.expireDate < new Date() : false;
-    if (filter === "in-progress") return course.progress < 100 && !isExpired;
-    if (filter === "completed") return course.progress === 100;
-    if (filter === "expired") return isExpired;
-    return true;
+    const matchSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase());
+    if (filter === "in-progress") return course.progress < 100 && !isExpired && matchSearch;
+    if (filter === "completed") return course.progress === 100 && matchSearch;
+    if (filter === "expired") return isExpired && matchSearch;
+    return matchSearch;
   });
 
   return (
     <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-page' : ''}`}>
+      <ThemeToggleButton/>
       {expiredPopup && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ backgroundColor: 'white', borderRadius: '16px', padding: '40px', maxWidth: '420px', width: '90%', textAlign: 'center' }}>
@@ -174,12 +180,49 @@ const MyCourses: React.FC = () => {
               
               <Navbar/>
               
-      <div className="page-header">
-        <div className="container">
-          <h1 className="my-courses-header">คอร์สเรียนของฉัน</h1>
-          <p className="my-courses-subtitle">ยินดีต้อนรับกลับมา! ลุยต่อให้จบกันเถอะ</p>
+    <div className="page-header">
+          <OceanAnimations />
+      <div className="container" style={{ textAlign: 'center' }}>
+        <h1 className="my-courses-header" style={{ fontSize: '3rem', textAlign: 'center' }}>
+          คอร์สเรียนของฉัน
+        </h1>
+        <p className="my-courses-subtitle" style={{ fontSize: '1.1rem', textAlign: 'center' }}>
+          ยินดีต้อนรับกลับมา! ลุยต่อให้จบกันเถอะ
+        </p>
+          <p style={{ 
+            textAlign: 'center', 
+            color: 'white', 
+            fontSize: '1rem', 
+            marginTop: '10px',
+            opacity: 0.9 
+          }}>
+            ตอนนี้คุณเรียนไปแล้ว{' '}
+            <strong>{myCourses.filter(c => c.progress === 100).length}</strong>
+            {' '}คอร์ส จาก{' '}
+            <strong>{myCourses.length}</strong>
+            {' '}คอร์ส
+          </p>
+          <div style={{ maxWidth: '500px', margin: '20px auto 0', position: 'relative' }}>
+      <Search style={{ position: 'absolute', left: '15px', top: '14px', color: '#6b7280' }} size={20} />
+      <input
+        type="text"
+        placeholder="ค้นหาชื่อคอร์สเรียน..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        style={{ 
+          width: '100%', 
+          padding: '14px 14px 14px 45px', 
+          borderRadius: '50px', 
+          border: 'none', 
+          fontSize: '1rem', 
+          outline: 'none', 
+          color: '#1f2937',
+          boxSizing: 'border-box'
+        }}
+      />
+    </div>
         </div>
-      </div>
+    </div>
 
       <section className="section my-courses-section">
         <div className="container">

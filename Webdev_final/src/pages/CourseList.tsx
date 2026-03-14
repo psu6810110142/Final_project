@@ -7,6 +7,8 @@ import GrayLogo from '../assets/graylogo.png';
 import Navbar from '../components/Navbar';
 import { useTheme } from '../contexts/ThemeContext';
 import './OceanTheme.css';
+import OceanAnimations from '../components/OceanAnimations';
+import ThemeToggleButton from '../components/ThemeToggleButton';
 
 interface CourseData {
   course_id: number;
@@ -83,6 +85,8 @@ const CourseList: React.FC = () => {
             />
           </div>
         </div>
+        <OceanAnimations />
+        <ThemeToggleButton />
       </div>
 
       {/* ================= Courses Content ================= */}
