@@ -94,21 +94,13 @@ export class UsersService implements OnModuleInit {
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
-    const user = await this.findOne(id);
-
-    if (updateUserDto.password_hash) {
-      const salt = await bcrypt.genSalt();
-      updateUserDto.password_hash = await bcrypt.hash(updateUserDto.password_hash, salt);
-    }
-
-    Object.assign(user, updateUserDto);
-
-    if (updateUserDto.level_id) {
-      user.level = { level_id: updateUserDto.level_id } as any;
-    }
-    
-    return this.userRepo.save(user);
+  const user = await this.findOne(id);
+  Object.assign(user, updateUserDto);
+  if (updateUserDto.level_id) {
+    user.level = { level_id: updateUserDto.level_id } as any;
   }
+  return this.userRepo.save(user);
+}
 
   // ✅ เพิ่ม: เปลี่ยนรหัสผ่าน
   async changePassword(id: number, currentPassword: string, newPassword: string) {
