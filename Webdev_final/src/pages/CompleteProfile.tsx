@@ -51,10 +51,12 @@ return (
         <div className="auth-card">
             <div className="auth-header">
                 {picture && (
-                    <>
-                        {console.log('picture url:', picture)}
-                        <img src={picture} alt="profile" style={{ width: '72px', height: '72px', borderRadius: '50%', marginBottom: '12px' }} />
-                    </>
+                <img
+                    src={picture}
+                    alt="profile"
+                    referrerPolicy="no-referrer"
+                    style={{ width: '72px', height: '72px', borderRadius: '50%', marginBottom: '12px' }}
+                />
                 )}
                 <h2>ยินดีต้อนรับ! 👋</h2>
                 <p>สวัสดี {firstName} กรุณาตั้ง Username เพื่อเริ่มใช้งาน</p>
