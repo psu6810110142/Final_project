@@ -34,6 +34,9 @@ export class User {
 
   @Column({ type: 'timestamp', nullable: true })
   last_seen: Date;
+  
+  @Column({ type: 'text', nullable: true })
+  bio: string;
 
   @CreateDateColumn()
   created_at: Date;

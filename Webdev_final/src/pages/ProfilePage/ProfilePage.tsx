@@ -9,6 +9,7 @@ import '../OceanTheme.css';
 import { useTheme } from '../../contexts/ThemeContext';
 import ThemeToggleButton from '../../components/ThemeToggleButton';
 import OceanAnimations from '../../components/OceanAnimations';
+import BackButton from '../../components/BackButton';
 
 // ==================== Types ====================
 interface UserData {
@@ -87,9 +88,14 @@ const ProfilePage: React.FC = () => {
         const response = await api.get(`/users/${userId}`);
         const data = response.data;
         const lvlId = data.level?.level_id || null;
+
+        const nameParts = (data.full_name || '').trim().split(' ');
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '';
+
         setUserData({
-          firstName: data.firstName || data.first_name || '',
-          lastName: data.lastName || data.last_name || '',
+          firstName,
+          lastName,
           email: data.email || '',
           phone: data.phone || data.phoneNumber || data.phone_number || '',
           bio: data.bio || '',
@@ -154,28 +160,44 @@ const ProfilePage: React.FC = () => {
   };
  
   const handleUpdateProfile = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!userId) return alert('ไม่พบข้อมูลผู้ใช้ กรุณาเข้าสู่ระบบใหม่');
-    try {
-      const formData = new FormData();
-      formData.append('firstName', userData.firstName);
-      formData.append('lastName', userData.lastName);
-      formData.append('phone', userData.phone);
-      formData.append('bio', userData.bio);
-      if (selectedLevelId !== null) formData.append('level_id', String(selectedLevelId));
-      if (selectedFile) formData.append('profile_picture', selectedFile);
-      await api.patch(`/users/${userId}`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      const updatedUser = { ...storedUser, full_name: `${userData.firstName} ${userData.lastName}` };
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-      setUserData({ ...userData, levelId: selectedLevelId });
-      setLevelSuccess('บันทึกข้อมูลเรียบร้อยแล้ว ✅');
-      alert('บันทึกข้อมูลส่วนตัวเรียบร้อยแล้ว ✅');
-    } catch (error) {
-      alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
-    }
-  };
+  e.preventDefault();
+  try {
+    const formData = new FormData();
+    formData.append('full_name', `${userData.firstName} ${userData.lastName}`.trim());
+    formData.append('phone', userData.phone);
+    formData.append('bio', userData.bio);
+    if (selectedLevelId !== null) formData.append('level_id', String(selectedLevelId));
+    if (selectedFile) formData.append('profile_picture', selectedFile);
+
+    const response = await api.patch(`/users/${userId}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+
+    const updatedUser = response.data;
+    const nameParts = (updatedUser.full_name || '').split(' ');
+    setUserData(prev => ({
+      ...prev,
+      firstName: nameParts[0] || '',
+      lastName: nameParts.slice(1).join(' ') || '',
+      bio: updatedUser.bio || '',
+      phone: updatedUser.phone || '',
+    }));
+
+    const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+    localStorage.setItem('user', JSON.stringify({
+      ...storedUser,
+      full_name: updatedUser.full_name,
+    }));
+
+    setLevelSuccess('บันทึกข้อมูลเรียบร้อยแล้ว ✅');
+    alert('บันทึกข้อมูลส่วนตัวเรียบร้อยแล้ว ✅');
+
+  } catch (error) {
+    console.log('error:', error);
+    alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+  }
+};
+
  
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
@@ -241,7 +263,7 @@ const ProfilePage: React.FC = () => {
  
         <div className="page-header">
           <div className="container">
-            <button className="btn-back" onClick={() => navigate(-1)}>&#8592; ย้อนกลับ</button>
+            <BackButton/>
             <h1>ตั้งค่าโปรไฟล์</h1>
             <p>จัดการข้อมูลส่วนตัว ระดับชั้น รหัสผ่าน และประวัติการสั่งซื้อ</p>
           </div>
