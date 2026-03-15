@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, BookOpen, Briefcase, DollarSign, TrendingUp, CreditCard, GraduationCap, Clock, XCircle, CheckCircle, AlertCircle, BarChart2, ListChecks } from 'lucide-react';
+import { Users, BookOpen, Briefcase, DollarSign, TrendingUp, CreditCard, GraduationCap, Clock, XCircle, CheckCircle, AlertCircle, BarChart2, ListChecks, PlayCircle, Award, PauseCircle, Ban, Hourglass, Medal } from 'lucide-react';
 import api from '../../api';
 import type { CourseData, OrderData, InstructorData, LearningProgressData } from './types';
 
@@ -123,9 +123,9 @@ const DashboardTab: React.FC<Props> = ({ courses, users, orders, instructors, pr
 
         {/* B1 — สถานะการเรียนรู้ */}
         <Section title="สถานะการเรียนรู้" icon={<GraduationCap size={18}/>} color="#3b82f6">
-          <StatusBadge icon="📖" label="กำลังเรียนอยู่"   count={learning_active}    color="#3b82f6" bg="#eff6ff" />
-          <StatusBadge icon="🎓" label="เรียนจบแล้ว"      count={learning_completed} color="#10b981" bg="#f0fdf4" />
-          <StatusBadge icon="⏸️" label="ยังไม่เริ่มเรียน" count={Math.max(0, learning_active - learning_completed)} color="#f59e0b" bg="#fffbeb" />
+          <StatusBadge icon={<PlayCircle size={16}/>} label="กำลังเรียนอยู่"   count={learning_active}    color="#3b82f6" bg="#eff6ff" />
+          <StatusBadge icon={<Award size={16}/>} label="เรียนจบแล้ว"      count={learning_completed} color="#10b981" bg="#f0fdf4" />
+          <StatusBadge icon={<PauseCircle size={16}/>} label="ยังไม่เริ่มเรียน" count={Math.max(0, learning_active - learning_completed)} color="#f59e0b" bg="#fffbeb" />
           <div style={{ marginTop: '18px' }}>
             <ProgressBar label="อัตราเรียนจบ" value={learning_completed} max={learning_total} color="#10b981" />
           </div>
@@ -133,9 +133,9 @@ const DashboardTab: React.FC<Props> = ({ courses, users, orders, instructors, pr
 
         {/* B2 — สถานะการชำระเงิน */}
         <Section title="สถานะการชำระเงิน" icon={<CreditCard size={18}/>} color="#ec4899">
-          <StatusBadge icon="✅" label="ชำระเงินสำเร็จ"  count={pay_completed} color="#10b981" bg="#f0fdf4" />
-          <StatusBadge icon="⏳" label="รอการอนุมัติ"    count={pay_waiting}   color="#f59e0b" bg="#fffbeb" />
-          <StatusBadge icon="❌" label="ถูกปฏิเสธ/ยกเลิก" count={pay_rejected} color="#ef4444" bg="#fef2f2" />
+          <StatusBadge icon={<CheckCircle size={16}/>} label="ชำระเงินสำเร็จ"  count={pay_completed} color="#10b981" bg="#f0fdf4" />
+          <StatusBadge icon={<Clock size={16}/>} label="รอการอนุมัติ"    count={pay_waiting}   color="#f59e0b" bg="#fffbeb" />
+          <StatusBadge icon={<XCircle size={16}/>} label="ถูกปฏิเสธ/ยกเลิก" count={pay_rejected} color="#ef4444" bg="#fef2f2" />
           <div style={{ marginTop: '18px', padding: '14px', backgroundColor: '#fdf2f8', borderRadius: '12px', border: '1px solid #fbcfe8' }}>
             <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>รายได้รอดำเนินการ</div>
             <div style={{ fontSize: '20px', fontWeight: '800', color: '#ec4899' }}>฿{pendingRevenue.toLocaleString()}</div>
@@ -158,7 +158,7 @@ const DashboardTab: React.FC<Props> = ({ courses, users, orders, instructors, pr
                 <div key={idx} style={{ marginBottom: '14px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
                     <span style={{ fontSize: '13px', fontWeight: '600', color: '#334155' }}>
-                      {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `${idx+1}.`} {course.title}
+                      {idx + 1}. {course.title}
                     </span>
                     <span style={{ fontSize: '12px', backgroundColor: '#fef3c7', color: '#92400e', padding: '2px 8px', borderRadius: '99px', fontWeight: '700', whiteSpace: 'nowrap' }}>
                       {count} คน

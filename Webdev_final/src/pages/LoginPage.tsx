@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import api from '../api';
+import ThemeToggleButton from '../components/ThemeToggleButton';
+import { useTheme } from '../contexts/ThemeContext';
 import { AxiosError } from 'axios';
 import './HomeTheme.css'; 
 import { Home, UserPlus } from 'lucide-react'; 
@@ -7,6 +9,7 @@ import logoImage from '../assets/Logo.png';
 import { useNavigate } from 'react-router-dom';
 
 const LoginPage: React.FC = () => {
+  const { theme } = useTheme();
   // ✨ 1. เปลี่ยนชื่อ State จาก email เป็น identifier เพื่อความครอบคลุม
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
@@ -47,7 +50,7 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="page-wrapper">
+    <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-page' : ''}`}>
       
       <nav className="navbar">
         <div className="container navbar-container">
@@ -134,6 +137,7 @@ const LoginPage: React.FC = () => {
           <div className="copyright">© 2026 New Learning Academy. All rights reserved.</div>
         </div>
       </footer>
+      <ThemeToggleButton />
     </div>
   );
 };

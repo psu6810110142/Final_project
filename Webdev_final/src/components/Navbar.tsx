@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Home, Book, User, LogOut, ShoppingCart, LogIn, UserPlus } from 'lucide-react';
+import NotificationBell from './NotificationBell';
+import { useNotifications } from '../contexts/NotificationContext';
 import logoImage from '../assets/Logo.png'; 
 import '../pages/HomeTheme.css';
 import { useCart } from '../contexts/CartContext';
@@ -12,6 +14,7 @@ const Navbar: React.FC = () => {
   
   const [currentUser, setCurrentUser] = useState<any>(null);
   const { cartCount } = useCart();
+  const { unreadCount } = useNotifications();
   const [isCartOpen, setIsCartOpen] = useState(false);
   
   useEffect(() => {
@@ -81,6 +84,7 @@ const Navbar: React.FC = () => {
               <a onClick={handleLogout} className="menu-item" style={{ cursor: 'pointer' }}>
                 <LogOut size={18} /> ออกจากระบบ
               </a>
+              <NotificationBell />
               <div className="user-pill" onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>
                 {currentUser.full_name || currentUser.username}
               </div>

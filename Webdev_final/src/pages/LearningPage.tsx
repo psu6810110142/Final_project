@@ -1,337 +1,163 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
 import './HomeTheme.css';
-import { ArrowLeft, PlayCircle, User, CheckCircle, Download, FileText } from 'lucide-react'; // ลบ Lock, CheckCircle ออกก่อนชั่วคราว
-import logoImage from '../assets/Logo.png';
+import {Search, Users, Clock, Filter} from 'lucide-react';
 import api from '../api';
+import ThemeToggleButton from '../components/ThemeToggleButton';
+import { Link } from 'react-router-dom';
+import GrayLogo from '../assets/graylogo.png';
+import Navbar from '../components/Navbar';
 import { useTheme } from '../contexts/ThemeContext';
 import './OceanTheme.css';
 
-const LearningPage: React.FC = () => {
-  const { theme } = useTheme();
-  const { courseId } = useParams();
-  const navigate = useNavigate();
-  const [accessDenied, setAccessDenied] = React.useState(false);
+interface CourseData {
+  course_id: number;
+  title: string;
+  description: string;
+  price: number;
+  duration_weeks: number;
+  cover_image_url?: string;
+  level?: {
+    level_name: string;
+  };
+  instructor?: {
+    name: string;
+    profile_image_url: string;
+  };
+}
 
-  const [currentUser, setCurrentUser] = useState<any>(null);
-  const [lessons, setLessons] = useState<any[]>([]);
-  const [currentLessonId, setCurrentLessonId] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [completedLessons, setCompletedLessons] = useState<number[]>([]);
-  const [courseDetail, setCourseDetail] = useState<any>(null);
-  const [accessExpireDate, setAccessExpireDate] = useState<Date | null>(null);
-
-  const handleVideoEnd = async () => {
-  if (!currentLessonId || !currentUser) return;
-
-  try {
-    await api.post('/learning-progress', {
-      user_id: currentUser.sub,  // ✅ เพิ่ม user_id
-      lesson_id: currentLessonId,
-      is_completed: true
-    });
-
-    if (!completedLessons.includes(currentLessonId)) {
-      setCompletedLessons(prev => [...prev, currentLessonId]);
-    }
-  } catch (error) {
-    console.error('Error saving progress:', error);
+const getImageUrl = (url?: string, type: 'course' | 'user' = 'course') => {
+  if (!url) {
+    return type === 'user'
+      ? GrayLogo // 👨‍🏫 รูปคน Default
+      : GrayLogo // 📚 รูปคอร์สเรียน Default
   }
+
+  if (url.startsWith('/uploads')) {
+    return `http://localhost:3001${url}`;
+  }
+  return url;
 };
 
-  const handleDownload = (fileUrl: string | null | undefined) => {
-    if (!fileUrl) {
-      alert('อาจารย์ยังไม่ได้อัปโหลดไฟล์สำหรับคอร์สนี้');
-      return;
-    }
-    // เปิดไฟล์ในแท็บใหม่ (ถ้าเป็น PDF เบราว์เซอร์จะเปิดให้ดู / ถ้าเป็น Zip จะดาวน์โหลดลงเครื่องทันที)
-    window.open(`http://localhost:3001${fileUrl}`, '_blank');
-  };
+const CourseList: React.FC = () => {
+  const { theme } = useTheme();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeCategory, setActiveCategory] = useState("ทั้งหมด");
 
-  // ยามเฝ้าประตู 
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    const token = localStorage.getItem('access_token');
-
-    if (!token || !storedUser) {
-      window.location.replace('/landing');
-      return;
-    }
-    setCurrentUser(JSON.parse(storedUser));
-  }, []);
+  const [courses, setCourses] = useState<CourseData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const dynamicCategories = ["ทั้งหมด", ...Array.from(new Set(courses.map(c => c.level?.level_name).filter(Boolean)))];
 
   useEffect(() => {
-    if (!currentUser) return;
-
-    const fetchData = async () => {
+    const fetchCourses = async () => {
       try {
-        const userId = currentUser?.sub || currentUser?.user_id
-        const ordersRes = await api.get(`/orders/user/${userId}`);
-
-        const completedOrder = ordersRes.data.find((o: any) =>
-          o.status === 'COMPLETED' &&
-        o.order_details?.some((d: any) => String(d.course?.course_id) === String(courseId))
-      );
-      
-      const now = new Date();
-      const expireDate = completedOrder?.access_expire_date ? new Date(completedOrder.access_expire_date) : null;
-      const hasAccess = !!completedOrder && (!expireDate || expireDate > now);
-      
-      if (expireDate) setAccessExpireDate(expireDate);
-
-      if (!hasAccess) {
-        setAccessDenied(true);
-        return;
-      }
-
-
-        // ดึงรายชื่อบทเรียน
-        const lessonsRes = await api.get(`/lessons/course/${courseId}`);
-        const fetchedLessons = lessonsRes.data;
-        setLessons(fetchedLessons);
-
-        // ดึงคอร์สเรียน เอาชื่อและรูปอาจารย์
-        const courseRes = await api.get(`/courses/${courseId}`);
-        setCourseDetail(courseRes.data);
-
-        if (fetchedLessons.length > 0) {
-          setCurrentLessonId(fetchedLessons[0].lesson_id);
-        }
-
-        // ดึงประวัติการเรียนของฉัน
-        const progressRes = await api.get('/learning-progress/user/my-progress');
-        const myProgress = progressRes.data;
-
-        // กรองเอาเฉพาะ ID บทเรียนที่ is_completed เป็น true
-        const completedIds = myProgress
-        .filter((p: any) => 
-          p.is_completed === true && 
-        String(p.lesson?.course?.course_id) === String(courseId)  // ✅ เพิ่มบรรทัดนี้
-        )
-        .map((p: any) => p.lesson?.lesson_id);
-
-
-        setCompletedLessons(completedIds);
-
-      } catch (error: any) {
-        console.error('Error fetching data:', error);
-        if (error.response && error.response.status === 403) {
-          alert('คุณยังไม่ได้ซื้อคอร์สเรียนนี้ กรุณาสั่งซื้อก่อนเข้าเรียนครับ');
-          window.location.replace('/my-courses');
-        }
-      } finally {
+        const response = await api.get('/courses');
+        setCourses(response.data);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching courses:', err);
+        setError('ไม่สามารถดึงข้อมูลคอร์สเรียนได้ กรุณาตรวจสอบว่า Backend รันอยู่หรือไม่');
         setLoading(false);
       }
     };
-
-    fetchData();
-  }, [courseId, currentUser]);
-
-  // 3. ดักจับสถานะ Loading (ป้องกัน Error หน้าขาว)
-  if (loading) {
-    return (
-      <div className="page-wrapper" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#f1f5f9' }}>
-        <h2 style={{ color: '#64748b' }}>กำลังโหลดห้องเรียน... ⏳</h2>
-      </div>
-    );
-  }
-
-  if (accessDenied) {
-  return (
-    <div className="page-wrapper" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#f1f5f9', flexDirection: 'column', gap: '16px' }}>
-      <span style={{ fontSize: '64px' }}>🔒</span>
-      <h2 style={{ color: '#1e293b' }}>หมดสิทธิ์การเข้าเรียน</h2>
-      <p style={{ color: '#64748b' }}>
-        {accessExpireDate
-          ? `คอร์สนี้หมดอายุแล้วเมื่อ ${accessExpireDate.toLocaleDateString('th-TH')}`
-          : 'คุณยังไม่ได้ซื้อคอร์สเรียนนี้'}
-      </p>
-      <button
-        onClick={() => navigate('/my-courses')}
-        style={{ padding: '10px 24px', backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '1rem' }}
-      >
-        กลับหน้าคอร์สของฉัน
-      </button>
-    </div>
-  );
-}
-
-  const currentLesson = lessons.find(l => l.lesson_id === currentLessonId) || null;
-  const progressPercent = lessons.length > 0 ? Math.round((completedLessons.length / lessons.length) * 100) : 0;
+    fetchCourses();
+  }, []);
 
   return (
-    <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-page' : ''}`} >
-      {/* ================= Minimal Navbar ================= */}
-      <nav className="navbar" style={{ padding: '10px 0' }}>
-        <div className="container navbar-container">
-          <div className="navbar-left" style={{ gap: '20px' }}>
-            <button onClick={() => navigate('/my-courses')} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1rem' }}>
-              <ArrowLeft size={20} /> กลับ
-            </button>
-            <div style={{ height: '24px', width: '1px', backgroundColor: 'rgba(255,255,255,0.2)' }}></div>
-            <img src={logoImage} alt="Logo" className="navbar-logo" />
-            <span style={{ fontWeight: '600', fontSize: '1.1rem' }}>
-              {courseDetail?.title || 'ห้องเรียนออนไลน์'}
-            </span>
-          </div>
+    <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-page' : ''}`}>
+      <Navbar />
+      {/* ================= Course Header & Search ================= */}
+      <div className="page-header" style={{ padding: '60px 0', textAlign: 'center' }}>
+        <div className="container">
+          <h1 style={{ fontSize: '2.5rem', marginBottom: '15px' }}>ค้นหาคอร์สเรียนที่ใช่สำหรับคุณ</h1>
+          <p style={{ opacity: 0.9, marginBottom: '30px' }}>เลือกเรียนจากคอร์สคุณภาพที่สอนโดยอาจารย์ผู้เชี่ยวชาญ</p>
 
-          <div className="navbar-menu">
-            <div className="user-pill">{currentUser?.full_name || currentUser?.username}</div>
+          {/* Search Box */}
+          <div style={{ maxWidth: '600px', margin: '0 auto', position: 'relative' }}>
+            <Search style={{ position: 'absolute', left: '15px', top: '14px', color: '#6b7280' }} size={20} />
+            <input
+              type="text"
+              placeholder="ค้นหาชื่อคอร์สเรียน, รายละเอียด..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ width: '100%', padding: '14px 14px 14px 45px', borderRadius: '50px', border: 'none', fontSize: '1rem', outline: 'none', color: '#1f2937' }}
+            />
           </div>
         </div>
-      </nav>
+      </div>
 
-      {/* ================= Main Learning Area ================= */}
-      <section className="section" style={{ backgroundColor: '#f1f5f9', minHeight: '75vh', padding: '0px 0' }}>
+      {/* ================= Courses Content ================= */}
+      <section className="section" style={{ backgroundColor: '#f9fafb', minHeight: '50vh' }}>
         <div className="container">
-          <div className="learning-layout">
 
-            {/* ----- ฝั่งซ้าย: Video Player ----- */}
-            <div>
-              <div className="video-section">
-                <div className="video-wrapper">
-                  {currentLesson?.video_url ? (
-                    <video
-                      key={currentLesson.lesson_id}
-                      src={`http://localhost:3001${currentLesson.video_url}`}
-                      controls
-                      onEnded={handleVideoEnd}
-                      style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                    />
-                  ) : (
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#94a3b8', flexDirection: 'column', gap: '8px' }}>
-                      <span style={{ fontSize: '48px' }}>🎬</span>
-                      <span>ยังไม่มีวิดีโอสำหรับบทเรียนนี้</span>
-                    </div>
-                  )}
-                </div>
-                <div className="video-info">
-                  {/* ใช้ Optional Chaining (?.) ป้องกัน Error */}
-                  <h2>{currentLesson?.title || 'ไม่มีข้อมูลบทเรียน'}</h2>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginTop: '15px', color: '#64748b', fontSize: '0.95rem' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                      {courseDetail.instructor.profile_image_url ? (
-                        <img
-                          src={`http://localhost:3001${courseDetail.instructor.profile_image_url}`}
-                          alt={courseDetail.instructor.name}
-                          style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }}
-                        />
-                      ) : (
-                        <User size={18} />
-                      )}
-                      {/* ดึงชื่ออาจารย์มาแสดง */}
-                      {courseDetail?.instructor?.name || 'อ.ผู้สอน'}
-                    </span>
-                  </div>
-                  <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '20px 0' }} />
-                  <div>
-                    <h3 style={{ fontSize: '1.05rem', color: '#1e293b', marginBottom: '10px' }}>รายละเอียดคอร์สเรียน</h3>
-                    <p style={{ lineHeight: '1.6', color: '#475569', fontSize: '0.95rem', marginBottom: '25px' }}>
-                      {/* ดึงรายละเอียดจาก courseDetail แทน currentLesson */}
-                      {courseDetail?.description || 'ไม่มีรายละเอียดสำหรับคอร์สเรียนนี้'}
-                    </p>
-
-                    <h3 style={{ fontSize: '1.05rem', color: '#1e293b', marginBottom: '10px' }}>เอกสารประกอบการเรียน</h3>
-                    <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
-
-                      {/* ปุ่มโหลดเอกสาร */}
-                      <button
-                        onClick={() => handleDownload(courseDetail?.material_file_url)}
-                        style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', backgroundColor: '#f1f5f9', color: '#334155', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer', fontWeight: '500', transition: 'all 0.2s' }}
-                        onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#e2e8f0'}
-                        onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
-                      >
-                        <FileText size={18} color="#2563eb" />
-                        เอกสารประกอบการเรียน
-                        <Download size={16} style={{ marginLeft: '4px' }} />
-                      </button>
-
-                      {/* ปุ่มโหลดแบบฝึกหัด */}
-                      <button
-                        onClick={() => handleDownload(courseDetail?.exercise_file_url)}
-                        style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', backgroundColor: '#f1f5f9', color: '#334155', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer', fontWeight: '500', transition: 'all 0.2s' }}
-                        onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#e2e8f0'}
-                        onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
-                      >
-                        <FileText size={18} color="#16a34a" />
-                        ไฟล์แบบฝึกหัด
-                        <Download size={16} style={{ marginLeft: '4px' }} />
-                      </button>
-
-                    </div>
-                  </div>
-                </div>
-              </div>
+          {/* Categories Filter (สร้างปุ่มอัตโนมัติตามข้อมูลที่มี) */}
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '40px', overflowX: 'auto', paddingBottom: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontWeight: 'bold', color: '#4b5563', marginRight: '10px' }}>
+              <Filter size={18} /> หมวดหมู่:
             </div>
-
-            {/* ----- ฝั่งขวา: Playlist & Progress ----- */}
-            <div>
-              <div className="playlist-section">
-                <div className="playlist-header">
-                  <h3 style={{ margin: '0 0 10px 0', fontSize: '1.1rem', color: '#1e293b' }}>เนื้อหาหลักสูตร</h3>
-
-                  {/* ตัวเลขบอกเปอร์เซ็นต์ */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#64748b', marginBottom: '8px', fontWeight: '500' }}>
-                    <span>ความคืบหน้าการเรียน</span>
-                    <span style={{ color: progressPercent === 100 ? '#16a34a' : '#2563eb' }}>
-                      {progressPercent}%
-                    </span>
-                  </div>
-
-                  {/* หลอดพื้นหลังสีเทา */}
-                  <div style={{ width: '100%', height: '8px', backgroundColor: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
-                    {/* หลอดสีเขียว/น้ำเงิน ที่ขยับตามเปอร์เซ็นต์จริง */}
-                    <div
-                      style={{
-                        width: `${progressPercent}%`,
-                        height: '100%',
-                        backgroundColor: progressPercent === 100 ? '#16a34a' : '#3b82f6', // ถ้าเต็ม 100% ให้เป็นสีเขียว
-                        transition: 'width 0.5s ease-in-out', // แอนิเมชันให้หลอดค่อยๆ วิ่ง
-                        borderRadius: '4px'
-                      }}
-                    ></div>
-                  </div>
-
-                  {/* บอกจำนวนบทเรียน (เช่น 1/4 บท) */}
-                  <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '8px', textAlign: 'right' }}>
-                    เรียนจบแล้ว {completedLessons.length} จาก {lessons.length} บท
-                  </div>
-                </div>
-
-                <div className="playlist-content">
-                  {/* ✨ ตรวจสอบว่ามีบทเรียนไหม ถ้าไม่มีให้ขึ้นข้อความ */}
-                  {lessons.length === 0 ? (
-                    <div style={{ padding: '20px', textAlign: 'center', color: '#64748b' }}>
-                      ยังไม่มีบทเรียนในคอร์สนี้
-                    </div>
-                  ) : (
-                    // วนลูปจาก State 'lessons'
-                    lessons.map((lesson) => (
-                      <div
-                        key={lesson.lesson_id}
-                        className={`lesson-item ${lesson.lesson_id === currentLessonId ? 'active' : ''}`}
-                        onClick={() => setCurrentLessonId(lesson.lesson_id)}
-                      >
-                        <div style={{ marginTop: '2px' }}>
-                          {completedLessons.includes(lesson.lesson_id) ? (
-                            <CheckCircle size={18} color="#16a34a" />
-                          ) : (
-                            <PlayCircle size={18} color={lesson.lesson_id === currentLessonId ? "#2563eb" : "#94a3b8"} />
-                          )}
-                        </div>
-                        <div>
-                          <div className="lesson-title" style={{ color: lesson.lesson_id === currentLessonId ? '#1d4ed8' : '' }}>
-                            {lesson.sequence}. {lesson.title}
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            </div>
-
+            {dynamicCategories.map((cat) => (
+              <button
+                key={cat as string}
+                onClick={() => setActiveCategory(cat as string)}
+                style={{
+                  padding: '8px 20px',
+                  borderRadius: '50px',
+                  border: '1px solid #e5e7eb',
+                  backgroundColor: activeCategory === cat ? '#2563eb' : 'white',
+                  color: activeCategory === cat ? 'white' : '#4b5563',
+                  cursor: 'pointer',
+                  fontWeight: activeCategory === cat ? 'bold' : 'normal',
+                  whiteSpace: 'nowrap',
+                  transition: 'all 0.2s'
+                }}
+              >
+                {cat as string}
+              </button>
+            ))}
           </div>
+
+          {/* ✨ สถานะการโหลด หรือ Error */}
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '40px', fontSize: '1.2rem', color: '#6b7280' }}>กำลังโหลดข้อมูลคอร์สเรียน... ⏳</div>
+          ) : error ? (
+            <div style={{ textAlign: 'center', padding: '40px', color: 'red' }}>{error} ❌</div>
+          ) : (
+            <div className="courses-grid">
+              {courses
+                .filter(course => activeCategory === "ทั้งหมด" || course.level?.level_name === activeCategory)
+                .filter(course => course.title.toLowerCase().includes(searchTerm.toLowerCase()) || course.description.toLowerCase().includes(searchTerm.toLowerCase()))
+                .map((course) => (
+                  /* 🌟 ใช้ Link ครอบ CourseCard และส่ง ID ของคอร์สไปที่ URL (ย้าย key มาไว้ที่ Link) */
+                  <Link
+                    to={`/course/${course.course_id}`}
+                    key={course.course_id}
+                    style={{ textDecoration: 'none', color: 'inherit' }}
+                  >
+                    <CourseCard
+                      subject={course.level?.level_name || 'ทั่วไป'}
+                      grade={course.level?.level_name || '-'}
+                      title={course.title}
+                      price={`฿${course.price.toLocaleString()}`}
+                      tagColor="#dbeafe"
+                      textColor="#1e40af"
+                      imgSrc={getImageUrl(course.cover_image_url)}
+                      instructorName={course.instructor?.name || 'ไม่ระบุ'}
+                      duration={course.duration_weeks || 12}
+                      description={course.description}
+                      instructorImage={getImageUrl(course.instructor?.profile_image_url, 'user')}
+                    />
+                  </Link>
+                ))}
+
+              {/* ถ้าค้นหาแล้วไม่เจออะไรเลย */}
+              {courses.filter(course => (activeCategory === "ทั้งหมด" || course.level?.level_name === activeCategory) && (course.title.toLowerCase().includes(searchTerm.toLowerCase()) || course.description.toLowerCase().includes(searchTerm.toLowerCase()))).length === 0 && (
+                <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: '#6b7280' }}>
+                  ไม่พบคอร์สเรียนที่ตรงกับการค้นหา
+                </div>
+              )}
+            </div>
+          )}
+
         </div>
       </section>
 
@@ -359,8 +185,48 @@ const LearningPage: React.FC = () => {
           </div>
         </div>
       </footer>
+      <ThemeToggleButton />
     </div>
   );
 };
 
-export default LearningPage;
+const CourseCard = ({ subject, grade, title, price, tagColor, textColor, imgSrc, instructorName, instructorImage, instructor, duration, description }: any) => (
+  <div className="course-card">
+    <div className="course-image">
+      <img src={imgSrc} alt={title} style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
+      <span className="badge">{grade}</span>
+    </div>
+    <div className="course-content">
+      <span className="course-tag" style={{ backgroundColor: tagColor, color: textColor }}>{subject}</span>
+      <h3 className="course-title">{title}</h3>
+      <p className="course-desc" style={{
+        display: '-webkit-box',
+        WebkitLineClamp: 2,
+        WebkitBoxOrient: 'vertical',
+        overflow: 'hidden'
+      }}>
+        {description}
+      </p>
+      <div className="course-meta">
+        <div><Users size={14} /> 100 คน</div>
+        <div><Clock size={14} /> {duration} สัปดาห์</div>
+      </div>
+      <div className="course-footer">
+        <div className="instructor">
+          <div className="avatar" style={{ overflow: 'hidden', borderRadius: '50%', backgroundColor: '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <img
+              // ถ้าระบบไม่มีรูป จะดึง API สร้างรูปตัวอักษรย่อชื่ออาจารย์มาโชว์แทนอัตโนมัติ
+              src={instructorImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(instructor || 'T')}&background=random&color=fff`}
+              alt={instructor || 'Instructor'}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          </div>
+          <span>{instructorName}</span>
+        </div>
+        <div className="course-price" style={{ color: '#e74c3c', fontWeight: 'bold' }}>{price}</div>
+      </div>
+    </div>
+  </div>
+);
+
+export default CourseList;

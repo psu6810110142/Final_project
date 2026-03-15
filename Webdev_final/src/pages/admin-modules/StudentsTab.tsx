@@ -303,7 +303,7 @@ const StudentsTab: React.FC<Props> = ({ users, orders, courses, progressData, on
                   </h3>
                   <button onClick={() => setShowCart(p => !p)}
                     style={{ padding: '5px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', background: showCart ? '#eff6ff' : '#f8fafc', color: showCart ? '#3b82f6' : '#475569', fontSize: '12px', cursor: 'pointer', fontWeight: '500' }}>
-                    {showCart ? '📚 ประวัติ' : '🛒 ตะกร้า'}
+                    {showCart ? 'ประวัติการเรียน' : 'ตะกร้าสินค้า'}
                   </button>
                 </div>
                 <div style={{ maxHeight: '360px', overflowY: 'auto', paddingRight: '4px' }}>

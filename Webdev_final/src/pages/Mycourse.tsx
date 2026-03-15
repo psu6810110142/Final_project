@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './HomeTheme.css';
-import { PlayCircle, CheckCircle, LockKeyhole } from 'lucide-react';
+import { PlayCircle, CheckCircle, LockKeyhole, RefreshCw, XCircle, Mail } from 'lucide-react';
 import api from '../api';
 import Navbar from '../components/Navbar';
 import { useTheme } from '../contexts/ThemeContext';
@@ -9,6 +9,7 @@ import './OceanTheme.css';
 
 interface Course {
   id: number;
+  orderId: number;
   title: string;
   subject: string;
   imgSrc: string;
@@ -117,6 +118,7 @@ const MyCourses: React.FC = () => {
 
           purchasedCourses.push({
             id: course.course_id,
+            orderId: order.order_id,
             title: course.title,
             subject: course.level?.level_name || 'ไม่ระบุระดับชั้น',
             imgSrc: course.cover_image_url || "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&q=80&w=400",
@@ -129,6 +131,14 @@ const MyCourses: React.FC = () => {
         });
       });
 
+      // เรียงตาม orderId ล่าสุดก่อน และ dedup ด้วย course_id โดยเอา active order ล่าสุด
+      const statusPriority: Record<string, number> = { COMPLETED: 0, WAITING_PAYMENT: 1, REJECTED: 2, CANCELLED: 3 };
+      purchasedCourses.sort((a, b) => {
+        const sp = (statusPriority[a.orderStatus] ?? 9) - (statusPriority[b.orderStatus] ?? 9);
+        if (sp !== 0) return sp;
+        return b.orderId - a.orderId;
+      });
+      // เก็บ 1 order ต่อ course โดยเอา priority สูงสุด (COMPLETED > WAITING > REJECTED)
       const uniqueCourses = Array.from(new Map(purchasedCourses.map(c => [c.id, c])).values());
       setMyCourses(uniqueCourses);
 
@@ -153,7 +163,7 @@ const MyCourses: React.FC = () => {
   });
 
   return (
-    <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-page' : ''}`}>
+    <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-theme' : ''}`}>
       {expiredPopup && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ backgroundColor: 'white', borderRadius: '16px', padding: '40px', maxWidth: '420px', width: '90%', textAlign: 'center' }}>
@@ -263,7 +273,7 @@ const MyCourseCard = ({ course }: { course: Course }) => {
         )}
         {isRejected && (
           <span className="status-badge" style={{ backgroundColor: '#fee2e2', color: '#991b1b', border: '1px solid #fecaca' }}>
-            ❌ ไม่อนุมัติ
+            ไม่อนุมัติ
           </span>
         )}
       </div>
@@ -288,12 +298,26 @@ const MyCourseCard = ({ course }: { course: Course }) => {
 
         {isPending ? (
           <div style={{ padding: '10px', backgroundColor: '#fef9c3', borderRadius: '8px', fontSize: '13px', color: '#854d0e', textAlign: 'center' }}>
-            ⏳ รอแอดมินตรวจสอบสลิปการชำระเงิน
+            รอแอดมินตรวจสอบสลิปการชำระเงิน
           </div>
         ) : isRejected ? (
-          <div style={{ padding: '10px', backgroundColor: '#fee2e2', borderRadius: '8px', fontSize: '13px', color: '#991b1b', textAlign: 'center' }}>
-            ❌ การชำระเงินถูกปฏิเสธ<br />
-            <span style={{ fontSize: '12px' }}>กรุณาติดต่อแอดมินหรือชำระใหม่อีกครั้ง</span>
+          <div style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '10px', padding: '14px', fontSize: '13px' }}>
+            <div style={{ color: '#991b1b', fontWeight: '700', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <XCircle size={15}/> การชำระเงินถูกปฏิเสธ
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <a href={`/payment/${course.id}`}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '8px', backgroundColor: '#3b82f6', color: 'white', borderRadius: '8px', textDecoration: 'none', fontWeight: '600', fontSize: '13px' }}>
+                <RefreshCw size={13}/> ส่งหลักฐานการชำระเงินใหม่
+              </a>
+              <a href="mailto:info@newlearning.com?subject=ขอยกเลิกและรับเงินคืน"
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '8px', backgroundColor: 'white', color: '#ef4444', border: '1px solid #fecaca', borderRadius: '8px', textDecoration: 'none', fontWeight: '600', fontSize: '13px' }}>
+                <Mail size={13}/> ยกเลิกและติดต่อขอเงินคืน
+              </a>
+            </div>
+            <div style={{ marginTop: '8px', fontSize: '11px', color: '#94a3b8', textAlign: 'center' }}>
+              เลขคำสั่งซื้อ #{course.orderId}
+            </div>
           </div>
         ) : (
           <button className={`btn-learn ${isCompleted ? 'review' : 'continue'}`} onClick={() => navigate(`/learn/${course.id}`)}>

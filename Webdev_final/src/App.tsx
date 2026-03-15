@@ -18,6 +18,7 @@ import PaymentPage from './pages/PaymentPage'; // ✨ 1. Import หน้า Pay
 import CompleteProfile from './pages/CompleteProfile';
 import AuthCallback from './pages/AuthCallback';
 import { CartProvider } from './contexts/CartContext';
+import { NotificationProvider } from './contexts/NotificationContext';
 
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
     <ThemeProvider>
       <BrowserRouter>
         <CartProvider>
+          <NotificationProvider>
           <Routes>
             {/* === กำหนดเส้นทาง (Route) === */}
 
@@ -72,6 +74,7 @@ function App() {
           <Route path="/complete-profile" element={<CompleteProfile />} />
 
           </Routes>
+          </NotificationProvider>
         </CartProvider>
       </BrowserRouter>
     </ThemeProvider>

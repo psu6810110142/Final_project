@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, ForbiddenException } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
@@ -33,6 +33,21 @@ export class OrdersController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.ordersService.findOne(+id);
+  }
+
+  // User resubmit — reset REJECTED → WAITING_PAYMENT (เฉพาะ order ของตัวเอง)
+  @UseGuards(AuthGuard('jwt'))
+  @Patch(':id/resubmit')
+  async resubmit(@Param('id') id: string, @Req() req: any) {
+    const userId = req.user?.sub || req.user?.user_id;
+    const order = await this.ordersService.findOne(+id);
+    if (order.user?.user_id !== userId) {
+      throw new ForbiddenException('ไม่มีสิทธิ์แก้ไข order นี้');
+    }
+    if (order.status !== 'REJECTED') {
+      throw new ForbiddenException('สามารถ resubmit ได้เฉพาะ order ที่ถูกปฏิเสธเท่านั้น');
+    }
+    return this.ordersService.update(+id, { status: 'WAITING_PAYMENT' });
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)

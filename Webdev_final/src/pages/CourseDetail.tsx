@@ -3,6 +3,7 @@ import { useParams, useNavigate} from 'react-router-dom';
 import {Book, Clock, Users, PlayCircle, CheckCircle } from 'lucide-react';
 import './HomeTheme.css';
 import api from '../api';
+import ThemeToggleButton from '../components/ThemeToggleButton';
 import imgVDO from '../assets/locobackgroudewhite.png';
 import Navbar from '../components/Navbar';
 import { useCart } from '../contexts/CartContext';
@@ -83,7 +84,7 @@ export default function CourseDetail() {
   );
 
   return (
-    <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-page' : ''}`}>
+    <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-theme' : ''}`}>
       <Navbar />
 
       {/* 🔵 Header Section */}
@@ -206,6 +207,7 @@ export default function CourseDetail() {
           </div>
         </div>
       </footer>
+      <ThemeToggleButton />
     </div>
   );
 }

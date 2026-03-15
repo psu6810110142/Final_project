@@ -17,8 +17,13 @@ export class PaymentsController {
   @UseInterceptors(
     FileInterceptor('slip_image', {
       storage: getStorageConfig('slips'), // เก็บไว้ใน uploads/slips
-      limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
-      fileFilter: imageFileFilter,
+      limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+      fileFilter: (req: any, file: any, cb: any) => {
+        if (!file.originalname.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+          return cb(new Error('กรุณาอัปโหลดเฉพาะไฟล์รูปภาพ (jpg, jpeg, png, gif, webp)'), false);
+        }
+        cb(null, true);
+      },
     }),
   )
   create(

@@ -23,12 +23,22 @@ export class OrdersService {
 
     // ดึง course_id จาก DTO ที่ส่งมา (ถ้ามี)
     if (createOrderDto.course_id) {
-      const alreadyEnrolled = existingOrders.some(o =>
+      // block ถ้ามี order ที่ COMPLETED หรือ WAITING_PAYMENT อยู่แล้ว
+      const activeOrder = existingOrders.find(o =>
         ['COMPLETED', 'WAITING_PAYMENT'].includes(o.status) &&
         o.order_details?.some(d => d.course?.course_id === createOrderDto.course_id)
       );
-      if (alreadyEnrolled) {
+      if (activeOrder) {
         throw new ConflictException('คุณได้ลงทะเบียนคอร์สนี้แล้ว');
+      }
+
+      // ถ้ามี order เก่าที่ REJECTED ให้ CANCELLED ก่อน (ล้างของเก่าออก)
+      const rejectedOrders = existingOrders.filter(o =>
+        o.status === 'REJECTED' &&
+        o.order_details?.some(d => d.course?.course_id === createOrderDto.course_id)
+      );
+      for (const old of rejectedOrders) {
+        await this.orderRepo.update({ order_id: old.order_id }, { status: 'CANCELLED' });
       }
     }
 

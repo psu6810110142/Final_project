@@ -894,3 +894,49 @@
   .how-arrow    { transform: rotate(90deg); }
   .promo-banner { flex-direction: column; }
 }
+
+/* ============================================================
+   OCEAN THEME (ไม่มี scroll-snap) — สำหรับหน้าอื่นที่ไม่ใช่ Landing
+   ใช้แทน ocean-page เพื่อได้ theme สีและ style แต่ scroll ปกติ
+   ============================================================ */
+.ocean-theme {
+  font-family: 'Nunito', 'Kanit', sans-serif;
+  /* ไม่มี scroll-snap-type, overflow-y, height */
+}
+
+/* ทุก style ที่ใช้ .ocean-page ให้ใช้ได้กับ .ocean-theme ด้วย */
+.ocean-theme .navbar { background: linear-gradient(135deg, var(--db-abyss) 0%, var(--db-deep) 60%, var(--db-navy) 100%) !important; box-shadow: 0 4px 24px rgba(2,11,24,0.5) !important; }
+.ocean-theme .btn-nav-register { background: linear-gradient(135deg, var(--db-sun), var(--db-sunset)) !important; color: var(--db-deep) !important; font-weight: 800 !important; }
+.ocean-theme .btn-nav-register:hover { transform: translateY(-2px) !important; box-shadow: 0 6px 20px rgba(255,213,79,.5) !important; }
+.ocean-theme .btn-hero { background: linear-gradient(135deg,var(--db-sun),var(--db-sunset)) !important; color: white !important; font-weight: 800 !important; }
+.ocean-theme .course-card { border-radius: 20px !important; border: 1px solid rgba(21,101,192,.15) !important; box-shadow: 0 6px 22px rgba(10,31,68,.08) !important; transition: transform .25s, box-shadow .25s !important; overflow: hidden; }
+.ocean-theme .course-card:hover { transform: translateY(-7px) !important; box-shadow: 0 18px 42px rgba(10,31,68,.16) !important; border-color: var(--db-bright) !important; }
+.ocean-theme .badge { background: linear-gradient(135deg,var(--db-navy),var(--db-ocean)) !important; color: white !important; font-weight: 700 !important; border-radius: 20px !important; }
+.ocean-theme .course-price { color: var(--db-coral) !important; font-weight: 800 !important; }
+.ocean-theme .section-title { font-weight: 900 !important; color: var(--db-navy) !important; }
+.ocean-theme .footer { background: var(--db-abyss) !important; border-top: 3px solid var(--db-navy) !important; }
+.ocean-theme .footer h3 { color: var(--db-shimmer) !important; }
+.ocean-theme .footer p { color: rgba(144,202,249,.7) !important; }
+.ocean-theme .copyright { color: rgba(144,202,249,.4) !important; }
+
+/* page-header ใน ocean-theme — ไม่บังคับ 100vh */
+.ocean-theme .page-header {
+  background: linear-gradient(180deg, var(--db-deep) 0%, var(--db-ocean) 60%, var(--db-mid) 100%) !important;
+}
+.ocean-theme .page-header h1 { color: white !important; text-shadow: 0 3px 18px rgba(0,0,0,.45); }
+.ocean-theme .page-header p { color: rgba(255,255,255,.9) !important; }
+
+/* ============================================================
+   HERO SNAP FIX — ให้ hero เป็น snap section เต็ม 100vh
+   ============================================================ */
+.ocean-page .page-header {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  min-height: 100vh;
+  height: 100vh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}

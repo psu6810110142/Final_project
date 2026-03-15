@@ -220,7 +220,7 @@ const ProfilePage: React.FC = () => {
   // ==================== Loading State ====================
   if (isLoadingProfile) {
     return (
-      <div className={theme === 'ocean' ? 'ocean-page' : ''}>
+      <div className={theme === 'ocean' ? 'ocean-theme' : ''}>
         <Navbar />
         <div style={{ textAlign: 'center', padding: '120px 0', color: '#6b7280' }}>
           กำลังโหลดข้อมูล...
@@ -231,7 +231,7 @@ const ProfilePage: React.FC = () => {
  
   // ==================== Render ====================
   return (
-    <div className={theme === 'ocean' ? 'ocean-page' : ''}>
+    <div className={theme === 'ocean' ? 'ocean-theme' : ''}>
       <Navbar />
       <div className="profile-wrapper">
  

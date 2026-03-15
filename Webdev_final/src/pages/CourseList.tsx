@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './HomeTheme.css';
 import {Search, Users, Clock, Filter} from 'lucide-react';
 import api from '../api';
+import ThemeToggleButton from '../components/ThemeToggleButton';
 import { Link } from 'react-router-dom';
 import GrayLogo from '../assets/graylogo.png';
 import Navbar from '../components/Navbar';
@@ -63,7 +64,7 @@ const CourseList: React.FC = () => {
   }, []);
 
   return (
-    <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-page' : ''}`}>
+    <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-theme' : ''}`}>
       <Navbar />
       {/* ================= Course Header & Search ================= */}
       <div className="page-header" style={{ padding: '60px 0', textAlign: 'center' }}>
@@ -184,6 +185,7 @@ const CourseList: React.FC = () => {
           </div>
         </div>
       </footer>
+      <ThemeToggleButton />
     </div>
   );
 };

@@ -45,11 +45,24 @@ const PaymentPage: React.FC = () => {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
-    setSelectedFile(file);
     setMessage('');
     setIsSuccess(false);
-    if (file) setSlipPreview(URL.createObjectURL(file));
-    else setSlipPreview(null);
+
+    if (file) {
+      // เช็คขนาดไฟล์ — backend รับสูงสุด 2MB
+      if (file.size > 2 * 1024 * 1024) {
+        setMessage('ไฟล์ใหญ่เกินไป กรุณาเลือกรูปที่มีขนาดไม่เกิน 2MB');
+        setSelectedFile(null);
+        setSlipPreview(null);
+        e.target.value = ''; // reset input
+        return;
+      }
+      setSelectedFile(file);
+      setSlipPreview(URL.createObjectURL(file));
+    } else {
+      setSelectedFile(null);
+      setSlipPreview(null);
+    }
   };
 
   const handleUpload = async () => {
@@ -75,31 +88,64 @@ const PaymentPage: React.FC = () => {
         return;
       }
 
-      const orderRes = await api.post('/orders', {
-        user_id: userId,
-        total_amount: totalAmount,
-        ...(isCartMode ? {} : { course_id: Number(courseId) }),
-      });
-      const orderId = orderRes.data.order_id;
+      let orderId: number | null = null;
 
-      if (isCartMode) {
-        await Promise.all(
-          cartItems.map(item =>
-            api.post('/order-details', {
-              order_id: orderId,
-              course_id: item.course.course_id,
-              price_at_purchase: Number(item.course.price),
-            })
-          )
+      if (!isCartMode && courseId) {
+        // เช็คว่ามี order REJECTED อยู่แล้วไหม — ถ้ามีให้ใช้ order_id เดิม
+        const existingRes = await api.get(`/orders/user/${userId}`);
+        const existingOrders: any[] = Array.isArray(existingRes.data) ? existingRes.data : [];
+
+        // เช็ค REJECTED order ก่อน
+        const rejectedOrder = existingOrders.find(o =>
+          o.status === 'REJECTED' &&
+          o.order_details?.some((d: any) => d.course?.course_id === Number(courseId))
         );
-      } else {
-        await api.post('/order-details', {
-          order_id: orderId,
-          course_id: Number(courseId),
-          price_at_purchase: Number(course.price),
-        });
+
+        // เช็ค WAITING_PAYMENT ที่ยังไม่มี payment สำเร็จ (กรณีไฟล์ใหญ่เกินแล้วสร้าง order ค้างไว้)
+        const waitingOrder = existingOrders.find(o =>
+          o.status === 'WAITING_PAYMENT' &&
+          o.order_details?.some((d: any) => d.course?.course_id === Number(courseId))
+        );
+
+        if (rejectedOrder) {
+          // ใช้ order_id เดิม — reset status กลับเป็น WAITING_PAYMENT
+          orderId = rejectedOrder.order_id;
+          await api.patch(`/orders/${orderId}/resubmit`, {});
+        } else if (waitingOrder) {
+          // ใช้ order_id เดิมที่ค้างอยู่ — ไม่ต้อง reset เพราะยังเป็น WAITING_PAYMENT อยู่แล้ว
+          orderId = waitingOrder.order_id;
+        }
       }
 
+      // ถ้าไม่มี order เดิม → สร้างใหม่
+      if (!orderId) {
+        const orderRes = await api.post('/orders', {
+          user_id: userId,
+          total_amount: totalAmount,
+          ...(isCartMode ? {} : { course_id: Number(courseId) }),
+        });
+        orderId = orderRes.data.order_id;
+
+        if (isCartMode) {
+          await Promise.all(
+            cartItems.map(item =>
+              api.post('/order-details', {
+                order_id: orderId,
+                course_id: item.course.course_id,
+                price_at_purchase: Number(item.course.price),
+              })
+            )
+          );
+        } else {
+          await api.post('/order-details', {
+            order_id: orderId,
+            course_id: Number(courseId),
+            price_at_purchase: Number(course.price),
+          });
+        }
+      }
+
+      // สร้าง payment ใหม่เสมอ (ผูกกับ order_id ที่ได้มา)
       const formData = new FormData();
       formData.append('slip_image', selectedFile);
       formData.append('order_id', String(orderId));
@@ -122,7 +168,16 @@ const PaymentPage: React.FC = () => {
 
     } catch (error: any) {
       console.error('Payment error:', error);
-      setMessage(error.response?.data?.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่');
+      const status = error.response?.status;
+      const msg = error.response?.data?.message;
+
+      if (status === 409) {
+        setMessage('คุณมีคำสั่งซื้อคอร์สนี้อยู่แล้ว หากต้องการส่งสลิปใหม่กรุณาไปที่หน้า "คอร์สของฉัน"');
+      } else if (status === 413 || msg?.includes('File too large') || msg?.includes('ขนาด')) {
+        setMessage('ไฟล์ใหญ่เกินไป กรุณาเลือกรูปที่มีขนาดไม่เกิน 2MB');
+      } else {
+        setMessage(msg || 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -140,7 +195,7 @@ const PaymentPage: React.FC = () => {
   );
 
   return (
-    <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-page' : ''}`} style={{ backgroundColor: '#f1f5f9', minHeight: '100vh' }}>
+    <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-theme' : ''}`} style={{ backgroundColor: '#f1f5f9', minHeight: '100vh' }}>
       <nav className="navbar" style={{ background: 'linear-gradient(90deg, #3674B5 0%)' }}>
         <div className="container navbar-container">
           <a href="/home" className="navbar-left">

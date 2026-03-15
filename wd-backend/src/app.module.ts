@@ -14,6 +14,7 @@ import { PaymentsModule } from './payments/payments.module';
 import { OrderDetailsModule } from './order_details/order_details.module';
 import { LearningProgressModule } from './learning_progress/learning_progress.module';
 import { AuthModule } from './auth/auth.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 
@@ -51,6 +52,7 @@ import { join } from 'path';
     OrderDetailsModule,
     LearningProgressModule,
     AuthModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

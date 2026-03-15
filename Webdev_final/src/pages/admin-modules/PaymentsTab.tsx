@@ -110,7 +110,7 @@ const PaymentsTab: React.FC = () => {
             <div onClick={() => setFilterStatus('PENDING')}
               style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: '#fef3c7', border: '1.5px solid #f59e0b', color: '#92400e', fontSize: '14px', fontWeight: '700', padding: '8px 16px', borderRadius: '999px', cursor: 'pointer', animation: 'pulse 2s infinite' }}>
               <Clock size={15} />
-              <span>⚠️ รอตรวจสอบ <strong>{pendingCount}</strong> รายการ — คลิกเพื่อดู</span>
+              <span>รอตรวจสอบ <strong>{pendingCount}</strong> รายการ — คลิกเพื่อดู</span>
             </div>
           )}
         </div>
