@@ -1,14 +1,13 @@
-import React, { useEffect, useState, useRef } from 'react';
-import './HomePage.css';
-import './OceanTheme.css';
-import { Home, BookOpen, Users, Clock, LogIn, UserPlus, Book, ArrowRight, Play, ChevronUp } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import './HomeTheme.css'; // ใช้ CSS เดิม
+import './OceanTheme.css'; // 🌊 Ocean Theme Overlay
+import { Home, BookOpen, Users, ArrowRight, Clock, LogIn, UserPlus, Book } from 'lucide-react';
 import logoImage from '../assets/Logo.png';
 import api from '../api';
-import { Link, useNavigate } from 'react-router-dom';
-import GrayLogo from '../assets/graylogo.png';
-import ChulaLogo from '../assets/chula-logo.png';
-import ThammasatLogo from '../assets/thammasat-logo.png';
-import PSULogo from '../assets/psu-logo.png';
+import { Link } from 'react-router-dom';
+import GrayLogo from '../assets/graylogo.png'
+import ThemeToggleButton from '../components/ThemeToggleButton';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface CourseData {
   course_id: number; title: string; description: string; price: number;
@@ -31,10 +30,14 @@ const getImageUrl = (url?: string) => {
   return url;
 };
 
-/* ---- ScrollReveal ---- */
-const Reveal = ({ children, delay = 0, dir = 'up' }: { children: React.ReactNode; delay?: number; dir?: 'up'|'left'|'right'|'none' }) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const [vis, setVis] = useState(false);
+const LandingPage: React.FC = () => {
+  const { theme } = useTheme();
+
+  const [courses, setCourses] = useState<CourseData[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+
+  // ดึงข้อมูลคอร์สเรียนจาก Backend
   useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setVis(true); obs.disconnect(); } }, { threshold: 0.1 });
     if (ref.current) obs.observe(ref.current);
@@ -81,9 +84,8 @@ const LandingPage: React.FC = () => {
   };
 
   return (
-    <div className="page-wrapper ocean-page" ref={topRef}>
-
-      {/* ===== NAVBAR ===== */}
+    <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-page' : ''}`}>
+      {/* ================= Navbar (เวอร์ชันยังไม่ล็อกอิน) ================= */}
       <nav className="navbar">
         <div className="container navbar-container">
           <a href="/" className="navbar-left">
@@ -104,33 +106,33 @@ const LandingPage: React.FC = () => {
         </div>
       </nav>
 
-      {/* ===== 1. HERO ===== */}
-      <section className="snap-section hero-snap">
-        <div className="ocean-bubbles">{[...Array(10)].map((_,i)=><div key={i} className="bubble"/>)}</div>
-        <span className="fish fish-1">🐠</span>
-        <span className="fish fish-2">🐟</span>
-        <span className="fish fish-3">🦑</span>
-        <span className="seagull seagull-1">🕊️</span>
-        <span className="seagull seagull-2">🦅</span>
-        <div className="wave-layer-1"/><div className="wave-layer-2"/>
-        <div className="wave-layer-3"/><div className="wave-layer-sand"/>
-        <span className="palm-left">🌴</span><span className="palm-right">🌴</span>
-
-        <div className="container hero-two-col" style={{ position:'relative', zIndex:10 }}>
-          {/* ซ้าย — ข้อความ */}
-          <div className="hero-text hero-left">
-            {/* FIX #2 — hero-tag พื้นหลังสีขาว */}
-            <div className="hero-tag hero-tag-white">🎓 แพลตฟอร์มการเรียนรู้ออนไลน์</div>
-            <h1>เรียนออนไลน์ <br/>ที่บ้าน สะดวก สบาย</h1>
-            <p>สำหรับนักเรียนชั้นประถมและมัธยมต้น เรียนได้ทุกที่ทุกเวลา พร้อมครูผู้สอนที่มีคุณภาพ</p>
-            {/* FIX #3 — hero-badges พื้นหลังสีขาว */}
-            <div className="hero-badges">
-              <span className="hero-badge-white">✅ ไม่มีค่าสมัคร</span>
-              <span className="hero-badge-white">✅ ดูซ้ำได้ไม่จำกัด</span>
-              <span className="hero-badge-white">✅ มีใบเซอร์</span>
+      {/* ================= Hero Section ================= */}
+      <header className="page-header">
+        {theme === 'ocean' && (
+          <>
+            <div className="ocean-bubbles">
+              {[...Array(10)].map((_, i) => <div key={i} className="bubble" />)}
             </div>
-            <a href="/register" className="btn-hero" style={{ textDecoration:'none', display:'inline-flex', marginTop:'8px' }}>
-              <BookOpen size={20}/> เริ่มต้นใช้งานฟรี
+            <span className="fish fish-1">🐠</span>
+            <span className="fish fish-2">🐟</span>
+            <span className="fish fish-3">🦑</span>
+            <span className="seagull seagull-1">🕊️</span>
+            <span className="seagull seagull-2">🦅</span>
+            <div className="wave-layer-1" />
+            <div className="wave-layer-2" />
+            <div className="wave-layer-3" />
+            <div className="wave-layer-sand" />
+            <span className="palm-left">🌴</span>
+            <span className="palm-right">🌴</span>
+          </>
+        )}
+        <div className="container hero-content">
+          <div className="hero-text" style={{ marginLeft: '5%' }}>
+            <h1>เรียนออนไลน์ <br />ที่บ้าน สะดวก สบาย</h1>
+            <p style={{ marginBottom: '30px' }}>แพลตฟอร์มการเรียนออนไลน์สำหรับนักเรียนชั้นประถมและมัธยมต้น เรียนได้ทุกที่ทุกเวลา พร้อมครูผู้สอนที่มีคุณภาพ</p>
+            {/* ปุ่มกดแล้วไปหน้า Register */}
+            <a href="/register" className="btn-hero" style={{ textDecoration: 'none' }}>
+              <BookOpen size={20} /> เริ่มต้นใช้งานฟรี
             </a>
           </div>
           {/* ขวา — FIX #1 เปลี่ยนมาสคอตเป็นฉลาม */}
@@ -442,6 +444,7 @@ const LandingPage: React.FC = () => {
           <div className="copyright">© 2026 New Learning Academy. All rights reserved.</div>
         </div>
       </footer>
+      <ThemeToggleButton />
     </div>
   );
 };

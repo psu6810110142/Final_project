@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import './HomePage.css';
+import './HomeTheme.css';
 import { ArrowLeft, PlayCircle, User, CheckCircle, Download, FileText } from 'lucide-react'; // ลบ Lock, CheckCircle ออกก่อนชั่วคราว
 import logoImage from '../assets/Logo.png';
 import api from '../api';
+import { useTheme } from '../contexts/ThemeContext';
+import './OceanTheme.css';
 
 const LearningPage: React.FC = () => {
+  const { theme } = useTheme();
   const { courseId } = useParams();
   const navigate = useNavigate();
   const [accessDenied, setAccessDenied] = React.useState(false);
@@ -157,7 +160,7 @@ const LearningPage: React.FC = () => {
   const progressPercent = lessons.length > 0 ? Math.round((completedLessons.length / lessons.length) * 100) : 0;
 
   return (
-    <div className="page-wrapper" >
+    <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-page' : ''}`} >
       {/* ================= Minimal Navbar ================= */}
       <nav className="navbar" style={{ padding: '10px 0' }}>
         <div className="container navbar-container">

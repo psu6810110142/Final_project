@@ -156,4 +156,28 @@ export class UsersService implements OnModuleInit {
     const user = await this.findOne(id);
     return this.userRepo.remove(user);
   }
+
+  async findOrCreateGoogleUser(googleUser: { email: string; firstName: string; lastName: string; picture: string }) {
+  const existingUser = await this.userRepo.findOne({ where: { email: googleUser.email } });
+  if (existingUser) return existingUser;
+  return null; // ถ้าไม่มี return null → แสดงว่าต้องกรอกข้อมูลเพิ่มเติม
+}
+
+async createGoogleUser(data: { email: string; username: string; firstName: string; lastName: string; picture?: string }) {
+  const existingUsername = await this.userRepo.findOne({ where: { username: data.username } });
+  if (existingUsername) {
+    throw new ConflictException('ชื่อผู้ใช้นี้ถูกใช้งานแล้ว กรุณาใช้ชื่ออื่น');
+  }
+
+  const newUser = this.userRepo.create({
+    email: data.email,
+    username: data.username,
+    full_name: `${data.firstName} ${data.lastName}`,
+    password_hash: '', // Google user ไม่มี password
+    role: 'STUDENT',
+    profile_picture_url: data.picture || undefined,
+  });
+
+  return this.userRepo.save(newUser);
+}
 }

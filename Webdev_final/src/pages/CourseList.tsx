@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import './HomePage.css';
+import './HomeTheme.css';
 import {Search, Users, Clock, Filter} from 'lucide-react';
 import api from '../api';
 import { Link } from 'react-router-dom';
 import GrayLogo from '../assets/graylogo.png';
 import Navbar from '../components/Navbar';
+import { useTheme } from '../contexts/ThemeContext';
+import './OceanTheme.css';
 
 interface CourseData {
   course_id: number;
@@ -36,6 +38,7 @@ const getImageUrl = (url?: string, type: 'course' | 'user' = 'course') => {
 };
 
 const CourseList: React.FC = () => {
+  const { theme } = useTheme();
   const [searchTerm, setSearchTerm] = useState("");
   const [activeCategory, setActiveCategory] = useState("ทั้งหมด");
 
@@ -60,7 +63,7 @@ const CourseList: React.FC = () => {
   }, []);
 
   return (
-    <div className="page-wrapper">
+    <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-page' : ''}`}>
       <Navbar />
       {/* ================= Course Header & Search ================= */}
       <div className="page-header" style={{ padding: '60px 0', textAlign: 'center' }}>

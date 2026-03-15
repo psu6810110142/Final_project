@@ -49,7 +49,7 @@ export class LearningProgressService {
 
   findAll() {
     return this.progressRepo.find({
-      relations: ['user', 'lesson'],
+      relations: ['user', 'lesson', 'lesson.course'],
     });
   }
 

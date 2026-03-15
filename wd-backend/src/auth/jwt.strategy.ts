@@ -9,8 +9,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      // ✨ แก้ตรงนี้: ใส่ || '' หรือค่า default เพื่อบอกว่าไม่ใช่ undefined แน่นอน
-      secretOrKey: configService.get<string>('JWT_SECRET') || 'NewLearningSecretKey2026!', 
+      secretOrKey: configService.getOrThrow<string>('JWT_SECRET'),
     });
   }
 

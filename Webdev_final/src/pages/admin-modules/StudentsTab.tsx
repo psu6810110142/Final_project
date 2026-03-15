@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, ChevronRight, X, Edit, Trash2, CheckCircle, User, ShoppingCart } from 'lucide-react';
+import { Search, ChevronRight, X, Edit, Trash2, CheckCircle, ShoppingCart } from 'lucide-react';
 import api from '../../api';
 import { useConfirm } from './ConfirmDialog';
 
@@ -54,17 +54,36 @@ const StudentsTab: React.FC<Props> = ({ users, orders, courses, progressData, on
   }, [users]);
 
   const getStudentCourses = (userId: number) => {
-    return localOrders.filter(o => o.user_id === userId).map(order => {
+  return localOrders
+    .filter(o => o.user_id === userId && o.status === 'COMPLETED')
+    .map(order => {
       const matchedCourse = courses.find(c => Number(c.price) === Number(order.total_amount));
-      const progress = progressData.find(p => p.user_id === userId && p.course_id === matchedCourse?.course_id);
+      const courseId = matchedCourse?.course_id ?? 0;
+
+      const completedLessons = progressData.filter(p => {
+        const pUserId = (p as any).user?.user_id;
+        const pCourseId = (p as any).lesson?.course?.course_id;
+        return pUserId === userId && pCourseId === courseId && p.is_completed;
+      });
+
+      const allLessonsInCourse = progressData.filter(p => {
+        const pCourseId = (p as any).lesson?.course?.course_id;
+        return pCourseId === courseId;
+      });
+
+      const totalKnown = allLessonsInCourse.length;
+      const progressPercent = totalKnown > 0
+        ? Math.round((completedLessons.length / totalKnown) * 100)
+        : 0;
+
       return {
         order_id: order.order_id,
         course: matchedCourse || { title: 'คอร์สไม่ระบุ', price: order.total_amount, course_id: 0 } as Partial<CourseData>,
-        progress: progress?.completion_percentage ?? 0,
-        is_completed: progress?.is_completed ?? false,
+        progress: progressPercent,
+        is_completed: progressPercent === 100,
       };
     });
-  };
+};
 
   const fetchCart = async (userId: number) => {
     setCartLoading(true);

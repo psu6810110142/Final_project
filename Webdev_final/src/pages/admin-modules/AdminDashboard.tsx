@@ -3,7 +3,7 @@ import api from '../../api';
 import { useNavigate } from 'react-router-dom';
 import { LayoutDashboard, BookOpen, GraduationCap, Briefcase, LogOut, Loader2, DollarSign, Video } from 'lucide-react';
 import logoImage from '../../assets/Logo.png';
-import '../HomePage.css';
+import '../HomeTheme.css';
 
 import DashboardTab from './DashboardTab';
 import CoursesTab from './CoursesTab';

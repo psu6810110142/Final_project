@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Home, Book, User, LogOut, ShoppingCart, LogIn, UserPlus } from 'lucide-react';
 import logoImage from '../assets/Logo.png'; 
-import '../pages/HomePage.css';
+import '../pages/HomeTheme.css';
 import { useCart } from '../contexts/CartContext';
 import CartSidebar from './CartSidebar';
 
