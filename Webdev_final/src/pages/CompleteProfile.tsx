@@ -9,7 +9,7 @@ const params = new URLSearchParams(window.location.search);
 const email = params.get('email') || '';
 const firstName = params.get('firstName') || '';
 const lastName = params.get('lastName') || '';
-const picture = params.get('picture') || '';
+const picture = params.get('picture') ? decodeURIComponent(params.get('picture')!) : '';
 
 const [username, setUsername] = useState('');
 const [loading, setLoading] = useState(false);
@@ -51,8 +51,11 @@ return (
         <div className="auth-card">
             <div className="auth-header">
                 {picture && (
-                    <img src={picture} alt="profile" style={{ width: '72px', height: '72px', borderRadius: '50%', marginBottom: '12px' }} />
-                    )}
+                    <>
+                        {console.log('picture url:', picture)}
+                        <img src={picture} alt="profile" style={{ width: '72px', height: '72px', borderRadius: '50%', marginBottom: '12px' }} />
+                    </>
+                )}
                 <h2>ยินดีต้อนรับ! 👋</h2>
                 <p>สวัสดี {firstName} กรุณาตั้ง Username เพื่อเริ่มใช้งาน</p>
             </div>
@@ -73,7 +76,12 @@ return (
                     required
                     />
                 </div>
-                <button type="submit" className="btn-primary" disabled={loading} style={{ width: '100%', marginTop: '8px' }}>
+                <button
+                type="submit"
+                className="btn-submit"
+                disabled={loading}
+                style={{ width: '100%', marginTop: '8px' }}
+                >
                 {loading ? 'กำลังสร้างบัญชี...' : 'เริ่มต้นใช้งาน'}
                 </button>
             </form>

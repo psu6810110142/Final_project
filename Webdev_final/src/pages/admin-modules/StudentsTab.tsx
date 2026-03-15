@@ -140,8 +140,21 @@ const StudentsTab: React.FC<Props> = ({ users, orders, courses, progressData, on
         <h1 style={{ fontSize: '26px', fontWeight: 'bold', color: '#1e293b' }}>รายชื่อนักเรียน ({users.length})</h1>
         <div style={{ position: 'relative', width: '300px' }}>
           <Search size={17} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-          <input type="text" placeholder="ค้นหาชื่อ หรือ อีเมล..." value={searchText} onChange={e => setSearchText(e.target.value)}
-            style={{ width: '100%', padding: '10px 12px 10px 38px', borderRadius: '10px', border: '1px solid #cbd5e1', outline: 'none', fontSize: '14px' }} />
+          <input
+            type="text"
+            placeholder="ค้นหาชื่อ หรือ อีเมล..."
+            value={searchText}
+            onChange={e => setSearchText(e.target.value)}
+            style={{
+              width: '100%',
+              boxSizing: 'border-box', // ✅ เพิ่มบรรทัดนี้
+              padding: '10px 12px 10px 38px',
+              borderRadius: '10px',
+              border: '1px solid #cbd5e1',
+              outline: 'none',
+              fontSize: '14px',
+            }}
+          />
         </div>
       </div>
 

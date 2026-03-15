@@ -94,7 +94,10 @@ const ProfilePage: React.FC = () => {
           phone: data.phone || data.phoneNumber || data.phone_number || '',
           bio: data.bio || '',
           profilePictureUrl: data.profile_picture_url
-            ? `http://localhost:3001${data.profile_picture_url}` : '',
+            ? (data.profile_picture_url.startsWith('http')
+                ? data.profile_picture_url                          // ✅ Google URL ใช้ตรงๆ
+                : `http://localhost:3001${data.profile_picture_url}`) // ✅ รูปที่อัปโหลดเอง
+            : '',
           levelId: lvlId,
         });
         setSelectedLevelId(lvlId);
