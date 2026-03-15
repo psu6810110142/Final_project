@@ -8,6 +8,8 @@ import Navbar from '../components/Navbar';
 import { useCart } from '../contexts/CartContext';
 import { useTheme } from '../contexts/ThemeContext';
 import './OceanTheme.css';
+import BackButton from '../components/BackButton';
+import OceanAnimations from '../components/OceanAnimations';
 
 // 📌 Types
 interface Lesson {
@@ -88,7 +90,9 @@ export default function CourseDetail() {
 
       {/* 🔵 Header Section */}
       <header className="page-header">
+        <OceanAnimations/>
         <div className="container">
+          <BackButton />
           <div className="cd-banner-content">
             <div className="cd-banner-info">
               <div className="cd-tags">

@@ -9,6 +9,7 @@ import '../OceanTheme.css';
 import { useTheme } from '../../contexts/ThemeContext';
 import ThemeToggleButton from '../../components/ThemeToggleButton';
 import OceanAnimations from '../../components/OceanAnimations';
+import BackButton from '../../components/BackButton';
 
 // ==================== Types ====================
 interface UserData {
@@ -259,7 +260,7 @@ const ProfilePage: React.FC = () => {
  
         <div className="page-header">
           <div className="container">
-            <button className="btn-back" onClick={() => navigate(-1)}>&#8592; ย้อนกลับ</button>
+            <BackButton/>
             <h1>ตั้งค่าโปรไฟล์</h1>
             <p>จัดการข้อมูลส่วนตัว ระดับชั้น รหัสผ่าน และประวัติการสั่งซื้อ</p>
           </div>

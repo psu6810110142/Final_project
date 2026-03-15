@@ -79,11 +79,18 @@
   box-shadow: 0 0 50px 22px rgba(255,213,79,0.35), 0 0 100px 50px rgba(255,152,0,0.12);
   animation: sunPulse 4s ease-in-out infinite;
   pointer-events: none;
-  z-index: 2;
+  z-index: 1;
 }
 @keyframes sunPulse {
   0%,100% { box-shadow: 0 0 50px 22px rgba(255,213,79,0.35), 0 0 100px 50px rgba(255,152,0,0.12); }
   50%     { box-shadow: 0 0 70px 32px rgba(255,213,79,0.5),  0 0 140px 70px rgba(255,152,0,0.2); }
+}
+
+/* ปรับดวงอาทิตย์อยู่หลัง content*/
+.ocean-page .cd-banner-content,
+.ocean-page .container {
+  position: relative;
+  z-index: 10;
 }
 
 /* คลื่นชั้น 1 */
