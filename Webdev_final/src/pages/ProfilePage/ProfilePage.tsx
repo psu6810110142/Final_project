@@ -8,6 +8,7 @@ import ProfileTabs from '../ProfilePage/ProfileTabs';
 import '../OceanTheme.css';
 import { useTheme } from '../../contexts/ThemeContext';
 import ThemeToggleButton from '../../components/ThemeToggleButton';
+import OceanAnimations from '../../components/OceanAnimations';
 
 // ==================== Types ====================
 interface UserData {
@@ -241,6 +242,7 @@ const ProfilePage: React.FC = () => {
             <h1>ตั้งค่าโปรไฟล์</h1>
             <p>จัดการข้อมูลส่วนตัว ระดับชั้น รหัสผ่าน และประวัติการสั่งซื้อ</p>
           </div>
+          <OceanAnimations/>
         </div>
  
         <div className="container">
