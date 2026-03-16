@@ -40,6 +40,7 @@ const MyCourses: React.FC = () => {
   const [loading, setLoading] = useState(true);
   
   const [expiringCourses, setExpiringCourses] = useState<Course[]>([]);
+  const [myGrades, setMyGrades] = useState<Record<number, string>>({});
   const [expiredPopup, setExpiredPopup] = useState<{ courseId: string; expiredAt: string } | null>(
     location.state?.expiredCourseId 
     ? { courseId: location.state.expiredCourseId, expiredAt: location.state.expiredAt }
@@ -66,9 +67,10 @@ const MyCourses: React.FC = () => {
     if (!userId) { setLoading(false); return; }
 
     try {
-      const [ordersRes, progressRes] = await Promise.all([
+      const [ordersRes, progressRes, gradesRes] = await Promise.all([
         api.get(`/orders/user/${userId}`),
         api.get('/learning-progress/user/my-progress'),
+        api.get('/grades/my-grades').catch(() => ({ data: [] })),
       ]);
 
       const myProgress: any[] = progressRes.data;
@@ -150,6 +152,13 @@ const MyCourses: React.FC = () => {
       if (expiringSoon.length > 0) {
         setExpiringCourses(expiringSoon);
       }
+
+      // grades
+      const gradesMap: Record<number, string> = {};
+      (Array.isArray(gradesRes.data) ? gradesRes.data : []).forEach((g: any) => {
+        if (g.course?.course_id && g.grade) gradesMap[g.course.course_id] = g.grade;
+      });
+      setMyGrades(gradesMap);
 
     } catch (error: any) {
       console.error('เกิดข้อผิดพลาดในการดึงข้อมูลคอร์ส:', error);
@@ -252,7 +261,7 @@ const MyCourses: React.FC = () => {
                       return;
                     }
                     navigate(`/learn/${course.id}`);}} style={{ cursor: 'pointer' }}>
-                    <MyCourseCard course={course} onCancel={cancelOrder} />
+                    <MyCourseCard course={course} onCancel={cancelOrder} grade={myGrades[Number(course.id)]} />
                   </div>
                 ))
               ) : (
@@ -290,7 +299,7 @@ const MyCourses: React.FC = () => {
   );
 };
 
-const MyCourseCard = ({ course, onCancel }: { course: Course; onCancel: (orderId: number) => void }) => {
+const MyCourseCard = ({ course, onCancel, grade }: { course: Course; onCancel: (orderId: number) => void; grade?: string }) => {
   const isCompleted = course.progress === 100;
   const isPending = course.orderStatus === 'WAITING_PAYMENT';
   const isRejected = course.orderStatus === 'REJECTED';
@@ -332,6 +341,18 @@ const MyCourseCard = ({ course, onCancel }: { course: Course; onCancel: (orderId
             <div className="progress-track">
               <div className="progress-fill" style={{ width: `${course.progress}%`, backgroundColor: progressColor }} />
             </div>
+          </div>
+        )}
+
+        {/* เกรดที่ได้รับจากอาจารย์ */}
+        {grade && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px', padding: '8px 12px', backgroundColor: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+            <span style={{ fontSize: '13px', color: '#64748b' }}>เกรดที่ได้:</span>
+            <span style={{
+              fontWeight: '900', fontSize: '22px',
+              color: grade === 'A' ? '#16a34a' : grade === 'B' ? '#2563eb' : grade === 'C' ? '#d97706' : grade === 'D' ? '#ea580c' : '#dc2626'
+            }}>{grade}</span>
+            {grade === 'F' && <span style={{ fontSize: '11px', color: '#dc2626', backgroundColor: '#fee2e2', padding: '2px 8px', borderRadius: '999px' }}>ไม่ผ่าน</span>}
           </div>
         )}
 

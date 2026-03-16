@@ -16,6 +16,7 @@ import { LearningProgressModule } from './learning_progress/learning_progress.mo
 import { AuthModule } from './auth/auth.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { QuizzesModule } from './quizzes/quizzes.module';
+import { GradesModule } from './grades/grades.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 
@@ -55,6 +56,7 @@ import { join } from 'path';
     AuthModule,
     NotificationsModule,
     QuizzesModule,
+    GradesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

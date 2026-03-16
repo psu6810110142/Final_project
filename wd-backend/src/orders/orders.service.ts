@@ -38,7 +38,7 @@ export class OrdersService {
 
   findAll() {
     return this.orderRepo.find({
-      relations: ['user'],
+      relations: ['user', 'order_details', 'order_details.course'],
       order: { created_at: 'DESC' }
     });
   }
@@ -116,13 +116,19 @@ export class OrdersService {
         const startDate = new Date();
         order.access_start_date = startDate;
 
+        // หา duration_weeks จาก course — ถ้าไม่มีหรือเป็น 0 ใช้ default 12 สัปดาห์
         const maxWeeks = order.order_details?.reduce((max, detail) => {
-          return Math.max(max, detail.course?.duration_weeks ?? 0);
+          const weeks = Number(detail.course?.duration_weeks) || 0;
+          return Math.max(max, weeks);
         }, 0) ?? 0;
 
+        const finalWeeks = maxWeeks > 0 ? maxWeeks : 12; // default 12 สัปดาห์
+
         const expireDate = new Date(startDate);
-        expireDate.setDate(expireDate.getDate() + maxWeeks * 7);
+        expireDate.setDate(expireDate.getDate() + finalWeeks * 7);
         order.access_expire_date = expireDate;
+
+        console.log(`Order ${order.order_id}: duration=${finalWeeks}w, expires=${expireDate.toISOString()}`);
       }
     }
 
