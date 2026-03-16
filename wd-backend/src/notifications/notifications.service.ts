@@ -41,19 +41,21 @@ export class NotificationsService {
 
   // mark อ่านแล้ว (ทีละอัน)
   async markRead(notifId: number, userId: number) {
-    await this.notifRepo.update(
-      { notification_id: notifId, user: { user_id: userId } },
-      { is_read: true }
-    );
+    await this.notifRepo.createQueryBuilder()
+      .update(Notification)
+      .set({ is_read: true })
+      .where('notification_id = :notifId AND user_id = :userId', { notifId, userId })
+      .execute();
     return { ok: true };
   }
 
   // mark ทั้งหมดว่าอ่านแล้ว
   async markAllRead(userId: number) {
-    await this.notifRepo.update(
-      { user: { user_id: userId }, is_read: false },
-      { is_read: true }
-    );
+    await this.notifRepo.createQueryBuilder()
+      .update(Notification)
+      .set({ is_read: true })
+      .where('user_id = :userId AND is_read = :isRead', { userId, isRead: false })
+      .execute();
     return { ok: true };
   }
 }

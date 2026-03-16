@@ -19,15 +19,15 @@ export class NotificationsController {
     return this.notifService.countUnread(userId);
   }
 
-  @Patch(':id/read')
-  markRead(@Param('id') id: string, @Req() req: any) {
-    const userId = req.user?.sub || req.user?.user_id;
-    return this.notifService.markRead(+id, userId);
-  }
-
   @Patch('read-all')
   markAllRead(@Req() req: any) {
     const userId = req.user?.sub || req.user?.user_id;
     return this.notifService.markAllRead(userId);
+  }
+
+  @Patch(':id/read')
+  markRead(@Param('id') id: string, @Req() req: any) {
+    const userId = req.user?.sub || req.user?.user_id;
+    return this.notifService.markRead(+id, userId);
   }
 }

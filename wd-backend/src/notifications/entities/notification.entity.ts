@@ -27,4 +27,7 @@ export class Notification {
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;
+
+  @Column({ type: 'int' })
+  user_id: number;
 }
