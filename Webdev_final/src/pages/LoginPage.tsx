@@ -50,7 +50,7 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-page' : ''}`}>
+    <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-theme' : ''}`}>
       
       <nav className="navbar">
         <div className="container navbar-container">
