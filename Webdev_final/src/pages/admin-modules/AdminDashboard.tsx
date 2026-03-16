@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api';
 import { useNavigate } from 'react-router-dom';
-import { LayoutDashboard, BookOpen, GraduationCap, Briefcase, LogOut, Loader2, DollarSign, Video } from 'lucide-react';
+import { LayoutDashboard, BookOpen, GraduationCap, Briefcase, LogOut, Loader2, DollarSign, Video, Award } from 'lucide-react';
 import logoImage from '../../assets/Logo.png';
 import '../HomeTheme.css';
 
@@ -9,6 +9,7 @@ import DashboardTab from './DashboardTab';
 import CoursesTab from './CoursesTab';
 import InstructorsTab from './InstructorsTab';
 import StudentsTab from './StudentsTab';
+import GradeTab from './GradeTab';
 import PaymentsTab from './PaymentsTab';
 import LessonsTab from './LessonsTab';
 
@@ -16,11 +17,15 @@ import type {
   CourseData, UserData, InstructorData, OrderData, LearningProgressData
 } from './types';
 
-type Tab = 'dashboard' | 'courses' | 'instructors' | 'students' | 'payments' | 'lessons';
+type Tab = 'dashboard' | 'courses' | 'instructors' | 'students' | 'payments' | 'lessons' | 'grades';
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<Tab>('dashboard');
+  const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const userRole: string = storedUser?.role || 'STUDENT';
+  const isAdmin = userRole === 'ADMIN';
+  const [activeTab, setActiveTab] = useState<Tab>(userRole === 'INSTRUCTOR' ? 'lessons' : 'dashboard');
+
   const [loading, setLoading] = useState(true);
 
   const [courses, setCourses] = useState<CourseData[]>([]);
@@ -30,7 +35,14 @@ const AdminDashboard: React.FC = () => {
   const [progressData, setProgressData] = useState<LearningProgressData[]>([]);
   const [pendingPaymentCount, setPendingPaymentCount] = useState(0);
 
-  useEffect(() => { fetchAllData(); }, []);
+  useEffect(() => {
+    // redirect ถ้าไม่ใช่ ADMIN หรือ INSTRUCTOR
+    if (!['ADMIN', 'INSTRUCTOR'].includes(userRole)) {
+      navigate('/home');
+      return;
+    }
+    fetchAllData();
+  }, []);
 
   const fetchAllData = async () => {
     setLoading(true);
@@ -39,22 +51,49 @@ const AdminDashboard: React.FC = () => {
       // ✅ users, orders, learning-progress ต้องใช้ token (ADMIN)
       // api.ts ควร attach Authorization header อัตโนมัติจาก localStorage
       const [coursesRes, usersRes, ordersRes, instructorsRes, progressRes] = await Promise.all([
-        api.get('/courses').catch(() => ({ data: [] })),
+        api.get('/courses/manage').catch(() => ({ data: [] })),
         api.get('/users').catch(() => ({ data: [] })),
         api.get('/orders').catch(() => ({ data: [] })),
         api.get('/instructors').catch(() => ({ data: [] })),
         api.get('/learning-progress').catch(() => ({ data: [] })),
       ]);
 
-      setCourses(Array.isArray(coursesRes.data) ? coursesRes.data : []);
+      const fetchedCourses = Array.isArray(coursesRes.data) ? coursesRes.data : [];
+      setCourses(fetchedCourses);
       setInstructors(Array.isArray(instructorsRes.data) ? instructorsRes.data : []);
 
-      // ✅ กรอง STUDENT และเรียงชื่อ
+      // กรอง STUDENT — INSTRUCTOR เห็นเฉพาะนักเรียนในคอร์สตัวเอง
       const allUsers = Array.isArray(usersRes.data) ? usersRes.data as UserData[] : [];
-      const sorted = allUsers
-        .filter(u => u.role === 'STUDENT')
-        .sort((a, b) => a.full_name.localeCompare(b.full_name, 'th'));
-      setUsers(sorted);
+      const allStudents = allUsers.filter(u => u.role === 'STUDENT');
+
+      if (userRole === 'INSTRUCTOR') {
+        // ดึง student_ids จาก orders COMPLETED ในคอร์สของอาจารย์
+        const rawOrders = Array.isArray(ordersRes.data) ? ordersRes.data : [];
+        const myCourseIds = new Set(fetchedCourses.map((c: any) => c.course_id));
+        // ลอง fetch orders พร้อม order_details
+        try {
+          const detailOrders = await Promise.all(
+            rawOrders
+              .filter((o: any) => o.status === 'COMPLETED')
+              .map((o: any) => api.get(`/orders/${o.order_id}`).catch(() => null))
+          );
+          const myStudentIds = new Set<number>();
+          detailOrders.forEach(r => {
+            if (!r) return;
+            const o = r.data;
+            const hasMatch = o.order_details?.some((d: any) => myCourseIds.has(d.course?.course_id));
+            if (hasMatch && o.user?.user_id) myStudentIds.add(o.user.user_id);
+          });
+          const filtered = myStudentIds.size > 0
+            ? allStudents.filter(u => myStudentIds.has(u.user_id))
+            : allStudents;
+          setUsers(filtered.sort((a: any, b: any) => (a.full_name || '').localeCompare(b.full_name || '', 'th')));
+        } catch {
+          setUsers(allStudents.sort((a: any, b: any) => (a.full_name || '').localeCompare(b.full_name || '', 'th')));
+        }
+      } else {
+        setUsers(allStudents.sort((a: any, b: any) => (a.full_name || '').localeCompare(b.full_name || '', 'th')));
+      }
 
       // ✅ orders จาก backend มี structure: { order_id, total_amount, status, user: { user_id, ... } }
       // ต้อง normalize ให้มี user_id ตรงๆ
@@ -69,12 +108,14 @@ const AdminDashboard: React.FC = () => {
 
       setProgressData(Array.isArray(progressRes.data) ? progressRes.data : []);
 
-      // โหลด pending payments count สำหรับ badge
-      try {
-        const paymentsRes = await api.get('/payments');
-        const payments = Array.isArray(paymentsRes.data) ? paymentsRes.data : [];
-        setPendingPaymentCount(payments.filter((p: any) => p.status === 'PENDING').length);
-      } catch {}
+      // โหลด pending payments count เฉพาะ ADMIN
+      if (userRole === 'ADMIN') {
+        try {
+          const paymentsRes = await api.get('/payments');
+          const payments = Array.isArray(paymentsRes.data) ? paymentsRes.data : [];
+          setPendingPaymentCount(payments.filter((p: any) => p.status === 'PENDING').length);
+        } catch {}
+      }
 
     } catch (err) {
       console.error('fetchAllData error:', err);
@@ -106,21 +147,26 @@ const AdminDashboard: React.FC = () => {
     );
   }
 
-  const navItems: { tab: Tab; label: string; Icon: React.ElementType }[] = [
-    { tab: 'dashboard', label: 'ภาพรวมระบบ', Icon: LayoutDashboard },
-    { tab: 'courses', label: 'จัดการคอร์สเรียน', Icon: BookOpen },
-    { tab: 'lessons', label: 'จัดการบทเรียน', Icon: Video },
-    { tab: 'instructors', label: 'จัดการผู้สอน', Icon: Briefcase },
-    { tab: 'students', label: 'รายชื่อนักเรียน', Icon: GraduationCap },
-    { tab: 'payments', label: 'ตรวจสอบการชำระเงิน', Icon: DollarSign },
+  // กำหนด tab ตาม role
+  const allNavItems: { tab: Tab; label: string; Icon: React.ElementType; roles: string[] }[] = [
+    { tab: 'dashboard',   label: 'ภาพรวมระบบ',           Icon: LayoutDashboard, roles: ['ADMIN'] },
+    { tab: 'courses',     label: 'จัดการคอร์สเรียน',      Icon: BookOpen,        roles: ['ADMIN'] },
+    { tab: 'lessons',     label: 'จัดการบทเรียน',         Icon: Video,           roles: ['ADMIN', 'INSTRUCTOR'] },
+    { tab: 'instructors', label: 'จัดการผู้สอน',          Icon: Briefcase,       roles: ['ADMIN'] },
+    { tab: 'students',    label: 'รายชื่อนักเรียน',       Icon: GraduationCap,   roles: ['ADMIN', 'INSTRUCTOR'] },
+    { tab: 'grades',      label: 'ให้เกรดนักเรียน',        Icon: Award,           roles: ['INSTRUCTOR'] },
+    { tab: 'payments',    label: 'ตรวจสอบการชำระเงิน',   Icon: DollarSign,      roles: ['ADMIN'] },
   ];
+  const navItems = allNavItems.filter(item => item.roles.includes(userRole));
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f8fafc', fontFamily: '"Prompt", sans-serif' }}>
       <aside style={{ width: '260px', backgroundColor: '#1e293b', color: '#f1f5f9', display: 'flex', flexDirection: 'column', position: 'fixed', height: '100%', left: 0, top: 0, zIndex: 50 }}>
         <div style={{ padding: '28px 24px', display: 'flex', alignItems: 'center', gap: '12px', borderBottom: '1px solid #334155' }}>
           <img src={logoImage} alt="Logo" style={{ width: '32px', height: '32px' }} />
-          <div style={{ fontWeight: 'bold', fontSize: '16px', color: 'white' }}>ADMIN PANEL</div>
+          <div style={{ fontWeight: 'bold', fontSize: '16px', color: 'white' }}>
+            {isAdmin ? 'ADMIN PANEL' : 'INSTRUCTOR PANEL'}
+          </div>
         </div>
         <nav style={{ padding: '20px 0', flex: 1 }}>
           {navItems.map(({ tab, label, Icon }) => (
@@ -151,13 +197,16 @@ const AdminDashboard: React.FC = () => {
           <DashboardTab courses={courses} users={users} orders={orders} instructors={instructors} progressData={progressData} getCourseEnrolledCount={getCourseEnrolledCount} />
         )}
         {activeTab === 'courses' && (
-          <CoursesTab courses={courses} instructors={instructors} onRefresh={fetchAllData} />
+          <CoursesTab courses={courses} instructors={instructors} onRefresh={fetchAllData} userRole={userRole} />
         )}
         {activeTab === 'instructors' && (
           <InstructorsTab instructors={instructors} onRefresh={fetchAllData} />
         )}
         {activeTab === 'students' && (
-          <StudentsTab users={users} orders={orders} courses={courses} progressData={progressData} onRefresh={fetchAllData} />
+          <StudentsTab users={users} orders={orders} courses={courses} progressData={progressData} onRefresh={fetchAllData} userRole={userRole} />
+        )}
+        {activeTab === 'grades' && (
+          <GradeTab courses={courses} />
         )}
         {activeTab === 'payments' && (
           <PaymentsTab />

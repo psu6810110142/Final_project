@@ -38,7 +38,7 @@ export class PaymentsController {
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'INSTRUCTOR')
   @Get() // ดูทั้งหมด (Admin)
   findAll() {
     return this.paymentsService.findAll();

@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne, JoinColumn } from 'typeorm';
 import { Course } from '../../courses/entities/course.entity';
+import { User } from '../../users/entities/user.entity';
 
 @Entity('instructors')
 export class Instructor {
@@ -22,6 +23,9 @@ export class Instructor {
   subject_taught: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
+  expertise: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
   contact_info: string;
 
   @Column({ type: 'text', nullable: true })
@@ -30,7 +34,10 @@ export class Instructor {
   @Column({ type: 'boolean', default: true })
   is_active: boolean;
 
-  // อาจารย์ 1 คน สอนได้หลายคอร์ส (One-to-Many)
+  // ผูกกับ User account (nullable เพราะอาจารย์เก่าอาจไม่มี account)
+  @Column({ type: 'int', nullable: true })
+  user_id: number | null;
+
   @OneToMany(() => Course, (course) => course.instructor)
   courses: Course[];
 }

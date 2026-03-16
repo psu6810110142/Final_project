@@ -32,7 +32,7 @@ export class UsersController {
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'INSTRUCTOR')
   @Get()
   findAll() {
     return this.usersService.findAll();

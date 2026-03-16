@@ -24,7 +24,7 @@ export class LearningProgressController {
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'INSTRUCTOR')
   @Get()
   findAll() {
     return this.learningProgressService.findAll();

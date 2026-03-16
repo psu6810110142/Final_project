@@ -13,7 +13,7 @@ export class LessonsController {
   constructor(private readonly lessonsService: LessonsService) { }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'INSTRUCTOR')
   @Post()
   @UseInterceptors(
     FileFieldsInterceptor([
@@ -51,7 +51,7 @@ export class LessonsController {
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'INSTRUCTOR')
   @Get()
   findAll() {
     return this.lessonsService.findAll();
@@ -71,7 +71,7 @@ export class LessonsController {
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'INSTRUCTOR')
   @Patch(':id')
   @UseInterceptors(
     FileFieldsInterceptor([
@@ -110,7 +110,7 @@ export class LessonsController {
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'INSTRUCTOR')
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.lessonsService.remove(+id);

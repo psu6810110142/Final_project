@@ -34,7 +34,7 @@ const LoginPage: React.FC = () => {
         const userRole = response.data.user.role;
 
         // ✅ ใช้ navigate แทน window.location.href เพื่อกัน race condition
-        if (userRole === 'ADMIN') {
+        if (userRole === 'ADMIN' || userRole === 'INSTRUCTOR') {
           window.location.href = '/manage-courses'; 
         } else {
           navigate('/home');

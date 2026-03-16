@@ -5,6 +5,7 @@ import { Payment } from './entities/payment.entity';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { Order } from '../orders/entities/order.entity';
+import { OrdersService } from '../orders/orders.service';
 import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
@@ -14,8 +15,18 @@ export class PaymentsService {
     private readonly paymentRepo: Repository<Payment>,
     @InjectRepository(Order)
     private readonly orderRepo: Repository<Order>,
+    private readonly ordersService: OrdersService,
     private readonly notifService: NotificationsService,
   ) {}
+
+  // helper — ส่ง notification แบบ safe (ไม่ทำให้ main flow พัง)
+  private async sendNotif(dto: any) {
+    try {
+      await this.notifService.create(dto);
+    } catch (e) {
+      console.warn('Notification send failed (non-critical):', e?.message);
+    }
+  }
 
   // แจ้งโอนเงิน (แนบสลิป)
   create(createPaymentDto: CreatePaymentDto) {
@@ -60,10 +71,8 @@ export class PaymentsService {
       // sync order status อัตโนมัติ — ไม่ต้องพึ่ง frontend อีกต่อไป
       if (payment.order?.order_id) {
         const orderStatus = updatePaymentDto.status === 'PAID' ? 'COMPLETED' : 'REJECTED';
-        await this.orderRepo.update(
-          { order_id: payment.order.order_id },
-          { status: orderStatus }
-        );
+        // เรียก ordersService.update เพื่อให้คำนวณ access_expire_date ด้วย
+        await this.ordersService.update(payment.order.order_id, { status: orderStatus });
         console.log(`Order ${payment.order.order_id} synced → ${orderStatus}`);
 
         // ดึง user_id จาก order
@@ -75,7 +84,7 @@ export class PaymentsService {
         if (order?.user?.user_id) {
           const courseName = order.order_details?.[0]?.course?.title || 'คอร์สเรียน';
           if (updatePaymentDto.status === 'PAID') {
-            await this.notifService.create({
+            await this.sendNotif({
               user_id: order.user.user_id,
               title: 'การชำระเงินได้รับการยืนยันแล้ว',
               message: `คำสั่งซื้อ #${order.order_id} สำหรับ "${courseName}" ได้รับการอนุมัติเรียบร้อย คุณสามารถเข้าเรียนได้ทันที`,
@@ -83,7 +92,7 @@ export class PaymentsService {
               order_id: order.order_id,
             });
           } else {
-            await this.notifService.create({
+            await this.sendNotif({
               user_id: order.user.user_id,
               title: 'การชำระเงินถูกปฏิเสธ',
               message: `คำสั่งซื้อ #${order.order_id} สำหรับ "${courseName}" ถูกปฏิเสธ กรุณาส่งหลักฐานใหม่หรือติดต่อแอดมิน`,

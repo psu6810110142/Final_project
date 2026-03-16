@@ -29,7 +29,7 @@ export class User {
   @Column({ type: 'varchar', length: 255, nullable: true })
   interesting_subject: string;
 
-  @Column({ type: 'enum', enum: ['STUDENT', 'ADMIN'], default: 'STUDENT' })
+  @Column({ type: 'enum', enum: ['STUDENT', 'ADMIN', 'INSTRUCTOR'], default: 'STUDENT' })
   role: string;
 
   @Column({ type: 'timestamp', nullable: true })

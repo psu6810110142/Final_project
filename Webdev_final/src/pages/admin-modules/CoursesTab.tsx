@@ -7,6 +7,7 @@ import type { CourseData, InstructorData } from './types';
 import { mockLevels, getImageUrl } from './types';
 
 interface Props {
+  userRole?: string;
   courses: CourseData[];
   instructors: InstructorData[];
   onRefresh: () => void;
@@ -20,7 +21,7 @@ const emptyCourse: any = {
   payment_qr_file: null, bank_name: '', account_name: '', account_number: ''
 };
 
-const CoursesTab: React.FC<Props> = ({ courses, instructors, onRefresh }) => {
+const CoursesTab: React.FC<Props> = ({ userRole = "ADMIN", courses, instructors, onRefresh }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { confirm, ConfirmDialogComponent } = useConfirm();
   const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
@@ -133,9 +134,11 @@ const CoursesTab: React.FC<Props> = ({ courses, instructors, onRefresh }) => {
                   <button onClick={() => openEdit(course)} style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid #cbd5e1', cursor: 'pointer', background: 'white', color: '#334155', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px' }}>
                     <Edit size={14} /> แก้ไข
                   </button>
-                  <button onClick={() => handleDelete(course.course_id)} style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid #fecaca', cursor: 'pointer', background: '#fef2f2', color: '#ef4444', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px' }}>
-                    <Trash2 size={14} />
-                  </button>
+                  {userRole !== "INSTRUCTOR" && (
+                    <button onClick={() => handleDelete(course.course_id)} style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid #fecaca', cursor: 'pointer', background: '#fef2f2', color: '#ef4444', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px' }}>
+                      <Trash2 size={14} />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

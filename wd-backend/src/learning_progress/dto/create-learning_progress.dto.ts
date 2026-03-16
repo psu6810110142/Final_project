@@ -2,6 +2,7 @@ import { Type } from 'class-transformer';
 import { IsBoolean, IsNumber, IsOptional } from 'class-validator';
 
 export class CreateLearningProgressDto {
+  @IsOptional()
   @Type(() => Number)
   @IsNumber()
   user_id: number;

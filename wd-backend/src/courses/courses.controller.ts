@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFiles } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFiles, Req } from '@nestjs/common';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
@@ -59,8 +59,22 @@ export class CoursesController {
     return this.coursesService.create(createCourseDto);
   }
 
+  // Public — ทุกคนดูได้ (หน้า CourseList)
   @Get()
   findAll() {
+    return this.coursesService.findAll();
+  }
+
+  // ADMIN/INSTRUCTOR — ดูคอร์สตามสิทธิ์ (หน้า Admin panel)
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('ADMIN', 'INSTRUCTOR')
+  @Get('manage')
+  findAllManage(@Req() req: any) {
+    const role = req.user?.role;
+    const userId = Number(req.user?.userId || req.user?.sub);
+    if (role === 'INSTRUCTOR') {
+      return this.coursesService.findByInstructorUserId(userId);
+    }
     return this.coursesService.findAll();
   }
 
@@ -70,7 +84,7 @@ export class CoursesController {
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'INSTRUCTOR')
   @Patch(':id')
   @UseInterceptors(
     FileFieldsInterceptor([

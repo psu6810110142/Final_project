@@ -49,9 +49,9 @@ const PaymentPage: React.FC = () => {
     setIsSuccess(false);
 
     if (file) {
-      // เช็คขนาดไฟล์ — backend รับสูงสุด 2MB
-      if (file.size > 2 * 1024 * 1024) {
-        setMessage('ไฟล์ใหญ่เกินไป กรุณาเลือกรูปที่มีขนาดไม่เกิน 2MB');
+      // เช็คขนาดไฟล์ — backend รับสูงสุด 5MB
+      if (file.size > 5 * 1024 * 1024) {
+        setMessage('ไฟล์ใหญ่เกินไป กรุณาเลือกรูปที่มีขนาดไม่เกิน 5MB');
         setSelectedFile(null);
         setSlipPreview(null);
         e.target.value = ''; // reset input
@@ -81,7 +81,7 @@ const PaymentPage: React.FC = () => {
     try {
       const userStr = localStorage.getItem('user');
       const user = userStr ? JSON.parse(userStr) : null;
-      const userId = Number(user?.sub);
+      const userId = Number(user?.sub || user?.user_id || user?.id);
 
       if (!userId) {
         setMessage('กรุณาเข้าสู่ระบบก่อนชำระเงิน');

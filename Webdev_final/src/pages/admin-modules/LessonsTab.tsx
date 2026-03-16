@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, X, Video, ChevronLeft, Upload, Play, Paperclip, FileText } from 'lucide-react';
+import { Plus, Edit, Trash2, X, Video, ChevronLeft, Upload, Play, Paperclip, FileText, ClipboardList } from 'lucide-react';
+import QuizCreator from './QuizCreator';
 import api from '../../api';
 import { useConfirm } from './ConfirmDialog';
 import type { CourseData } from './types';
@@ -37,6 +38,7 @@ const LessonsTab: React.FC<Props> = ({ courses }) => {
   const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
   const [formData, setFormData] = useState(emptyLesson);
   const [saving, setSaving] = useState(false);
+  const [quizLesson, setQuizLesson] = useState<{ lesson_id: number; title: string } | null>(null);
 
   const fetchLessons = async (courseId: number) => {
     setLoading(true);
@@ -199,6 +201,10 @@ const LessonsTab: React.FC<Props> = ({ courses }) => {
                   style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', background: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', color: '#334155' }}>
                   <Edit size={13} /> แก้ไข
                 </button>
+                <button onClick={() => setQuizLesson({ lesson_id: lesson.lesson_id, title: lesson.title })}
+                  style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #a5b4fc', background: '#eef2ff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', color: '#4f46e5' }}>
+                  <ClipboardList size={13} /> ข้อสอบ
+                </button>
                 <button onClick={() => handleDelete(lesson.lesson_id)}
                   style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #fecaca', background: '#fef2f2', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', color: '#ef4444' }}>
                   <Trash2 size={13} />
@@ -270,6 +276,22 @@ const LessonsTab: React.FC<Props> = ({ courses }) => {
             </form>
           </div>
         </div>
+      )}
+      {quizLesson && (
+        <QuizCreator
+          lessonId={quizLesson.lesson_id}
+          lessonTitle={quizLesson.title}
+          onClose={() => setQuizLesson(null)}
+        />
+      )}
+
+      {/* QuizCreator Modal */}
+      {quizLesson && (
+        <QuizCreator
+          lessonId={quizLesson.lesson_id}
+          lessonTitle={quizLesson.title}
+          onClose={() => setQuizLesson(null)}
+        />
       )}
     </div>
   );

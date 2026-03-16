@@ -36,6 +36,15 @@ export class CoursesService {
     });
   }
 
+  // ดึงคอร์สของอาจารย์คนนี้ (กรองตาม user_id)
+  async findByInstructorUserId(userId: number) {
+    return this.courseRepo.find({
+      where: { instructor: { user_id: userId } as any },
+      relations: ['level', 'instructor'],
+      order: { course_id: 'DESC' },
+    });
+  }
+
   async findOne(id: number) {
     const course = await this.courseRepo.findOne({ 
       where: { course_id: id },

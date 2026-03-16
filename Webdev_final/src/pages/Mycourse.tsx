@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './HomeTheme.css';
-import { PlayCircle, CheckCircle, LockKeyhole, RefreshCw, XCircle, Mail } from 'lucide-react';
+import { PlayCircle, CheckCircle, LockKeyhole, RefreshCw, XCircle, Mail, Clock } from 'lucide-react';
 import api from '../api';
 import Navbar from '../components/Navbar';
-import { useTheme } from '../contexts/ThemeContext';
 import './OceanTheme.css';
 
 interface Course {
@@ -33,7 +32,6 @@ const statusStyleMap: Record<string, { tagColor: string; textColor: string }> = 
 };
 
 const MyCourses: React.FC = () => {
-  const { theme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [filter, setFilter] = useState("in-progress");
@@ -41,6 +39,7 @@ const MyCourses: React.FC = () => {
   const [myCourses, setMyCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   
+  const [expiringCourses, setExpiringCourses] = useState<Course[]>([]);
   const [expiredPopup, setExpiredPopup] = useState<{ courseId: string; expiredAt: string } | null>(
     location.state?.expiredCourseId 
     ? { courseId: location.state.expiredCourseId, expiredAt: location.state.expiredAt }
@@ -131,16 +130,26 @@ const MyCourses: React.FC = () => {
         });
       });
 
-      // เรียงตาม orderId ล่าสุดก่อน และ dedup ด้วย course_id โดยเอา active order ล่าสุด
+      // เรียงตาม priority และ dedup ด้วย course_id
       const statusPriority: Record<string, number> = { COMPLETED: 0, WAITING_PAYMENT: 1, REJECTED: 2, CANCELLED: 3 };
       purchasedCourses.sort((a, b) => {
         const sp = (statusPriority[a.orderStatus] ?? 9) - (statusPriority[b.orderStatus] ?? 9);
         if (sp !== 0) return sp;
         return b.orderId - a.orderId;
       });
-      // เก็บ 1 order ต่อ course โดยเอา priority สูงสุด (COMPLETED > WAITING > REJECTED)
       const uniqueCourses = Array.from(new Map(purchasedCourses.map(c => [c.id, c])).values());
       setMyCourses(uniqueCourses);
+
+      // เช็คคอร์สที่ใกล้หมดอายุ (เหลือน้อยกว่า 7 วัน) แล้วแจ้งเตือน
+      const now = new Date();
+      const expiringSoon = uniqueCourses.filter((c: Course) => {
+        if (!c.expireDate || c.orderStatus !== 'COMPLETED') return false;
+        const daysLeft = Math.round((c.expireDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        return daysLeft > 0 && daysLeft <= 7;
+      });
+      if (expiringSoon.length > 0) {
+        setExpiringCourses(expiringSoon);
+      }
 
     } catch (error: any) {
       console.error('เกิดข้อผิดพลาดในการดึงข้อมูลคอร์ส:', error);
@@ -162,8 +171,18 @@ const MyCourses: React.FC = () => {
     return true;
   });
 
+  const cancelOrder = async (orderId: number) => {
+    if (!window.confirm('ยืนยันการยกเลิกคำสั่งซื้อนี้?\nหากต้องการรับเงินคืน กรุณาติดต่อแอดมิน')) return;
+    try {
+      await api.patch(`/orders/${orderId}/cancel`);
+      fetchMyCourses();
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'ยกเลิกไม่สำเร็จ กรุณาลองใหม่');
+    }
+  };
+
   return (
-    <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-theme' : ''}`}>
+    <div className="page-wrapper">
       {expiredPopup && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ backgroundColor: 'white', borderRadius: '16px', padding: '40px', maxWidth: '420px', width: '90%', textAlign: 'center' }}>
@@ -200,6 +219,26 @@ const MyCourses: React.FC = () => {
             <button className={`tab-button ${filter === "all" ? "active" : ""}`} onClick={() => setFilter("all")}>ทั้งหมด</button>
           </div>
 
+          {/* แจ้งเตือนคอร์สใกล้หมดอายุ */}
+          {expiringCourses.length > 0 && (
+            <div style={{ backgroundColor: '#fffbeb', border: '1px solid #f59e0b', borderRadius: '10px', padding: '14px 18px', marginBottom: '20px', display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+              <Clock size={18} color="#f59e0b" style={{ flexShrink: 0, marginTop: '2px' }}/>
+              <div>
+                <div style={{ fontWeight: '700', color: '#92400e', fontSize: '14px', marginBottom: '4px' }}>
+                  แจ้งเตือน: คอร์สใกล้หมดอายุ
+                </div>
+                {expiringCourses.map((c: Course) => {
+                  const daysLeft = Math.round((c.expireDate!.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+                  return (
+                    <div key={c.id} style={{ fontSize: '13px', color: '#78350f' }}>
+                      • <strong>{c.title}</strong> — เหลือ <strong>{daysLeft} วัน</strong> ({c.expireDate!.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: 'numeric' })})
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {loading ? (
             <div className="state-message">กำลังโหลดข้อมูลคอร์สเรียนของคุณ... ⏳</div>
           ) : (
@@ -213,7 +252,7 @@ const MyCourses: React.FC = () => {
                       return;
                     }
                     navigate(`/learn/${course.id}`);}} style={{ cursor: 'pointer' }}>
-                    <MyCourseCard course={course} />
+                    <MyCourseCard course={course} onCancel={cancelOrder} />
                   </div>
                 ))
               ) : (
@@ -251,7 +290,7 @@ const MyCourses: React.FC = () => {
   );
 };
 
-const MyCourseCard = ({ course }: { course: Course }) => {
+const MyCourseCard = ({ course, onCancel }: { course: Course; onCancel: (orderId: number) => void }) => {
   const isCompleted = course.progress === 100;
   const isPending = course.orderStatus === 'WAITING_PAYMENT';
   const isRejected = course.orderStatus === 'REJECTED';
@@ -297,8 +336,21 @@ const MyCourseCard = ({ course }: { course: Course }) => {
         )}
 
         {isPending ? (
-          <div style={{ padding: '10px', backgroundColor: '#fef9c3', borderRadius: '8px', fontSize: '13px', color: '#854d0e', textAlign: 'center' }}>
-            รอแอดมินตรวจสอบสลิปการชำระเงิน
+          <div style={{ backgroundColor: '#fffbeb', border: '1px solid #fde68a', borderRadius: '10px', padding: '14px', fontSize: '13px' }}>
+            <div style={{ color: '#92400e', fontWeight: '700', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Clock size={14}/> รอแอดมินตรวจสอบสลิป
+            </div>
+            <div style={{ fontSize: '12px', color: '#78350f', marginBottom: '10px', lineHeight: '1.5' }}>
+              ทีมงานจะตรวจสอบภายใน 1-2 ชั่วโมง
+            </div>
+            <button
+              onClick={() => onCancel(course.orderId)}
+              style={{ width: '100%', padding: '8px', backgroundColor: 'white', color: '#ef4444', border: '1px solid #fecaca', borderRadius: '8px', fontWeight: '600', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+              <XCircle size={13}/> ยกเลิกคำสั่งซื้อ
+            </button>
+            <div style={{ marginTop: '8px', fontSize: '11px', color: '#94a3b8', textAlign: 'center' }}>
+              เลขคำสั่งซื้อ #{course.orderId}
+            </div>
           </div>
         ) : isRejected ? (
           <div style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '10px', padding: '14px', fontSize: '13px' }}>
@@ -325,21 +377,32 @@ const MyCourseCard = ({ course }: { course: Course }) => {
           </button>
         )}
 
-        {isApproved && course.expireDate && (
-          <div style={{ 
-            fontSize: '12px', 
-            color: course.expireDate < new Date() ? '#991b1b' : '#64748b',
-            backgroundColor: course.expireDate < new Date() ? '#fee2e2' : '#f1f5f9',
-            padding: '6px 10px', 
-            borderRadius: '6px', 
-            marginTop: '8px' 
+        {isApproved && course.expireDate && (() => {
+          const now = new Date();
+          const isExpired = course.expireDate! < now;
+          const diffDays = Math.round((course.expireDate!.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+          const expireStr = course.expireDate!.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: 'numeric' });
+          return (
+            <div style={{
+              fontSize: '12px',
+              color: isExpired ? '#991b1b' : diffDays <= 7 ? '#92400e' : '#475569',
+              backgroundColor: isExpired ? '#fee2e2' : diffDays <= 7 ? '#fffbeb' : '#f8fafc',
+              border: `1px solid ${isExpired ? '#fecaca' : diffDays <= 7 ? '#fde68a' : '#e2e8f0'}`,
+              padding: '8px 12px',
+              borderRadius: '8px',
+              marginTop: '8px',
+              display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '500'
             }}>
-              {course.expireDate < new Date()
-              ? `หมดอายุแล้วเมื่อ ${course.expireDate.toLocaleDateString('th-TH')}`
-              : `หมดอายุ ${course.expireDate.toLocaleDateString('th-TH')}`
-    }
-  </div>
-)}
+              <Clock size={12}/>
+              {isExpired
+                ? `หมดอายุแล้ว — ${expireStr}`
+                : diffDays <= 7
+                  ? `⚠️ ใกล้หมดอายุ! เหลือ ${diffDays} วัน (${expireStr})`
+                  : `เข้าเรียนได้ถึง ${expireStr} (เหลือ ${diffDays} วัน)`
+              }
+            </div>
+          );
+        })()}
       </div>
     </div>
   );

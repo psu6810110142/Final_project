@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle, XCircle, Clock, Eye, X, Search } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Eye, X, Search, RefreshCw } from 'lucide-react';
 import api from '../../api';
 import { useConfirm } from './ConfirmDialog';
 
@@ -65,14 +65,7 @@ const PaymentsTab: React.FC = () => {
       const res = await api.patch(`/payments/${paymentId}`, { status: newStatus });
       console.log('payment update result:', res.data);
 
-      // Step 2: sync order status ให้ตรงกับ payment เสมอ
-      if (selectedPayment) {
-        const orderId = selectedPayment.order?.order_id;
-        if (orderId) {
-          const orderStatus = newStatus === 'PAID' ? 'COMPLETED' : 'REJECTED';
-          await api.patch(`/orders/${orderId}`, { status: orderStatus });
-        }
-      }
+      // Step 2: backend sync order อัตโนมัติแล้ว ไม่ต้องทำที่นี่
 
       await fetchPayments();
       // อัปเดต selectedPayment ให้แสดงสถานะใหม่
@@ -110,7 +103,7 @@ const PaymentsTab: React.FC = () => {
             <div onClick={() => setFilterStatus('PENDING')}
               style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: '#fef3c7', border: '1.5px solid #f59e0b', color: '#92400e', fontSize: '14px', fontWeight: '700', padding: '8px 16px', borderRadius: '999px', cursor: 'pointer', animation: 'pulse 2s infinite' }}>
               <Clock size={15} />
-              <span>รอตรวจสอบ <strong>{pendingCount}</strong> รายการ — คลิกเพื่อดู</span>
+              <span>⚠️ รอตรวจสอบ <strong>{pendingCount}</strong> รายการ — คลิกเพื่อดู</span>
             </div>
           )}
         </div>
@@ -142,6 +135,7 @@ const PaymentsTab: React.FC = () => {
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
             <tr>
+              <th style={{ padding: '14px 18px', textAlign: 'left', color: '#64748b', fontSize: '13px', fontWeight: '600' }}>เลขคำสั่งซื้อ</th>
               <th style={{ padding: '14px 18px', textAlign: 'left', color: '#64748b', fontSize: '13px', fontWeight: '600' }}>ผู้ชำระเงิน</th>
               <th style={{ padding: '14px 18px', textAlign: 'left', color: '#64748b', fontSize: '13px', fontWeight: '600' }}>คอร์ส</th>
               <th style={{ padding: '14px 18px', textAlign: 'left', color: '#64748b', fontSize: '13px', fontWeight: '600' }}>ยอดเงิน</th>
@@ -152,17 +146,23 @@ const PaymentsTab: React.FC = () => {
           </thead>
           <tbody>
             {filtered.length === 0 && (
-              <tr><td colSpan={6} style={{ padding: '60px', textAlign: 'center', color: '#94a3b8' }}>ไม่มีรายการชำระเงิน</td></tr>
+              <tr><td colSpan={7} style={{ padding: '60px', textAlign: 'center', color: '#94a3b8' }}>ไม่มีรายการชำระเงิน</td></tr>
             )}
             {filtered.map(payment => {
               const cfg = statusConfig[payment.status];
               const StatusIcon = cfg.icon;
-              const courseName = payment.order?.order_details?.[0]?.course?.title || 'ไม่ระบุ';
+              const courseNames = payment.order?.order_details?.map((d: any) => d.course?.title).filter(Boolean) || [];
+              const courseName = courseNames.length > 0 ? courseNames.join(', ') : 'ไม่ระบุ';
               return (
                 <tr key={payment.payment_id}
                   style={{ borderBottom: '1px solid #f1f5f9', transition: 'background 0.15s' }}
                   onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#fafafa')}
                   onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}>
+                  <td style={{ padding: '16px 18px' }}>
+                    <span style={{ display: 'inline-block', backgroundColor: '#f1f5f9', color: '#475569', fontSize: '12px', fontWeight: '700', padding: '3px 8px', borderRadius: '6px' }}>
+                      #{payment.order?.order_id}
+                    </span>
+                  </td>
                   <td style={{ padding: '16px 18px' }}>
                     <div style={{ fontWeight: '600', color: '#1e293b', fontSize: '14px' }}>
                       {payment.order?.user?.full_name || 'ไม่ระบุ'}
@@ -220,15 +220,24 @@ const PaymentsTab: React.FC = () => {
                     <div style={{ fontWeight: '600', color: '#1e293b' }}>{selectedPayment.order?.user?.email}</div>
                   </div>
                   <div>
-                    <div style={{ color: '#94a3b8', fontSize: '12px', marginBottom: '2px' }}>คอร์สที่สมัคร</div>
-                    <div style={{ fontWeight: '600', color: '#1e293b' }}>
-                      {selectedPayment.order?.order_details?.[0]?.course?.title || 'ไม่ระบุ'}
-                    </div>
+                    <div style={{ color: '#94a3b8', fontSize: '12px', marginBottom: '2px' }}>เลขคำสั่งซื้อ</div>
+                    <div style={{ fontWeight: '700', color: '#1e293b' }}>#{selectedPayment.order?.order_id}</div>
                   </div>
                   <div>
                     <div style={{ color: '#94a3b8', fontSize: '12px', marginBottom: '2px' }}>ยอดเงิน</div>
                     <div style={{ fontWeight: 'bold', color: '#10b981', fontSize: '16px' }}>
                       ฿{Number(selectedPayment.amount).toLocaleString()}
+                    </div>
+                  </div>
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <div style={{ color: '#94a3b8', fontSize: '12px', marginBottom: '6px' }}>คอร์สที่สมัคร ({selectedPayment.order?.order_details?.length || 0} คอร์ส)</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      {selectedPayment.order?.order_details?.map((d: any, i: number) => (
+                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', backgroundColor: '#f8fafc', padding: '6px 10px', borderRadius: '6px', fontSize: '13px' }}>
+                          <span style={{ fontWeight: '600', color: '#1e293b' }}>{d.course?.title || 'ไม่ระบุ'}</span>
+                          <span style={{ color: '#10b981', fontWeight: '700' }}>฿{Number(d.price_at_purchase || d.course?.price || 0).toLocaleString()}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
