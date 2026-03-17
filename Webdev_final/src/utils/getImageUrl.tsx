@@ -1,7 +1,7 @@
 import GrayLogo from '../assets/graylogo.png';
 import imgVDO from '../assets/locobackgroudewhite.png';
 
-const BASE_URL = 'http://localhost:3001';
+const BASE_URL = 'https://wd10.pupasoft.com/api';
 
 export const getImageUrl = (
     url?: string,
