@@ -22,16 +22,50 @@
   --db-white:   #ffffff;
 }
 
-/* BASE */
+/* BASE — scroll snap container */
 .ocean-page {
   font-family: 'Nunito', 'Kanit', sans-serif;
   background: var(--db-foam);
+  scroll-snap-type: y mandatory;
+  overflow-y: scroll;
+  height: 100vh;
 }
 
-/* NAVBAR */
+/* แต่ละ section snap */
+.ocean-page .snap-section {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  min-height: 100vh;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Hero section — snap แต่ไม่ต้อง flex center (มี hero-content เอง) */
+.ocean-page .page-header.snap-section {
+  display: block;
+  padding-top: 0;
+}
+
+/* Footer snap — ไม่ต้อง min-height เต็มจอ */
+.ocean-page .footer.snap-section {
+  min-height: unset;
+  scroll-snap-align: start;
+}
+
+/* NAVBAR handled below */
+
 .ocean-page .navbar {
   background: linear-gradient(135deg, var(--db-abyss) 0%, var(--db-deep) 60%, var(--db-navy) 100%) !important;
   box-shadow: 0 4px 24px rgba(2,11,24,0.5) !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 1000 !important;
+  min-height: unset !important;
+  scroll-snap-align: none !important;
 }
 .ocean-page .btn-nav-register {
   background: linear-gradient(135deg, var(--db-sun), var(--db-sunset)) !important;
@@ -249,7 +283,7 @@
 .ocean-page .stat-card:hover{transform:translateY(-4px) !important;}
 .ocean-page .stat-number{color:var(--db-navy) !important; font-weight:900 !important;}
 
-/* SECTIONS */
+/* SECTIONS — สีพื้นหลังแต่ละ snap section */
 .ocean-page .section:nth-child(odd) {background:var(--db-foam) !important;}
 .ocean-page .section:nth-child(even){background:var(--db-sand) !important;}
 .ocean-page .section-title{color:var(--db-navy) !important; font-weight:900 !important;}
@@ -257,6 +291,42 @@
   content:''; display:block; height:4px; width:55%;
   background:linear-gradient(90deg,var(--db-mid),transparent);
   border-radius:2px; margin-top:8px;
+}
+
+/* WHY US section */
+.ocean-page .features-snap {
+  background: var(--db-foam) !important;
+}
+
+/* INSTRUCTORS section — dark navy */
+.ocean-page .instructors-snap {
+  background: linear-gradient(160deg, var(--db-abyss) 0%, var(--db-deep) 40%, var(--db-navy) 70%, var(--db-ocean) 100%) !important;
+}
+
+/* HOW IT WORKS section */
+.ocean-page .how-snap {
+  background: var(--db-sand) !important;
+}
+
+/* POPULAR COURSES section */
+.ocean-page .popular-snap {
+  background: var(--db-foam) !important;
+}
+
+/* REVIEWS section — dark */
+.ocean-page .reviews-snap {
+  background: linear-gradient(160deg, var(--db-deep) 0%, var(--db-navy) 60%, var(--db-ocean) 100%) !important;
+}
+
+/* COURSES section */
+.ocean-page .courses-snap {
+  background: var(--db-sand) !important;
+}
+
+/* CTA section */
+.ocean-page .cta-snap {
+  background: linear-gradient(160deg, var(--db-abyss) 0%, var(--db-deep) 40%, var(--db-navy) 70%, var(--db-ocean) 100%) !important;
+  justify-content: center !important;
 }
 
 /* FEATURE CARDS */
@@ -296,7 +366,7 @@
 }
 .ocean-page .course-price{color:var(--db-coral) !important; font-weight:800 !important;}
 
-/* CTA section */
+/* CTA section — override เดิมที่ใช้ section.page-header */
 .ocean-page section.page-header {
   background:linear-gradient(160deg,var(--db-abyss) 0%,var(--db-deep) 40%,var(--db-navy) 70%,var(--db-ocean) 100%) !important;
   position:relative; overflow:hidden;

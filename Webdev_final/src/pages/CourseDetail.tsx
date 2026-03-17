@@ -9,6 +9,7 @@ import Navbar from '../components/Navbar';
 import { useCart } from '../contexts/CartContext';
 import { useTheme } from '../contexts/ThemeContext';
 import './OceanTheme.css';
+import OceanAnimations from '../components/OceanAnimations';
 
 // 📌 Types
 interface Lesson {
@@ -84,11 +85,12 @@ export default function CourseDetail() {
   );
 
   return (
-    <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-theme' : ''}`}>
+    <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-page' : ''}`}>
       <Navbar />
 
       {/* 🔵 Header Section */}
-      <header className="page-header">
+      <header className="page-header" style={{ position: 'relative', overflow: 'hidden' }}>
+        {theme === 'ocean' && <OceanAnimations />}
         <div className="container">
           <div className="cd-banner-content">
             <div className="cd-banner-info">
@@ -115,6 +117,7 @@ export default function CourseDetail() {
               <img src={getImageUrl(course.cover_image_url)} alt={course.title} />
             </div>
           </div>
+          <ThemeToggleButton />
         </div>
       </header>
 
@@ -207,7 +210,6 @@ export default function CourseDetail() {
           </div>
         </div>
       </footer>
-      <ThemeToggleButton />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 type Theme = 'home' | 'ocean';
 
@@ -12,8 +12,17 @@ const ThemeContext = createContext<ThemeContextType>({
   toggleTheme: () => {},
 });
 
+export const useTheme = () => useContext(ThemeContext); 
+
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-  const [theme, setTheme] = useState<Theme>('home');
+  const [theme, setTheme] = useState<Theme>(() => {
+    const saved = localStorage.getItem('theme');
+    return (saved === 'ocean' || saved === 'home') ? saved : 'home';
+  });
+
+  useEffect (() => {
+    localStorage.setItem('theme', theme);
+  }, [theme]);
 
   const toggleTheme = () =>
     setTheme(prev => (prev === 'home' ? 'ocean' : 'home'));
@@ -24,5 +33,3 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     </ThemeContext.Provider>
   );
 };
-
-export const useTheme = () => useContext(ThemeContext);
