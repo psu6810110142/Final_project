@@ -5,7 +5,8 @@ import { UsersModule } from '../users/users.module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { JwtStrategy } from './jwt.strategy'; // เดี๋ยวเราสร้างไฟล์นี้ในขั้นตอนที่ 5
+import { JwtStrategy } from './jwt.strategy';
+import { JwtOptionalStrategy } from './jwt-optional.strategy';
 import { GoogleStrategy } from './google.strategy';
 
 @Module({
@@ -22,7 +23,7 @@ import { GoogleStrategy } from './google.strategy';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, GoogleStrategy], 
+  providers: [AuthService, JwtStrategy, JwtOptionalStrategy, GoogleStrategy], 
   exports: [AuthService],
 })
 export class AuthModule {}

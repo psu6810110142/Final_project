@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle, XCircle, RotateCcw } from 'lucide-react';
+import { RotateCcw } from 'lucide-react';
 import api from '../api';
 
 interface Props {
@@ -8,7 +8,7 @@ interface Props {
   onPassed: () => void; // callback เมื่อสอบผ่าน
 }
 
-const QuizPlayer: React.FC<Props> = ({ lessonId, userId, onPassed }) => {
+const QuizPlayer: React.FC<Props> = ({ lessonId, userId: _userId, onPassed }) => {
   const [quiz, setQuiz] = useState<any>(null);
   const [answers, setAnswers] = useState<number[]>([]);
   const [result, setResult] = useState<any>(null);
@@ -51,8 +51,12 @@ const QuizPlayer: React.FC<Props> = ({ lessonId, userId, onPassed }) => {
 
   // แสดงผลลัพธ์
   if (result) {
-    const grade = result.score >= 80 ? 'A' : result.score >= 70 ? 'B' : result.score >= 60 ? 'C' : result.score >= 50 ? 'D' : 'F';
-    const gradeColor = result.passed ? '#10b981' : '#ef4444';
+    // ✅ รองรับทั้งกรณีที่ submit ใหม่ (มี correct/total) และโหลดจาก my-result (อาจไม่มี)
+    const correctCount = result.correct ?? '-';
+    const totalCount = result.total ?? '-';
+    const passScore = result.pass_score ?? quiz?.pass_score ?? 60;
+    const scoreColor = result.passed ? '#10b981' : '#ef4444';
+
     return (
       <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', border: '1px solid #e2e8f0' }}>
         <h3 style={{ fontSize: '17px', fontWeight: '700', color: '#1e293b', marginBottom: '16px' }}>
@@ -61,17 +65,19 @@ const QuizPlayer: React.FC<Props> = ({ lessonId, userId, onPassed }) => {
 
         <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
           <div style={{ flex: 1, backgroundColor: '#f8fafc', borderRadius: '10px', padding: '16px', textAlign: 'center', border: '1px solid #e2e8f0' }}>
-            <div style={{ fontSize: '2rem', fontWeight: '900', color: result.passed ? '#10b981' : '#ef4444' }}>{result.correct}/{result.total}</div>
+            <div style={{ fontSize: '2rem', fontWeight: '900', color: scoreColor }}>
+              {correctCount}/{totalCount}
+            </div>
             <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>ข้อที่ตอบถูก</div>
           </div>
           <div style={{ flex: 1, backgroundColor: '#f8fafc', borderRadius: '10px', padding: '16px', textAlign: 'center', border: '1px solid #e2e8f0' }}>
-            <div style={{ fontSize: '2rem', fontWeight: '900', color: result.passed ? '#10b981' : '#ef4444' }}>{result.score}%</div>
+            <div style={{ fontSize: '2rem', fontWeight: '900', color: scoreColor }}>{result.score}%</div>
             <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>คะแนนที่ได้</div>
           </div>
         </div>
 
         <div style={{ padding: '12px 16px', borderRadius: '8px', backgroundColor: result.passed ? '#f0fdf4' : '#fef2f2', border: `1px solid ${result.passed ? '#bbf7d0' : '#fecaca'}`, marginBottom: '16px', fontSize: '14px', color: result.passed ? '#16a34a' : '#dc2626', fontWeight: '600' }}>
-          {result.passed ? 'ผ่านเกณฑ์แล้ว' : `ยังไม่ผ่านเกณฑ์ (ต้องได้ ${result.pass_score}% ขึ้นไป)`}
+          {result.passed ? 'ผ่านเกณฑ์แล้ว' : `ยังไม่ผ่านเกณฑ์ (ต้องได้ ${passScore}% ขึ้นไป)`}
         </div>
 
         {!result.passed && (

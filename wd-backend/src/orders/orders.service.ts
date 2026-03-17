@@ -143,6 +143,77 @@ export class OrdersService {
   }
 
   // ดึงนักเรียนที่ลงทะเบียนคอร์สนี้แล้ว (COMPLETED)
+  // ดึงนักเรียนทุก course ของ instructor คนนี้ (ใช้ user_id ผูกกับ instructor profile)
+  async findStudentsByInstructorUserId(userId: number) {
+    // 1. หา instructor profile ของ user นี้
+    const instructor = await this.orderRepo.manager.findOne('instructors' as any, {
+      where: { user_id: userId }
+    });
+
+    if (!instructor) return [];
+
+    const instructorId = (instructor as any).instructor_id;
+
+    // 2. หาทุก course ที่อาจารย์สอน
+    const courses = await this.orderRepo.manager.find('courses' as any, {
+      where: { instructor: { instructor_id: instructorId } },
+      relations: ['instructor']
+    });
+
+    if (!courses || courses.length === 0) return [];
+
+    const courseIds = (courses as any[]).map((c: any) => c.course_id);
+
+    // 3. หา orders COMPLETED ที่มี order_details ตรงกับ courseIds เหล่านั้น
+    const orders = await this.orderRepo
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.user', 'user')
+      .leftJoinAndSelect('user.level', 'level')         // ✅ join level
+      .leftJoinAndSelect('order.order_details', 'detail')
+      .leftJoinAndSelect('detail.course', 'course')
+      .where('order.status = :status', { status: 'COMPLETED' })
+      .andWhere('course.course_id IN (:...courseIds)', { courseIds })
+      .getMany();
+
+    // 4. deduplicate users + เพิ่มข้อมูล course ที่ลงทะเบียน
+    const studentMap = new Map<number, any>();
+    orders.forEach(o => {
+      if (!o.user) return;
+      const uid = o.user.user_id;
+      const enrolledCourses = (o.order_details || [])
+        .filter((d: any) => courseIds.includes(d.course?.course_id))
+        .map((d: any) => ({
+          course_id: d.course?.course_id,
+          title: d.course?.title,
+          price: d.course?.price,
+        }));
+
+      if (!studentMap.has(uid)) {
+        studentMap.set(uid, {
+          user_id: uid,
+          username: o.user.username,
+          full_name: o.user.full_name,
+          email: o.user.email,
+          phone: (o.user as any).phone,
+          profile_picture_url: (o.user as any).profile_picture_url,
+          role: o.user.role,
+          level_id: (o.user as any).level?.level_id ?? null,
+          level: (o.user as any).level ?? null,          // ✅ ส่ง level object มาด้วย
+          enrolled_courses: enrolledCourses,             // ✅ คอร์สที่ลงทะเบียน
+        });
+      } else {
+        const existing = studentMap.get(uid);
+        enrolledCourses.forEach((ec: any) => {
+          if (!existing.enrolled_courses.some((c: any) => c.course_id === ec.course_id)) {
+            existing.enrolled_courses.push(ec);
+          }
+        });
+      }
+    });
+
+    return Array.from(studentMap.values());
+  }
+
   async findStudentsByCourse(courseId: number) {
     const orders = await this.orderRepo.find({
       where: {

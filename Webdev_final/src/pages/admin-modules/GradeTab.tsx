@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Award, ChevronLeft, Save, Search, BookOpen, ClipboardList, TrendingUp } from 'lucide-react';
+import React, { useState } from 'react';
+import { Award, Save, Search, ClipboardList, TrendingUp } from 'lucide-react';
 import api from '../../api';
 
 interface Props {

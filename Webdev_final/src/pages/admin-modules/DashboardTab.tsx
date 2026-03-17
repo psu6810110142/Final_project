@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, BookOpen, Briefcase, DollarSign, TrendingUp, CreditCard, GraduationCap, Clock, XCircle, CheckCircle, AlertCircle, BarChart2, ListChecks, PlayCircle, Award, PauseCircle, Ban, Hourglass, Medal } from 'lucide-react';
+import { Users, BookOpen, Briefcase, DollarSign, TrendingUp, CreditCard, GraduationCap, Clock, XCircle, CheckCircle, BarChart2, PlayCircle, Award, PauseCircle } from 'lucide-react';
 import api from '../../api';
 import type { CourseData, OrderData, InstructorData, LearningProgressData } from './types';
 

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFiles } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFiles, Req } from '@nestjs/common';
 import { LessonsService } from './lessons.service';
 import { CreateLessonDto } from './dto/create-lesson.dto';
 import { UpdateLessonDto } from './dto/update-lesson.dto';
@@ -7,6 +7,7 @@ import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/roles.decorator';
 import { getStorageConfig } from 'src/utils/file-upload.config';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { Request } from 'express';
 
 @Controller('lessons')
 export class LessonsController {
@@ -57,15 +58,19 @@ export class LessonsController {
     return this.lessonsService.findAll();
   }
 
+  // ⚠️ ต้องอยู่ก่อน @Get(':id') เพื่อป้องกัน NestJS parse 'course' เป็น :id
+  // ใช้ jwt-optional — ถ้า login จะ decode user ให้, ถ้าไม่มี token จะไม่ throw 401
+  @UseGuards(AuthGuard('jwt-optional'))
+  @Get('course/:courseId')
+  findByCourse(@Param('courseId') courseId: string, @Req() req: Request & { user?: any }) {
+    const user = req.user ?? null;
+    return this.lessonsService.findByCourse(+courseId, user);
+  }
+
   @UseGuards(AuthGuard('jwt'))
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.lessonsService.findOne(+id);
-  }
-
-  @Get('course/:courseId')
-  findByCourse(@Param('courseId') courseId: string) {
-    return this.lessonsService.findByCourse(+courseId, null);
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)

@@ -207,12 +207,6 @@ const HomePage: React.FC = () => {
 };
 
 // --- Helper Components ---
-const StatCard = ({ number, label }: any) => (
-  <div className="stat-card">
-    <div className="stat-number">{number}</div>
-    <div className="stat-label">{label}</div>
-  </div>
-);
 
 const FeatureCard = ({ icon, bg, title, desc }: any) => (
   <div className="feature-card">

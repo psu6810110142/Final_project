@@ -67,29 +67,14 @@ const AdminDashboard: React.FC = () => {
       const allStudents = allUsers.filter(u => u.role === 'STUDENT');
 
       if (userRole === 'INSTRUCTOR') {
-        // ดึง student_ids จาก orders COMPLETED ในคอร์สของอาจารย์
-        const rawOrders = Array.isArray(ordersRes.data) ? ordersRes.data : [];
-        const myCourseIds = new Set(fetchedCourses.map((c: any) => c.course_id));
-        // ลอง fetch orders พร้อม order_details
+        // ✅ ใช้ endpoint ใหม่ที่กรองด้วย instructor.user_id โดยตรง
         try {
-          const detailOrders = await Promise.all(
-            rawOrders
-              .filter((o: any) => o.status === 'COMPLETED')
-              .map((o: any) => api.get(`/orders/${o.order_id}`).catch(() => null))
-          );
-          const myStudentIds = new Set<number>();
-          detailOrders.forEach(r => {
-            if (!r) return;
-            const o = r.data;
-            const hasMatch = o.order_details?.some((d: any) => myCourseIds.has(d.course?.course_id));
-            if (hasMatch && o.user?.user_id) myStudentIds.add(o.user.user_id);
-          });
-          const filtered = myStudentIds.size > 0
-            ? allStudents.filter(u => myStudentIds.has(u.user_id))
-            : allStudents;
-          setUsers(filtered.sort((a: any, b: any) => (a.full_name || '').localeCompare(b.full_name || '', 'th')));
+          const myStudentsRes = await api.get('/orders/students/my-courses');
+          const myStudents: UserData[] = Array.isArray(myStudentsRes.data) ? myStudentsRes.data : [];
+          setUsers(myStudents.sort((a: any, b: any) => (a.full_name || '').localeCompare(b.full_name || '', 'th')));
         } catch {
-          setUsers(allStudents.sort((a: any, b: any) => (a.full_name || '').localeCompare(b.full_name || '', 'th')));
+          // fallback: ถ้า API ล้มเหลวให้แสดง empty ไม่ใช่ทั้งหมด
+          setUsers([]);
         }
       } else {
         setUsers(allStudents.sort((a: any, b: any) => (a.full_name || '').localeCompare(b.full_name || '', 'th')));

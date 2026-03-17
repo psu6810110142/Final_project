@@ -67,12 +67,35 @@ export class QuizzesService {
     return { score, passed, correct, total: quiz.questions.length, pass_score: quiz.pass_score };
   }
 
-  // ดู submission ของนักเรียนใน quiz นี้
+  // ดู submission ของนักเรียนใน quiz นี้ — คืน correct/total ด้วยเพื่อให้ frontend แสดงได้
   async getMySubmission(quizId: number, userId: number) {
-    return this.submissionRepo.findOne({
+    const submission = await this.submissionRepo.findOne({
       where: { quiz: { quiz_id: quizId }, user_id: userId },
       order: { submitted_at: 'DESC' },
     });
+
+    if (!submission) return null;
+
+    // ดึง quiz เพื่อคำนวณ correct จาก answers ที่บันทึกไว้
+    const quiz = await this.quizRepo.findOne({
+      where: { quiz_id: quizId },
+      relations: ['questions'],
+    });
+
+    if (!quiz) return submission;
+
+    const answers: number[] = Array.isArray(submission.answers) ? submission.answers : [];
+    let correct = 0;
+    quiz.questions.forEach((q, i) => {
+      if (answers[i] === q.correct_answer) correct++;
+    });
+
+    return {
+      ...submission,
+      correct,
+      total: quiz.questions.length,
+      pass_score: quiz.pass_score,
+    };
   }
 
   // อาจารย์ดูผลทุกคน

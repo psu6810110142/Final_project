@@ -14,7 +14,7 @@ const Navbar: React.FC = () => {
   
   const [currentUser, setCurrentUser] = useState<any>(null);
   const { cartCount } = useCart();
-  const { unreadCount } = useNotifications();
+  useNotifications();
   const [isCartOpen, setIsCartOpen] = useState(false);
   
   useEffect(() => {

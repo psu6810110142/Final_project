@@ -37,6 +37,15 @@ export class OrdersController {
     return this.ordersService.findStudentsByCourse(+courseId);
   }
 
+  // INSTRUCTOR — ดึงนักเรียนทุก course ของอาจารย์ที่ login อยู่ (กรองจาก instructor.user_id)
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('ADMIN', 'INSTRUCTOR')
+  @Get('students/my-courses')
+  findStudentsOfInstructor(@Req() req: any) {
+    const userId = req.user?.userId || req.user?.sub;
+    return this.ordersService.findStudentsByInstructorUserId(+userId);
+  }
+
   // ⚠️ sub-path ต้องอยู่ก่อน :id เสมอ
 
   // User resubmit — REJECTED → WAITING_PAYMENT

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, X, Video, ChevronLeft, Upload, Play, Paperclip, FileText, ClipboardList } from 'lucide-react';
+import React, { useState } from 'react';
+import { Plus, Edit, Trash2, X, Video, ChevronLeft, Play, Paperclip, FileText, ClipboardList } from 'lucide-react';
 import QuizCreator from './QuizCreator';
 import api from '../../api';
 import { useConfirm } from './ConfirmDialog';

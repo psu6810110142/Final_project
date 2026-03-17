@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Edit, Trash2, X, Search, ShoppingCart, BookOpen, ChevronDown, ChevronUp, Package, TrendingUp } from 'lucide-react';
+import { Edit, Trash2, X, Search, ShoppingCart, BookOpen, ChevronDown, ChevronUp, TrendingUp } from 'lucide-react';
 import api from '../../api';
 import { useConfirm } from './ConfirmDialog';
-import { mockLevels, mockSubjects, getImageUrl, getLevelName } from './types';
+import { mockLevels, getLevelName } from './types';
 import type { UserData, OrderData, CourseData, LearningProgressData } from './types';
 
 interface Props {
@@ -14,33 +14,28 @@ interface Props {
   userRole?: string;
 }
 
-const StudentsTab: React.FC<Props> = ({ users, orders, courses, progressData, onRefresh, userRole = 'ADMIN' }) => {
+const StudentsTab: React.FC<Props> = ({ users, orders: _orders, courses: _courses, progressData, onRefresh, userRole = 'ADMIN' }) => {
   const [searchText, setSearchText] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<UserData | null>(null);
   const [formData, setFormData] = useState<any>({});
   const { confirm, ConfirmDialogComponent } = useConfirm();
 
-  // expanded rows
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
-
-  // cart data per user
   const [cartData, setCartData] = useState<Record<number, any[]>>({});
-  const [cartLoading, setCartLoading] = useState<Set<number>>(new Set());
-
-  // orders per user (raw with details)
   const [userOrdersData, setUserOrdersData] = useState<Record<number, any[]>>({});
 
   useEffect(() => {
     if (userRole !== 'ADMIN' || !users.length) return;
+    // โหลด carts และ orders ของทุก student พร้อมกันตอน mount
     fetchAllCarts();
+    fetchAllOrders(users);
   }, [users, userRole]);
 
   const fetchAllCarts = async () => {
     try {
       const res = await api.get('/cart-items');
       const all: any[] = Array.isArray(res.data) ? res.data : [];
-      // group by user_id
       const grouped: Record<number, any[]> = {};
       all.forEach((item: any) => {
         const uid = item.user?.user_id ?? item.user_id;
@@ -52,15 +47,22 @@ const StudentsTab: React.FC<Props> = ({ users, orders, courses, progressData, on
     } catch { setCartData({}); }
   };
 
-  const fetchUserOrders = async (userId: number) => {
-    if (userOrdersData[userId]) return;
+  // ✅ โหลด orders ทุก student พร้อมกัน เพื่อแสดงจำนวนคอร์สได้ทันที
+  const fetchAllOrders = async (studentList: UserData[]) => {
     try {
-      const res = await api.get(`/orders/user/${userId}`);
-      setUserOrdersData(prev => ({ ...prev, [userId]: Array.isArray(res.data) ? res.data : [] }));
-    } catch {
-      setUserOrdersData(prev => ({ ...prev, [userId]: [] }));
-    }
+      const results = await Promise.all(
+        studentList.map(s =>
+          api.get(`/orders/user/${s.user_id}`)
+            .then(r => ({ userId: s.user_id, data: Array.isArray(r.data) ? r.data : [] }))
+            .catch(() => ({ userId: s.user_id, data: [] }))
+        )
+      );
+      const grouped: Record<number, any[]> = {};
+      results.forEach(({ userId, data }) => { grouped[userId] = data; });
+      setUserOrdersData(grouped);
+    } catch { }
   };
+
 
   const toggleRow = (userId: number) => {
     const next = new Set(expandedRows);
@@ -68,7 +70,6 @@ const StudentsTab: React.FC<Props> = ({ users, orders, courses, progressData, on
       next.delete(userId);
     } else {
       next.add(userId);
-      fetchUserOrders(userId);
     }
     setExpandedRows(next);
   };
@@ -87,7 +88,7 @@ const StudentsTab: React.FC<Props> = ({ users, orders, courses, progressData, on
     try {
       const fd = new FormData();
       Object.entries(formData).forEach(([k, v]) => {
-        if (v !== null && v !== undefined && k !== 'level' && k !== 'orders') {
+        if (v !== null && v !== undefined && k !== 'level' && k !== 'orders' && k !== 'enrolled_courses') {
           fd.append(k, String(v));
         }
       });
@@ -109,30 +110,37 @@ const StudentsTab: React.FC<Props> = ({ users, orders, courses, progressData, on
     s.email?.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  const getStudentProgress = (userId: number) => {
-    const userOrders = userOrdersData[userId] || [];
-    const completedOrders = userOrders.filter((o: any) => o.status === 'COMPLETED');
-    const allLessonIds = new Set<number>();
-    const completedLessonIds = new Set<number>();
-
-    progressData.forEach((p: any) => {
-      const pUserId = p.user?.user_id ?? p.user_id;
-      if (pUserId !== userId) return;
-      const lessonId = p.lesson?.lesson_id ?? p.lesson_id;
-      if (lessonId) {
-        allLessonIds.add(lessonId);
-        if (p.is_completed) completedLessonIds.add(lessonId);
-      }
+  // ✅ helper: นับคอร์สที่ลงทะเบียนจริง (รองรับทั้ง ADMIN และ INSTRUCTOR)
+  const getEnrolledCourses = (student: any): any[] => {
+    // INSTRUCTOR mode — ข้อมูลมาจาก enrolled_courses field โดยตรง
+    if ((student as any).enrolled_courses) {
+      return (student as any).enrolled_courses;
+    }
+    // ADMIN mode — นับจาก orders
+    const studentOrders = userOrdersData[student.user_id] || [];
+    const completed = studentOrders.filter((o: any) => o.status === 'COMPLETED');
+    const allCourses: any[] = [];
+    completed.forEach((o: any) => {
+      (o.order_details || []).forEach((d: any) => {
+        if (d.course && !allCourses.find((c: any) => c.course_id === d.course.course_id)) {
+          allCourses.push({ course_id: d.course.course_id, title: d.course.title });
+        }
+      });
     });
-
-    return { completedOrders: completedOrders.length, completedLessons: completedLessonIds.size, totalLessons: allLessonIds.size };
+    return allCourses;
   };
 
-  const statusLabel: Record<string, { label: string; color: string; bg: string }> = {
-    COMPLETED:       { label: 'ชำระแล้ว',    color: '#065f46', bg: '#d1fae5' },
-    WAITING_PAYMENT: { label: 'รอตรวจสอบ',  color: '#854d0e', bg: '#fef9c3' },
-    REJECTED:        { label: 'ปฏิเสธ',      color: '#991b1b', bg: '#fee2e2' },
+  // ✅ helper: progress ของนักเรียนใน course นี้
+  const getCourseProgress = (userId: number, courseId: number) => {
+    const courseLessons = progressData.filter((p: any) => {
+      const pUserId = p.user?.user_id ?? p.user_id;
+      const pCourseId = p.lesson?.course?.course_id;
+      return pUserId === userId && pCourseId === courseId;
+    });
+    const done = courseLessons.filter((p: any) => p.is_completed).length;
+    return { done, total: courseLessons.length, pct: courseLessons.length > 0 ? Math.round((done / courseLessons.length) * 100) : 0 };
   };
+
 
   return (
     <div className="animate-fade-in">
@@ -156,7 +164,7 @@ const StudentsTab: React.FC<Props> = ({ users, orders, courses, progressData, on
           <thead style={{ backgroundColor: '#f8fafc' }}>
             <tr>
               <th style={{ padding: '14px 18px', textAlign: 'left', color: '#64748b', fontSize: '13px', fontWeight: '600' }}>นักเรียน</th>
-              <th style={{ padding: '14px 18px', textAlign: 'left', color: '#64748b', fontSize: '13px', fontWeight: '600' }}>คอร์ส & ความคืบหน้า</th>
+              <th style={{ padding: '14px 18px', textAlign: 'left', color: '#64748b', fontSize: '13px', fontWeight: '600' }}>คอร์สที่ลงทะเบียน</th>
               {userRole === 'ADMIN' && (
                 <th style={{ padding: '14px 18px', textAlign: 'center', color: '#64748b', fontSize: '13px', fontWeight: '600' }}>ตะกร้า</th>
               )}
@@ -170,11 +178,22 @@ const StudentsTab: React.FC<Props> = ({ users, orders, courses, progressData, on
             )}
             {filtered.map((student) => {
               const cartItems = cartData[student.user_id] || [];
-              const cartCount = cartItems.length;
               const isExpanded = expandedRows.has(student.user_id);
-              const studentOrders = userOrdersData[student.user_id] || [];
-              const progressStats = getStudentProgress(student.user_id);
-              const completedCount = studentOrders.filter((o: any) => o.status === 'COMPLETED').length;
+              const enrolledCourses = getEnrolledCourses(student);
+              const enrolledCount = enrolledCourses.length;
+
+              // progress รวมทุก course
+              let totalDone = 0, totalLessons = 0;
+              enrolledCourses.forEach((c: any) => {
+                const prog = getCourseProgress(student.user_id, c.course_id);
+                totalDone += prog.done;
+                totalLessons += prog.total;
+              });
+
+              // ระดับชั้น — รองรับทั้ง level object และ level_id
+              const levelName = (student as any).level?.level_name
+                || getLevelName(student.level_id)
+                || '-';
 
               return (
                 <React.Fragment key={student.user_id}>
@@ -200,40 +219,38 @@ const StudentsTab: React.FC<Props> = ({ users, orders, courses, progressData, on
                       </div>
                     </td>
 
-                    {/* คอร์ส & ความคืบหน้า */}
+                    {/* คอร์สที่ลงทะเบียน */}
                     <td style={{ padding: '14px 18px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                         <span style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#eff6ff', color: '#3b82f6', padding: '3px 10px', borderRadius: '999px', fontSize: '12px', fontWeight: '600' }}>
-                          <BookOpen size={11} /> {completedCount} คอร์ส
+                          <BookOpen size={11} /> {enrolledCount} คอร์ส
                         </span>
-                        {progressStats.totalLessons > 0 && (
+                        {totalLessons > 0 && (
                           <span style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#f0fdf4', color: '#16a34a', padding: '3px 10px', borderRadius: '999px', fontSize: '12px', fontWeight: '600' }}>
-                            <TrendingUp size={11} /> {progressStats.completedLessons}/{progressStats.totalLessons} บท
+                            <TrendingUp size={11} /> {totalDone}/{totalLessons} บท
                           </span>
                         )}
-                        {userRole === 'ADMIN' && (
-                          <button onClick={() => toggleRow(student.user_id)}
-                            style={{ display: 'flex', alignItems: 'center', gap: '3px', backgroundColor: isExpanded ? '#f1f5f9' : 'transparent', color: '#64748b', border: '1px solid #e2e8f0', padding: '3px 8px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' }}>
-                            {isExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
-                            {isExpanded ? 'ซ่อน' : 'ดูรายละเอียด'}
-                          </button>
-                        )}
+                        <button onClick={() => toggleRow(student.user_id)}
+                          style={{ display: 'flex', alignItems: 'center', gap: '3px', backgroundColor: isExpanded ? '#f1f5f9' : 'transparent', color: '#64748b', border: '1px solid #e2e8f0', padding: '3px 8px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' }}>
+                          {isExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                          {isExpanded ? 'ซ่อน' : 'ดูคอร์ส'}
+                        </button>
                       </div>
                     </td>
 
-                    {/* ตะกร้า */}
+                    {/* ตะกร้า — ADMIN เท่านั้น */}
                     {userRole === 'ADMIN' && (
                       <td style={{ padding: '14px 18px', textAlign: 'center' }}>
-                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', backgroundColor: cartCount > 0 ? '#ecfdf5' : '#f8fafc', color: cartCount > 0 ? '#059669' : '#94a3b8', border: `1px solid ${cartCount > 0 ? '#a7f3d0' : '#e2e8f0'}`, padding: '4px 10px', borderRadius: '999px', fontSize: '12px', fontWeight: '600' }}>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', backgroundColor: cartItems.length > 0 ? '#ecfdf5' : '#f8fafc', color: cartItems.length > 0 ? '#059669' : '#94a3b8', border: `1px solid ${cartItems.length > 0 ? '#a7f3d0' : '#e2e8f0'}`, padding: '4px 10px', borderRadius: '999px', fontSize: '12px', fontWeight: '600' }}>
                           <ShoppingCart size={12} />
-                          {cartCount > 0 ? `${cartCount} รายการ` : 'ว่าง'}
+                          {cartItems.length > 0 ? `${cartItems.length} รายการ` : 'ว่าง'}
                         </div>
                       </td>
                     )}
 
                     {/* ระดับชั้น */}
                     <td style={{ padding: '14px 18px', fontSize: '13px', color: '#475569' }}>
-                      {(student as any).level?.level_name || getLevelName(student.level_id) || '-'}
+                      {levelName}
                     </td>
 
                     {/* จัดการ */}
@@ -243,92 +260,74 @@ const StudentsTab: React.FC<Props> = ({ users, orders, courses, progressData, on
                           style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', background: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', color: '#334155' }}>
                           <Edit size={13} /> แก้ไข
                         </button>
-                        <button onClick={() => handleDelete(student.user_id)}
-                          style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid #fecaca', background: '#fef2f2', cursor: 'pointer', color: '#ef4444' }}>
-                          <Trash2 size={13} />
-                        </button>
+                        {userRole === 'ADMIN' && (
+                          <button onClick={() => handleDelete(student.user_id)}
+                            style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid #fecaca', background: '#fef2f2', cursor: 'pointer', color: '#ef4444' }}>
+                            <Trash2 size={13} />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
 
-                  {/* Expanded Row */}
-                  {isExpanded && userRole === 'ADMIN' && (
+                  {/* Expanded Row — คอร์สและความคืบหน้า */}
+                  {isExpanded && (
                     <tr style={{ backgroundColor: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
-                      <td colSpan={5} style={{ padding: '0' }}>
-                        <div style={{ padding: '16px 24px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                      <td colSpan={userRole === 'ADMIN' ? 5 : 4} style={{ padding: '0' }}>
+                        <div style={{ padding: '16px 24px', display: 'grid', gridTemplateColumns: userRole === 'ADMIN' ? '1fr 1fr' : '1fr', gap: '16px' }}>
 
-                          {/* ตะกร้าสินค้า */}
+                          {/* คอร์สที่ลงทะเบียน + progress */}
                           <div>
                             <h4 style={{ fontSize: '13px', fontWeight: '700', color: '#475569', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                              <ShoppingCart size={14} color="#059669" /> ตะกร้าสินค้า ({cartItems.length} รายการ)
+                              <BookOpen size={14} color="#3b82f6" /> คอร์สที่ลงทะเบียน ({enrolledCourses.length} คอร์ส)
                             </h4>
-                            {cartItems.length === 0 ? (
-                              <div style={{ fontSize: '13px', color: '#94a3b8', padding: '12px', backgroundColor: 'white', borderRadius: '8px', border: '1px solid #e2e8f0', textAlign: 'center' }}>ตะกร้าว่าง</div>
+                            {enrolledCourses.length === 0 ? (
+                              <div style={{ fontSize: '13px', color: '#94a3b8', padding: '12px', backgroundColor: 'white', borderRadius: '8px', border: '1px solid #e2e8f0', textAlign: 'center' }}>ยังไม่มีคอร์ส</div>
                             ) : (
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                {cartItems.map((item: any, i: number) => (
-                                  <div key={i} style={{ backgroundColor: 'white', borderRadius: '8px', border: '1px solid #e2e8f0', padding: '10px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <div style={{ fontSize: '13px', fontWeight: '600', color: '#1e293b' }}>{item.course?.title || 'ไม่ระบุ'}</div>
-                                    <div style={{ fontSize: '13px', color: '#10b981', fontWeight: '700' }}>฿{Number(item.course?.price || 0).toLocaleString()}</div>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-
-                          {/* ประวัติคำสั่งซื้อ */}
-                          <div>
-                            <h4 style={{ fontSize: '13px', fontWeight: '700', color: '#475569', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                              <Package size={14} color="#3b82f6" /> ประวัติการเรียน & คำสั่งซื้อ
-                            </h4>
-                            {studentOrders.length === 0 ? (
-                              <div style={{ fontSize: '13px', color: '#94a3b8', padding: '12px', backgroundColor: 'white', borderRadius: '8px', border: '1px solid #e2e8f0', textAlign: 'center' }}>ยังไม่มีคำสั่งซื้อ</div>
-                            ) : (
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '200px', overflowY: 'auto' }}>
-                                {studentOrders.map((order: any) => {
-                                  const cfg = statusLabel[order.status] || { label: order.status, color: '#475569', bg: '#f1f5f9' };
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                {enrolledCourses.map((course: any) => {
+                                  const prog = getCourseProgress(student.user_id, course.course_id);
                                   return (
-                                    <div key={order.order_id} style={{ backgroundColor: 'white', borderRadius: '8px', border: '1px solid #e2e8f0', padding: '10px 12px' }}>
-                                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                                        <span style={{ fontSize: '12px', color: '#94a3b8' }}>#{order.order_id}</span>
-                                        <span style={{ fontSize: '11px', fontWeight: '700', color: cfg.color, backgroundColor: cfg.bg, padding: '2px 8px', borderRadius: '999px' }}>{cfg.label}</span>
+                                    <div key={course.course_id} style={{ backgroundColor: 'white', borderRadius: '8px', border: '1px solid #e2e8f0', padding: '10px 14px' }}>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: prog.total > 0 ? '6px' : 0 }}>
+                                        <span style={{ fontSize: '13px', fontWeight: '600', color: '#1e293b' }}>{course.title}</span>
+                                        <span style={{ fontSize: '12px', color: prog.pct === 100 ? '#16a34a' : '#64748b', fontWeight: '600' }}>
+                                          {prog.total > 0 ? (prog.pct === 100 ? '✓ จบแล้ว' : `${prog.pct}%`) : 'ยังไม่เริ่ม'}
+                                        </span>
                                       </div>
-                                      {order.order_details?.map((d: any, i: number) => {
-                                        // หา progress ของ lesson ในคอร์สนี้
-                                        const courseId = d.course?.course_id;
-                                        const courseLessons = progressData.filter((p: any) => {
-                                          const pUserId = p.user?.user_id ?? p.user_id;
-                                          const pCourseId = p.lesson?.course?.course_id;
-                                          return pUserId === student.user_id && pCourseId === courseId;
-                                        });
-                                        const done = courseLessons.filter((p: any) => p.is_completed).length;
-                                        const total = courseLessons.length;
-                                        const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-
-                                        return (
-                                          <div key={i} style={{ marginTop: '4px' }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-                                              <span style={{ fontWeight: '600', color: '#1e293b' }}>{d.course?.title || 'ไม่ระบุ'}</span>
-                                              {order.status === 'COMPLETED' && (
-                                                <span style={{ fontSize: '12px', color: pct === 100 ? '#16a34a' : '#64748b', fontWeight: '600' }}>
-                                                  {pct === 100 ? 'จบแล้ว ✓' : `${pct}%`}
-                                                </span>
-                                              )}
-                                            </div>
-                                            {order.status === 'COMPLETED' && total > 0 && (
-                                              <div style={{ height: '4px', backgroundColor: '#e2e8f0', borderRadius: '99px', marginTop: '4px', overflow: 'hidden' }}>
-                                                <div style={{ width: `${pct}%`, height: '100%', backgroundColor: pct === 100 ? '#10b981' : '#3b82f6', borderRadius: '99px' }} />
-                                              </div>
-                                            )}
-                                          </div>
-                                        );
-                                      })}
+                                      {prog.total > 0 && (
+                                        <div style={{ height: '4px', backgroundColor: '#e2e8f0', borderRadius: '99px', overflow: 'hidden' }}>
+                                          <div style={{ width: `${prog.pct}%`, height: '100%', backgroundColor: prog.pct === 100 ? '#10b981' : '#3b82f6', borderRadius: '99px', transition: 'width .3s' }} />
+                                        </div>
+                                      )}
                                     </div>
                                   );
                                 })}
                               </div>
                             )}
                           </div>
+
+                          {/* ตะกร้า — ADMIN เท่านั้น */}
+                          {userRole === 'ADMIN' && (
+                            <div>
+                              <h4 style={{ fontSize: '13px', fontWeight: '700', color: '#475569', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <ShoppingCart size={14} color="#059669" /> ตะกร้าสินค้า ({cartItems.length} รายการ)
+                              </h4>
+                              {cartItems.length === 0 ? (
+                                <div style={{ fontSize: '13px', color: '#94a3b8', padding: '12px', backgroundColor: 'white', borderRadius: '8px', border: '1px solid #e2e8f0', textAlign: 'center' }}>ตะกร้าว่าง</div>
+                              ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                  {cartItems.map((item: any, i: number) => (
+                                    <div key={i} style={{ backgroundColor: 'white', borderRadius: '8px', border: '1px solid #e2e8f0', padding: '10px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                      <div style={{ fontSize: '13px', fontWeight: '600', color: '#1e293b' }}>{item.course?.title || 'ไม่ระบุ'}</div>
+                                      <div style={{ fontSize: '13px', color: '#10b981', fontWeight: '700' }}>฿{Number(item.course?.price || 0).toLocaleString()}</div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
+
                         </div>
                       </td>
                     </tr>
@@ -369,18 +368,6 @@ const StudentsTab: React.FC<Props> = ({ users, orders, courses, progressData, on
                   {mockLevels.map(l => (
                     <option key={l.level_id} value={l.level_id}>{l.level_name}</option>
                   ))}
-                </select>
-              </div>
-              <div className="form-group">
-                <label>วิชาที่สนใจ</label>
-                <select className="form-input" value={formData.interesting_subject || ''}
-                  onChange={e => setFormData({ ...formData, interesting_subject: e.target.value })}>
-                  <option value="">-- ไม่ระบุ --</option>
-                  <option value="math">คณิตศาสตร์</option>
-                  <option value="science">วิทยาศาสตร์</option>
-                  <option value="english">ภาษาอังกฤษ</option>
-                  <option value="thai">ภาษาไทย</option>
-                  <option value="social">สังคมศึกษา</option>
                 </select>
               </div>
               <div className="modal-footer">
