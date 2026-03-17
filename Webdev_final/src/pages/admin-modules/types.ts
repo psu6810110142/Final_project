@@ -82,7 +82,7 @@ export const mockSubjects = [
 export const getImageUrl = (url?: string): string | undefined => {
   if (!url) return undefined;
   if (url.startsWith('http')) return url;
-  return `http://localhost:3001${url}?t=${Date.now()}`;
+  return `http://43.210.144.64:3001${url}?t=${Date.now()}`;
 };
 
 export const getLevelName = (id?: number) =>
