@@ -64,15 +64,22 @@ const CourseList: React.FC = () => {
   }, []);
 
   return (
-    <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-theme' : ''}`}>
+    <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-page' : ''}`}>
       <Navbar />
       {/* ================= Course Header & Search ================= */}
-      <div className="page-header" style={{ padding: '60px 0', textAlign: 'center' }}>
-        <div className="container">
+      <div className={theme === 'ocean' ? 'page-header page-header-sm' : 'page-header'}
+        style={{ textAlign: 'center', position: 'relative' }}>
+        {theme === 'ocean' && (
+          <>
+            <div className="ocean-bubbles">{[...Array(10)].map((_, i) => <div key={i} className="bubble" />)}</div>
+            <span className="fish fish-1">🐠</span><span className="fish fish-2">🐟</span><span className="fish fish-3">🦑</span>
+            <div className="wave-layer-1" /><div className="wave-layer-2" /><div className="wave-layer-3" /><div className="wave-layer-sand" />
+            <span className="palm-left">🌴</span><span className="palm-right">🌴</span>
+          </>
+        )}
+        <div className="container" style={{ position: 'relative', zIndex: 10 }}>
           <h1 style={{ fontSize: '2.5rem', marginBottom: '15px' }}>ค้นหาคอร์สเรียนที่ใช่สำหรับคุณ</h1>
           <p style={{ opacity: 0.9, marginBottom: '30px' }}>เลือกเรียนจากคอร์สคุณภาพที่สอนโดยอาจารย์ผู้เชี่ยวชาญ</p>
-
-          {/* Search Box */}
           <div style={{ maxWidth: '600px', margin: '0 auto', position: 'relative' }}>
             <Search style={{ position: 'absolute', left: '15px', top: '14px', color: '#6b7280' }} size={20} />
             <input
@@ -80,14 +87,14 @@ const CourseList: React.FC = () => {
               placeholder="ค้นหาชื่อคอร์สเรียน, รายละเอียด..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ width: '100%', padding: '14px 14px 14px 45px', borderRadius: '50px', border: 'none', fontSize: '1rem', outline: 'none', color: '#1f2937' }}
+              style={{ width: '100%', padding: '14px 14px 14px 45px', borderRadius: '50px', border: 'none', fontSize: '1rem', outline: 'none', color: '#1f2937', boxSizing: 'border-box' }}
             />
           </div>
         </div>
       </div>
 
       {/* ================= Courses Content ================= */}
-      <section className="section" style={{ backgroundColor: '#f9fafb', minHeight: '50vh' }}>
+      <section className="section" style={{ backgroundColor: theme === 'ocean' ? '#fef9e7' : '#f9fafb', minHeight: '50vh' }}>
         <div className="container">
 
           {/* Categories Filter (สร้างปุ่มอัตโนมัติตามข้อมูลที่มี) */}

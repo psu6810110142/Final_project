@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import api from '../api';
 import ThemeToggleButton from '../components/ThemeToggleButton';
 import { useTheme } from '../contexts/ThemeContext';
+import OceanAnimations from '../components/OceanAnimations';
 import { AxiosError } from 'axios';
 import './HomeTheme.css'; 
 import { Home, UserPlus } from 'lucide-react'; 
@@ -50,7 +51,7 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-theme' : ''}`}>
+    <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-page' : ''}`}>
       
       <nav className="navbar">
         <div className="container navbar-container">
@@ -68,8 +69,10 @@ const LoginPage: React.FC = () => {
         </div>
       </nav>
 
-      <div className="auth-container page-header-white">
-        <div className="auth-card">
+      <div className={`page-header ${theme === 'ocean' ? 'page-header-sm page-header-fullscreen' : 'auth-container page-header-white'}`}>
+        <OceanAnimations />
+        <div style={{ position: 'relative', zIndex: 10, background: 'white', borderRadius: '16px', padding: '32px 40px', maxWidth: '460px', width: '90%', boxShadow: '0 8px 32px rgba(0,0,0,0.15)' }}>
+  
           <div className="auth-header">
             <h2>เข้าสู่ระบบ</h2>
             <p>ยินดีต้อนรับกลับมา! กรุณาล็อกอินเพื่อเข้าเรียน</p>

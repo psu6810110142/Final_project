@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFiles, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFiles } from '@nestjs/common';
 import { LessonsService } from './lessons.service';
 import { CreateLessonDto } from './dto/create-lesson.dto';
 import { UpdateLessonDto } from './dto/update-lesson.dto';
@@ -63,11 +63,9 @@ export class LessonsController {
     return this.lessonsService.findOne(+id);
   }
 
-  @UseGuards(AuthGuard('jwt'))
   @Get('course/:courseId')
-  findByCourse(@Param('courseId') courseId: string, @Req() req: any) {
-    const user = req.user;
-    return this.lessonsService.findByCourse(+courseId, user);
+  findByCourse(@Param('courseId') courseId: string) {
+    return this.lessonsService.findByCourse(+courseId, null);
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)

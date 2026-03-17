@@ -141,4 +141,31 @@ export class OrdersService {
     const order = await this.findOne(id);
     return this.orderRepo.remove(order);
   }
+
+  // ดึงนักเรียนที่ลงทะเบียนคอร์สนี้แล้ว (COMPLETED)
+  async findStudentsByCourse(courseId: number) {
+    const orders = await this.orderRepo.find({
+      where: {
+        status: 'COMPLETED',
+        order_details: { course: { course_id: courseId } },
+      },
+      relations: ['user', 'order_details', 'order_details.course'],
+    });
+    // deduplicate users
+    const seen = new Set<number>();
+    return orders
+      .filter(o => {
+        if (seen.has(o.user.user_id)) return false;
+        seen.add(o.user.user_id);
+        return true;
+      })
+      .map(o => ({
+        user_id: o.user.user_id,
+        username: o.user.username,
+        full_name: o.user.full_name,
+        email: o.user.email,
+        profile_picture_url: o.user.profile_picture_url,
+      }));
+  }
+
 }

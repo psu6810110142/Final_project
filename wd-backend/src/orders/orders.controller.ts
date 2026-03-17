@@ -29,6 +29,14 @@ export class OrdersController {
     return this.ordersService.findByUser(+userId);
   }
 
+  // INSTRUCTOR/ADMIN — ดึงนักเรียนที่ลงคอร์สนี้
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('ADMIN', 'INSTRUCTOR')
+  @Get('students/course/:courseId')
+  findStudentsByCourse(@Param('courseId') courseId: string) {
+    return this.ordersService.findStudentsByCourse(+courseId);
+  }
+
   // ⚠️ sub-path ต้องอยู่ก่อน :id เสมอ
 
   // User resubmit — REJECTED → WAITING_PAYMENT

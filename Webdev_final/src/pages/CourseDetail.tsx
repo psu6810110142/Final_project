@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate} from 'react-router-dom';
-import {Book, Clock, Users, PlayCircle, CheckCircle } from 'lucide-react';
+import {Book, Clock, Users, PlayCircle, CheckCircle, Lock } from 'lucide-react';
 import './HomeTheme.css';
 import api from '../api';
 import ThemeToggleButton from '../components/ThemeToggleButton';
 import imgVDO from '../assets/locobackgroudewhite.png';
 import Navbar from '../components/Navbar';
 import { useCart } from '../contexts/CartContext';
+import OceanAnimations from '../components/OceanAnimations';
+import BackButton from '../components/BackButton';
 import { useTheme } from '../contexts/ThemeContext';
 import './OceanTheme.css';
 
@@ -14,7 +16,9 @@ import './OceanTheme.css';
 interface Lesson {
   lesson_id: number;
   title: string;
-  duration_minutes: number;
+  sequence: number;
+  video_url?: string;
+  attachment_url?: string;
 }
 
 interface CourseDetailData {
@@ -32,7 +36,6 @@ interface CourseDetailData {
     profile_image_url: string;
     bio: string;
   };
-  lessons?: Lesson[];
 }
 
 export default function CourseDetail() {
@@ -43,6 +46,7 @@ export default function CourseDetail() {
 
   // 📌 States
   const [course, setCourse] = useState<CourseDetailData | null>(null);
+  const [lessons, setLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -51,13 +55,22 @@ export default function CourseDetail() {
     const fetchCourseDetail = async () => {
       try {
         setLoading(true);
-        const response = await api.get(`/courses/${id}`);
-        setCourse(response.data);
+        const courseRes = await api.get(`/courses/${id}`);
+        setCourse(courseRes.data);
       } catch (err) {
         console.error('Error fetching course details:', err);
         setError('ไม่สามารถโหลดข้อมูลคอร์สได้ กรุณาลองใหม่อีกครั้ง');
       } finally {
         setLoading(false);
+      }
+
+      // ดึงบทเรียนแยก — ถ้า 403 (ยังไม่ login หรือยังไม่จ่ายเงิน) ให้ใช้ empty array แทน
+      try {
+        const lessonsRes = await api.get(`/lessons/course/${id}`);
+        const lessonsData = Array.isArray(lessonsRes.data) ? lessonsRes.data : [];
+        setLessons(lessonsData.sort((a: Lesson, b: Lesson) => a.sequence - b.sequence));
+      } catch {
+        setLessons([]);
       }
     };
 
@@ -84,12 +97,14 @@ export default function CourseDetail() {
   );
 
   return (
-    <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-theme' : ''}`}>
+    <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-page' : ''}`}>
       <Navbar />
 
       {/* 🔵 Header Section */}
-      <header className="page-header">
+      <header className="page-header page-header-sm">
+        <OceanAnimations />
         <div className="container">
+          <BackButton />
           <div className="cd-banner-content">
             <div className="cd-banner-info">
               <div className="cd-tags">
@@ -100,7 +115,7 @@ export default function CourseDetail() {
 
               <div className="cd-stats-top">
                 <div className="cd-stat-item"><Users size={18} /> 128 คนเรียนแล้ว</div>
-                <div className="cd-stat-item"><Clock size={18} /> {course.duration_weeks || 12} สัปดาห์</div>
+                <div className="cd-stat-item"><Clock size={18} /> {course.duration_weeks > 0 ? `${course.duration_weeks} สัปดาห์` : 'ไม่ระบุระยะเวลา'}</div>
               </div>
 
               <div className="cd-instructor-badge">
@@ -136,18 +151,66 @@ export default function CourseDetail() {
 
               <div className="cd-card">
                 <h2 className="cd-card-title">เนื้อหาในคอร์ส (Syllabus)</h2>
-                <div className="cd-lesson-list">
-                  {course.lessons && course.lessons.length > 0 ? (
-                    course.lessons.map((lesson) => (
-                      <div className="cd-lesson-item" key={lesson.lesson_id}>
-                        <div className="cd-lesson-name"><PlayCircle size={16} color="#3b82f6" /> {lesson.title}</div>
-                        <div className="cd-lesson-time">{lesson.duration_minutes} นาที</div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="empty-state">ยังไม่มีข้อมูลบทเรียนในขณะนี้</div>
-                  )}
-                </div>
+                {lessons.length > 0 ? (
+                  <>
+                    <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Lock size={13} color="#f59e0b" />
+                      เนื้อหาจะปลดล็อกหลังจากชำระเงินและยืนยันการลงทะเบียนเรียบร้อยแล้ว
+                    </p>
+                    <div className="cd-lesson-list">
+                      {lessons.map((lesson) => (
+                        <div
+                          key={lesson.lesson_id}
+                          className="cd-lesson-item"
+                          style={{
+                            cursor: 'not-allowed',
+                            opacity: 0.85,
+                            backgroundColor: '#f8fafc',
+                            borderRadius: '8px',
+                            padding: '12px 14px',
+                            marginBottom: '8px',
+                            border: '1px solid #e2e8f0',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                          }}
+                          title="ชำระเงินและยืนยันการลงทะเบียนก่อนเข้าเรียน"
+                        >
+                          <div className="cd-lesson-name" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <span style={{
+                              width: '26px', height: '26px', borderRadius: '50%',
+                              backgroundColor: '#e2e8f0', color: '#94a3b8',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              fontSize: '12px', fontWeight: 'bold', flexShrink: 0
+                            }}>
+                              {lesson.sequence}
+                            </span>
+                            <span style={{ fontSize: '14px', color: '#334155', fontWeight: 500 }}>
+                              {lesson.title}
+                            </span>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#94a3b8', fontSize: '12px' }}>
+                            {lesson.video_url
+                              ? <PlayCircle size={14} color="#cbd5e1" />
+                              : null}
+                            <Lock size={14} color="#f59e0b" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{
+                      marginTop: '12px', padding: '12px 16px', borderRadius: '8px',
+                      backgroundColor: '#fffbeb', border: '1px solid #fde68a',
+                      display: 'flex', alignItems: 'center', gap: '8px',
+                      fontSize: '13px', color: '#92400e'
+                    }}>
+                      <Lock size={15} color="#f59e0b" />
+                      <span>บทเรียนทั้งหมด <strong>{lessons.length} บท</strong> — ปลดล็อกได้หลังลงทะเบียนและชำระเงินแล้ว</span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="empty-state">ยังไม่มีข้อมูลบทเรียนในขณะนี้</div>
+                )}
               </div>
             </div>
 
@@ -173,8 +236,8 @@ export default function CourseDetail() {
                   ลงทะเบียนเรียนเลย
                 </button>
                 <div className="cd-course-includes">
-                  <div className="cd-include-item"><Book size={18} color="#3b82f6" /> {course.lessons?.length || 0} บทเรียน</div>
-                  <div className="cd-include-item"><Clock size={18} color="#3b82f6" /> ระยะเวลา {course.duration_weeks || 12} สัปดาห์</div>
+                  <div className="cd-include-item"><Book size={18} color="#3b82f6" /> {lessons.length} บทเรียน</div>
+                  <div className="cd-include-item"><Clock size={18} color="#3b82f6" /> ระยะเวลา {course.duration_weeks > 0 ? `${course.duration_weeks} สัปดาห์` : 'ไม่ระบุ'}</div>
                 </div>
               </div>
             </div>

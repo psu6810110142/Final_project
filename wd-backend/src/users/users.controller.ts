@@ -38,6 +38,23 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('ADMIN')
+  @Post('create-instructor')
+  createInstructor(@Body() createUserDto: CreateUserDto) {
+    return this.usersService.create({ ...createUserDto, role: 'INSTRUCTOR' });
+  }
+
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('ADMIN')
+  @Patch(':id/role')
+  updateRole(
+    @Param('id') id: string,
+    @Body() body: { role: 'STUDENT' | 'INSTRUCTOR' | 'ADMIN' },
+  ) {
+    return this.usersService.update(+id, { role: body.role } as any);
+  }
+
   @UseGuards(AuthGuard('jwt'))
   @Get(':id')
   findOne(@Param('id') id: string) {

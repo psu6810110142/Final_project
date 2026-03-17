@@ -47,6 +47,11 @@ export class InstructorsController {
     if (file) {
       updateInstructorDto.profile_image_url = `/uploads/instructors/${file.filename}`;
     }
+    // Parse user_id จาก FormData (FormData ส่งมาเป็น string เสมอ)
+    if ((updateInstructorDto as any).user_id !== undefined) {
+      const raw = (updateInstructorDto as any).user_id;
+      (updateInstructorDto as any).user_id = (raw === '' || raw === 'null' || raw === '0') ? null : Number(raw);
+    }
     return this.instructorsService.update(+id, updateInstructorDto);
   }
 

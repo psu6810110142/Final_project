@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './HomeTheme.css';
-import { PlayCircle, CheckCircle, LockKeyhole, RefreshCw, XCircle, Mail, Clock } from 'lucide-react';
+import './OceanTheme.css';
+import { PlayCircle, CheckCircle, LockKeyhole, RefreshCw, XCircle, Mail, Clock, Search } from 'lucide-react';
 import api from '../api';
 import Navbar from '../components/Navbar';
-import './OceanTheme.css';
+import OceanAnimations from '../components/OceanAnimations';
+import ThemeToggleButton from '../components/ThemeToggleButton';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface Course {
   id: number;
@@ -34,7 +37,9 @@ const statusStyleMap: Record<string, { tagColor: string; textColor: string }> = 
 const MyCourses: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { theme } = useTheme();
   const [filter, setFilter] = useState("in-progress");
+  const [searchTerm, setSearchTerm] = useState('');
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [myCourses, setMyCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
@@ -174,10 +179,11 @@ const MyCourses: React.FC = () => {
 
   const filteredCourses = myCourses.filter(course => {
     const isExpired = course.expireDate ? course.expireDate < new Date() : false;
-    if (filter === "in-progress") return course.progress < 100 && !isExpired;
-    if (filter === "completed") return course.progress === 100;
-    if (filter === "expired") return isExpired;
-    return true;
+    const matchSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase());
+    if (filter === "in-progress") return course.progress < 100 && !isExpired && matchSearch;
+    if (filter === "completed") return course.progress === 100 && matchSearch;
+    if (filter === "expired") return isExpired && matchSearch;
+    return matchSearch;
   });
 
   const cancelOrder = async (orderId: number) => {
@@ -191,7 +197,8 @@ const MyCourses: React.FC = () => {
   };
 
   return (
-    <div className="page-wrapper">
+    <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-page' : ''}`}>
+      <ThemeToggleButton />
       {expiredPopup && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ backgroundColor: 'white', borderRadius: '16px', padding: '40px', maxWidth: '420px', width: '90%', textAlign: 'center' }}>
@@ -212,14 +219,32 @@ const MyCourses: React.FC = () => {
               
               <Navbar/>
               
-      <div className="page-header">
-        <div className="container">
-          <h1 className="my-courses-header">คอร์สเรียนของฉัน</h1>
-          <p className="my-courses-subtitle">ยินดีต้อนรับกลับมา! ลุยต่อให้จบกันเถอะ</p>
+      <div className="page-header page-header-sm">
+        <OceanAnimations />
+        <div className="container" style={{ textAlign: 'center' }}>
+          <h1 className="my-courses-header" style={{ fontSize: '3rem', textAlign: 'center', textShadow: '0 2px 12px rgba(0,0,0,0.5)' }}>คอร์สเรียนของฉัน</h1>
+          <p className="my-courses-subtitle" style={{ fontSize: '1.1rem', textAlign: 'center', textShadow: '0 1px 8px rgba(0,0,0,0.4)' }}>ยินดีต้อนรับกลับมา! ลุยต่อให้จบกันเถอะ</p>
+          <p style={{ textAlign: 'center', color: 'white', fontSize: '1rem', marginTop: '10px', opacity: 0.95, textShadow: '0 1px 8px rgba(0,0,0,0.4)' }}>
+            ตอนนี้คุณเรียนไปแล้ว{' '}
+            <strong>{myCourses.filter(c => c.progress === 100).length}</strong>
+            {' '}คอร์ส จาก{' '}
+            <strong>{myCourses.length}</strong>
+            {' '}คอร์ส
+          </p>
+          <div style={{ maxWidth: '500px', margin: '20px auto 0', position: 'relative' }}>
+            <Search style={{ position: 'absolute', left: '15px', top: '14px', color: '#6b7280' }} size={20} />
+            <input
+              type="text"
+              placeholder="ค้นหาชื่อคอร์สเรียน..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ width: '100%', padding: '14px 14px 14px 45px', borderRadius: '50px', border: 'none', fontSize: '1rem', outline: 'none', color: '#1f2937', boxSizing: 'border-box' }}
+            />
+          </div>
         </div>
       </div>
 
-      <section className="section my-courses-section">
+      <section className="my-courses-section" style={{ padding: "40px 0" }}>
         <div className="container">
           <div className="tabs-container">
             <button className={`tab-button ${filter === "in-progress" ? "active" : ""}`} onClick={() => setFilter("in-progress")}>กำลังเรียน</button>
@@ -251,7 +276,7 @@ const MyCourses: React.FC = () => {
           {loading ? (
             <div className="state-message">กำลังโหลดข้อมูลคอร์สเรียนของคุณ... ⏳</div>
           ) : (
-            <div className="courses-grid">
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: "24px" }}>
               {filteredCourses.length > 0 ? (
                 filteredCourses.map((course) => (
                   <div key={course.id} onClick={() => { 

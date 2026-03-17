@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Lesson } from './entities/lesson.entity';
@@ -47,27 +47,46 @@ export class LessonsService {
   }
 
   async findByCourse(courseId: number, user: any) {
-    console.log("👉 ค่า user ที่ส่งมาคือ:", user);
+    // ถ้าไม่ได้ login → คืนแค่ชื่อ+ลำดับ (ไม่มี video_url) เพื่อให้ frontend แสดง syllabus แบบ locked
+    if (!user) {
+      const lessons = await this.lessonRepo.find({
+        where: { course: { course_id: courseId } },
+        order: { sequence: 'ASC' }
+      });
+      return lessons.map(({ lesson_id, title, sequence }) => ({ lesson_id, title, sequence }));
+    }
+
+    // ADMIN / INSTRUCTOR → เห็นทุกอย่าง
     if (user.role === 'ADMIN' || user.role === 'INSTRUCTOR') {
       return this.lessonRepo.find({
         where: { course: { course_id: courseId } },
         order: { sequence: 'ASC' }
       });
     }
+
+    // User ทั่วไป → เช็คว่าซื้อคอร์สแล้วหรือยัง
     const userId = user.sub || user.user_id || user.userId || user.id;
     const hasPurchased = await this.orderDetailRepo.findOne({
       where: {
         course: { course_id: courseId },
         order: {
-          user: { user_id: userId }, // เช็คว่าเป็นบิลของตัวเองไหม
-          status: 'COMPLETED'        // เช็คว่าจ่ายเงินเสร็จแล้วใช่ไหม
+          user: { user_id: userId },
+          status: 'COMPLETED'
         }
       },
       relations: ['order', 'course']
     });
+
     if (!hasPurchased) {
-      throw new ForbiddenException('คุณยังไม่ได้ซื้อคอร์สเรียนนี้ หรือสถานะการชำระเงินยังไม่สมบูรณ์');
+      // ยังไม่จ่ายเงิน → คืนแค่ชื่อ+ลำดับ (locked)
+      const lessons = await this.lessonRepo.find({
+        where: { course: { course_id: courseId } },
+        order: { sequence: 'ASC' }
+      });
+      return lessons.map(({ lesson_id, title, sequence }) => ({ lesson_id, title, sequence }));
     }
+
+    // จ่ายเงินแล้ว → คืนข้อมูลเต็ม
     return this.lessonRepo.find({
       where: { course: { course_id: courseId } },
       order: { sequence: 'ASC' }

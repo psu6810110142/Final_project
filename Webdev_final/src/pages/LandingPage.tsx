@@ -120,17 +120,17 @@ const LandingPage: React.FC = () => {
       </nav>
 
       {/* ================= Hero Section ================= */}
-      <header className="page-header snap-section">
-        {theme === 'ocean' && (
+      <header className={theme === 'ocean' ? 'landing-hero snap-section' : 'page-header snap-section'}>
+        {theme === 'ocean' ? (
           <>
-            <div className="ocean-bubbles">
-              {[...Array(10)].map((_, i) => <div key={i} className="bubble" />)}
-            </div>
+            {/* ดวงดาว + พระจันทร์ */}
+            <div className="stars-layer" />
+            <div className="moon" />
+            {/* ชายหาด + คลื่น + ปาล์ม */}
+            <div className="ocean-bubbles">{[...Array(8)].map((_, i) => <div key={i} className="bubble" />)}</div>
             <span className="fish fish-1">🐠</span>
             <span className="fish fish-2">🐟</span>
             <span className="fish fish-3">🦑</span>
-            <span className="seagull seagull-1">🕊️</span>
-            <span className="seagull seagull-2">🦅</span>
             <div className="wave-layer-1" />
             <div className="wave-layer-2" />
             <div className="wave-layer-3" />
@@ -138,8 +138,10 @@ const LandingPage: React.FC = () => {
             <span className="palm-left">🌴</span>
             <span className="palm-right">🌴</span>
           </>
+        ) : (
+          <div className="wave-bottom" />
         )}
-        <div className="container hero-content">
+        <div className="container landing-hero-content">
           <Reveal dir="left" delay={0}>
           <div className="hero-text" style={{ marginLeft: '5%' }}>
             <h1>เรียนออนไลน์ <br />ที่บ้าน สะดวก สบาย</h1>
@@ -150,15 +152,11 @@ const LandingPage: React.FC = () => {
           </div>
           </Reveal>
           <Reveal dir="right" delay={200}>
-          <div className="hero-mascot">
-            <div className="mascot-wrap">
-              <div className="mascot-bubble">👋 ยินดีต้อนรับ!</div>
-              <div className="mascot-body">🦈</div>
-              <div className="mascot-books">📚</div>
-              <div className="mascot-star star-1">⭐</div>
-              <div className="mascot-star star-2">✨</div>
-              <div className="mascot-star star-3">🌟</div>
-            </div>
+          <div className="stats-grid">
+            <StatCard number="500+" label="นักเรียน" />
+            <StatCard number="50+" label="คอร์สเรียน" />
+            <StatCard number="20+" label="อาจารย์" />
+            <StatCard number="4.8" label="คะแนนเฉลี่ย" />
           </div>
           </Reveal>
         </div>
@@ -453,3 +451,10 @@ const CourseCard = ({ subject, grade, title, price, tagColor, textColor, imgSrc,
 );
 
 export default LandingPage;
+
+const StatCard = ({ number, label }: { number: string; label: string }) => (
+  <div className="stat-card">
+    <div className="stat-number">{number}</div>
+    <div className="stat-label">{label}</div>
+  </div>
+);

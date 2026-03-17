@@ -7,6 +7,7 @@ import ProfileSidebar from '../ProfilePage/ProfileSidebar';
 import ProfileTabs from '../ProfilePage/ProfileTabs';
 import '../OceanTheme.css';
 import { useTheme } from '../../contexts/ThemeContext';
+import OceanAnimations from '../../components/OceanAnimations';
 import ThemeToggleButton from '../../components/ThemeToggleButton';
 
 // ==================== Types ====================
@@ -220,7 +221,7 @@ const ProfilePage: React.FC = () => {
   // ==================== Loading State ====================
   if (isLoadingProfile) {
     return (
-      <div className={theme === 'ocean' ? 'ocean-theme' : ''}>
+      <div className={theme === 'ocean' ? 'ocean-page' : ''}>
         <Navbar />
         <div style={{ textAlign: 'center', padding: '120px 0', color: '#6b7280' }}>
           กำลังโหลดข้อมูล...
@@ -231,12 +232,13 @@ const ProfilePage: React.FC = () => {
  
   // ==================== Render ====================
   return (
-    <div className={theme === 'ocean' ? 'ocean-theme' : ''}>
+    <div className={theme === 'ocean' ? 'ocean-page' : ''}>
       <Navbar />
       <div className="profile-wrapper">
  
-        <div className="page-header">
-          <div className="container">
+        <div className="page-header page-header-sm">
+          <OceanAnimations />
+          <div style={{ position: 'relative', zIndex: 10, padding: '0 40px', maxWidth: '480px' }}>
             <button className="btn-back" onClick={() => navigate(-1)}>&#8592; ย้อนกลับ</button>
             <h1>ตั้งค่าโปรไฟล์</h1>
             <p>จัดการข้อมูลส่วนตัว ระดับชั้น รหัสผ่าน และประวัติการสั่งซื้อ</p>

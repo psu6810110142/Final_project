@@ -9,25 +9,25 @@ export class NotificationsController {
 
   @Get()
   findAll(@Req() req: any) {
-    const userId = req.user?.sub || req.user?.user_id;
+    const userId = req.user?.userId;
     return this.notifService.findByUser(userId);
   }
 
   @Get('unread-count')
   unreadCount(@Req() req: any) {
-    const userId = req.user?.sub || req.user?.user_id;
+    const userId = req.user?.userId;
     return this.notifService.countUnread(userId);
   }
 
   @Patch('read-all')
   markAllRead(@Req() req: any) {
-    const userId = req.user?.sub || req.user?.user_id;
+    const userId = req.user?.userId;
     return this.notifService.markAllRead(userId);
   }
 
   @Patch(':id/read')
   markRead(@Param('id') id: string, @Req() req: any) {
-    const userId = req.user?.sub || req.user?.user_id;
+    const userId = req.user?.userId;
     return this.notifService.markRead(+id, userId);
   }
 }

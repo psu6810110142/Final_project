@@ -44,6 +44,7 @@ export interface InstructorData {
   profile_image_url: string;
   is_active: boolean;
   profile_image_file?: File | null;
+  user_id?: number | null;
 }
 
 // ✅ Order จาก backend: user เป็น nested object → normalize แล้วใน AdminDashboard

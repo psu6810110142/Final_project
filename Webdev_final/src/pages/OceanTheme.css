@@ -23,8 +23,7 @@
    ============================================================ */
 .ocean-page {
   font-family: 'Nunito', 'Kanit', sans-serif;
-  scroll-snap-type: y mandatory;
-  overflow-y: scroll;
+  overflow-y: auto;
   height: 100vh;
 }
 
@@ -939,4 +938,87 @@
   flex-direction: column;
   justify-content: center;
   overflow: hidden;
+}
+/* ===== Short header (MyCourses, CourseList, CourseDetail, Profile) ===== */
+.ocean-page .page-header-sm {
+  min-height: unset !important;
+  height: auto !important;
+  padding: 30px 0 200px !important;
+  scroll-snap-align: unset !important;
+  scroll-snap-stop: unset !important;
+  background-color: #1565c0 !important;
+  background-image: linear-gradient(180deg,
+    #071428 0%, #0d2b5e 20%, #1565c0 42%,
+    #1e88e5 58%, #29b6f6 72%, #4dd0e1 82%,
+    #b2dfdb 90%, #fdf3d9 96%, #f5dfa0 100%
+  ) !important;
+}
+/* ===== landing-hero: wave, sand, palm, fish, bubble ===== */
+.landing-hero .wave-layer-1 {
+  position:absolute; bottom:138px; left:0; width:200%; height:60px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 60'%3E%3Cpath fill='%231976d2' fill-opacity='.55' d='M0,30 C100,0 200,60 300,30 C400,0 500,60 600,30 C700,0 800,60 800,30 L800,60 L0,60 Z'/%3E%3C/svg%3E") repeat-x bottom/800px 60px;
+  animation:waveSlide 9s linear infinite; z-index:3;
+}
+.landing-hero .wave-layer-2 {
+  position:absolute; bottom:108px; left:0; width:200%; height:55px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 55'%3E%3Cpath fill='%2329b6f6' fill-opacity='.65' d='M0,25 C150,55 250,0 400,25 C550,50 650,5 800,25 L800,55 L0,55 Z'/%3E%3C/svg%3E") repeat-x bottom/800px 55px;
+  animation:waveSlide 6.5s linear infinite reverse; z-index:4;
+}
+.landing-hero .wave-layer-3 {
+  position:absolute; bottom:80px; left:0; width:200%; height:48px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 48'%3E%3Cpath fill='%23e1f5fe' fill-opacity='.85' d='M0,20 C80,40 160,5 240,20 C320,35 400,8 480,22 C560,36 640,6 720,18 C760,24 785,20 800,20 L800,48 L0,48 Z'/%3E%3C/svg%3E") repeat-x bottom/800px 48px;
+  animation:waveSlide 4.2s linear infinite; z-index:5;
+}
+.landing-hero .wave-layer-sand {
+  position:absolute; bottom:0; left:0; width:100%; height:98px;
+  background:linear-gradient(180deg,#fdf3d9 0%,#f5dfa0 55%,#e8c97a 100%);
+  z-index:6;
+}
+.landing-hero .wave-layer-sand::before {
+  content:''; position:absolute; inset:0;
+  background-image: radial-gradient(circle,rgba(180,140,60,.28) 1px,transparent 1px), radial-gradient(circle,rgba(200,160,80,.18) 1px,transparent 1px);
+  background-size:11px 11px,7px 7px; background-position:0 0,5px 5px; opacity:.55;
+}
+.landing-hero .wave-layer-sand::after {
+  content:''; position:absolute; top:0; left:0; width:100%; height:22px;
+  background:linear-gradient(180deg,rgba(178,223,219,.55) 0%,transparent 100%);
+}
+.landing-hero .palm-left,
+.landing-hero .palm-right {
+  position:absolute; bottom:0; z-index:8; line-height:1;
+  filter:drop-shadow(4px 8px 14px rgba(0,0,0,.35)); transform-origin:bottom center;
+}
+.landing-hero .palm-left  { left:1.5%;  font-size:8rem; animation:palmSwayL 5s ease-in-out infinite; }
+.landing-hero .palm-right { right:1.5%; font-size:7rem; animation:palmSwayR 5s ease-in-out infinite; animation-delay:1.5s; }
+.landing-hero .fish { position:absolute; z-index:7; font-size:2rem; animation:fishSwim 12s linear infinite; }
+.landing-hero .fish-1 { top:45%; animation-duration:14s; }
+.landing-hero .fish-2 { top:55%; animation-duration:10s; animation-delay:3s; }
+.landing-hero .fish-3 { top:50%; animation-duration:16s; animation-delay:6s; font-size:1.6rem; }
+.landing-hero .ocean-bubbles { position:absolute; inset:0; overflow:hidden; z-index:2; }
+
+/* ===== landing-hero override snap-section height ===== */
+.landing-hero.snap-section {
+  min-height: calc(100vh - 64px) !important;
+  height: calc(100vh - 64px) !important;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+/* ===== CourseDetail ocean — ให้เหมือนธีมปกติ ===== */
+.ocean-page .cd-banner-content {
+  gap: 50px !important;
+}
+
+.ocean-page .cd-banner-video img {
+  height: 300px !important;
+}
+
+/* ===== Login/Register page — full height ===== */
+.ocean-page .page-header-fullscreen {
+  min-height: calc(100vh - 64px) !important;
+  height: auto !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }

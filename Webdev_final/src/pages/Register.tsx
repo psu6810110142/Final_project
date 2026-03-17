@@ -6,6 +6,7 @@ import logoImage from '../assets/Logo.png';
 import api from '../api';
 import ThemeToggleButton from '../components/ThemeToggleButton';
 import { useTheme } from '../contexts/ThemeContext';
+import OceanAnimations from '../components/OceanAnimations';
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
@@ -64,7 +65,7 @@ const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-theme' : ''}`}>
+    <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-page' : ''}`}>
 
       {/* Navbar */}
       <nav className="navbar">
@@ -84,8 +85,9 @@ const RegisterPage: React.FC = () => {
       </nav>
 
       {/* Form */}
-      <div className="auth-container page-header-white" style={{ padding: '40px 20px' }}>
-        <div className="auth-card" style={{ maxWidth: '600px' }}>
+      <div className={`page-header ${theme === 'ocean' ? 'page-header-sm page-header-fullscreen' : 'auth-container page-header-white'}`}>
+        <OceanAnimations />
+        <div style={{ position: 'relative', zIndex: 10, background: 'white', borderRadius: '16px', padding: '40px', maxWidth: '520px', width: '90%', boxShadow: '0 8px 32px rgba(0,0,0,0.15)', margin: '20px 0' }}>
           <div className="auth-header">
             <h2>สมัครสมาชิก</h2>
             <p>สร้างบัญชีเพื่อเริ่มต้นการเรียนรู้กับเรา</p>

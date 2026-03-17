@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateInstructorDto {
   @IsString()
@@ -28,4 +29,9 @@ export class CreateInstructorDto {
   @IsOptional()
   @IsString()
   profile_image_url?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  user_id?: number;
 }

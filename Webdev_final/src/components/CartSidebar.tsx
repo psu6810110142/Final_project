@@ -25,7 +25,7 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
   // ดักจับรูปภาพพัง
   const getImageUrl = (url?: string) => {
     if (!url) return 'https://via.placeholder.com/150';
-    return url.startsWith('/uploads') ? `http://localhost:3000${url}` : url;
+    return url.startsWith('/uploads') ? `http://localhost:3001${url}` : url;
   };
 
   return (

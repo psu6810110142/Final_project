@@ -65,17 +65,15 @@ const HomePage: React.FC = () => {
       <Navbar/>
 
       {/* ================= Hero Section ================= */}
-      <header className="page-header">
-        {theme === 'ocean' && (
+      <header className={theme === 'ocean' ? 'landing-hero' : 'page-header home-page-header'}>
+        {theme === 'ocean' ? (
           <>
-            <div className="ocean-bubbles">
-              {[...Array(10)].map((_, i) => <div key={i} className="bubble" />)}
-            </div>
+            <div className="stars-layer" />
+            <div className="moon" />
+            <div className="ocean-bubbles">{[...Array(8)].map((_, i) => <div key={i} className="bubble" />)}</div>
             <span className="fish fish-1">🐠</span>
             <span className="fish fish-2">🐟</span>
             <span className="fish fish-3">🦑</span>
-            <span className="seagull seagull-1">🕊️</span>
-            <span className="seagull seagull-2">🦅</span>
             <div className="wave-layer-1" />
             <div className="wave-layer-2" />
             <div className="wave-layer-3" />
@@ -83,9 +81,11 @@ const HomePage: React.FC = () => {
             <span className="palm-left">🌴</span>
             <span className="palm-right">🌴</span>
           </>
+        ) : (
+          <div className="wave-bottom" />
         )}
-        <div className="container hero-content">
-          <div className="hero-text" style={{ marginLeft: '5%' }}>
+        <div className="container home-hero-content">
+          <div className="hero-text" style={{ marginLeft: '15%', marginTop: theme === 'ocean' ? '100px' : '0px' }}>
             <h1>เรียนออนไลน์ <br />ที่บ้าน สะดวก สบาย</h1>
             <p style={{ marginBottom: '30px' }}>แพลตฟอร์มการเรียนออนไลน์สำหรับนักเรียนชั้นประถมและมัธยมต้น เรียนได้ทุกที่ทุกเวลา พร้อมครูผู้สอนที่มีคุณภาพ</p>
             <button className="btn-hero">
@@ -93,17 +93,21 @@ const HomePage: React.FC = () => {
             </button>
           </div>
 
-          <div className="stats-grid">
-            <StatCard number="500+" label="นักเรียน" />
-            <StatCard number="50+" label="คอร์สเรียน" />
-            <StatCard number="20+" label="อาจารย์" />
-            <StatCard number="4.8" label="คะแนนเฉลี่ย" />
+          <div className="hero-mascot">
+            <div className="mascot-wrap">
+              <div className="mascot-bubble">👋 ยินดีต้อนรับ!</div>
+              <div className="mascot-body">🦈</div>
+              <div className="mascot-books">📚</div>
+              <div className="mascot-star star-1">⭐</div>
+              <div className="mascot-star star-2">✨</div>
+              <div className="mascot-star star-3">🌟</div>
+            </div>
           </div>
         </div>
       </header>
 
       {/* ================= Features Section ================= */}
-      <section className="section">
+      <section className="section home-features-section">
         <div className="container">
           <h2 className="section-title">ทำไมต้องเลือกเรียนกับเรา?</h2>
           <div className="features-grid">

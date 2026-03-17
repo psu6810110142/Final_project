@@ -27,8 +27,8 @@ export class CreateUserDto {
   interesting_subject?: string;
 
   @IsOptional()
-  @IsEnum(['STUDENT', 'ADMIN'])
-  role?: 'STUDENT' | 'ADMIN';
+  @IsEnum(['STUDENT', 'ADMIN', 'INSTRUCTOR'])
+  role?: 'STUDENT' | 'ADMIN' | 'INSTRUCTOR';
 
   @IsOptional()
   @Type(() => Number)

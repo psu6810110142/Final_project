@@ -94,7 +94,6 @@ body {
 
 /* ================= Navbar (ใช้ร่วมกันทั้ง 2 หน้า) ================= */
 .navbar {
-  /*background: linear-gradient(180deg, #3674B5 0%, #18334F 100%);*/
   background-color: #3674b5;
   color: white;
   padding: 12px 0;
@@ -202,6 +201,7 @@ body {
   z-index: 10;
 }
 
+
 .hero-text h1 {
   font-size: 3.5rem;
   line-height: 1.2;
@@ -273,15 +273,64 @@ body {
 
 /* ================= Page Header (สำหรับหัวเว็บหน้าย่อย) ================= */
 .page-header {
-  background-color: #51A6FF;
+  background-color: #1565c0;
   background-image:
-    linear-gradient(rgba(81, 166, 255, 0.95), rgba(81, 166, 255, 0.95)),
+    linear-gradient(135deg,
+      rgba(12, 52, 131, 0.93) 0%,
+      rgba(21, 101, 192, 0.88) 40%,
+      rgba(30, 136, 229, 0.86) 70%,
+      rgba(13, 71, 161, 0.92) 100%
+    ),
     url('../assets/BG.png');
-  background-size: 70%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   color: white;
   padding: 50px 0;
   text-align: left;
   position: relative;
+  overflow: hidden;
+}
+
+/* วงกลมลอย */
+.page-header::before {
+  content: '';
+  position: absolute;
+  top: -80px; right: -80px;
+  width: 420px; height: 420px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(100,180,255,0.18) 0%, transparent 70%);
+  pointer-events: none;
+  animation: floatBubble1 8s ease-in-out infinite;
+}
+.page-header::after {
+  content: '';
+  position: absolute;
+  bottom: -60px; left: 30%;
+  width: 300px; height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+  pointer-events: none;
+  animation: floatBubble2 10s ease-in-out infinite;
+}
+
+@keyframes floatBubble1 {
+  0%, 100% { transform: translateY(0) scale(1); opacity: 0.7; }
+  50%       { transform: translateY(20px) scale(1.06); opacity: 1; }
+}
+@keyframes floatBubble2 {
+  0%, 100% { transform: translateY(0) scale(1); opacity: 0.5; }
+  50%       { transform: translateY(-16px) scale(1.08); opacity: 0.9; }
+}
+
+/* wave shape ขอบล่าง */
+.page-header .wave-bottom {
+  position: absolute;
+  bottom: -2px; left: 0;
+  width: 100%; height: 60px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 60'%3E%3Cpath fill='%23eff6ff' d='M0,30 C240,60 480,0 720,30 C960,60 1200,0 1440,30 L1440,60 L0,60 Z'/%3E%3C/svg%3E") no-repeat bottom/100%;
+  pointer-events: none;
+  z-index: 5;
 }
 
 .page-header-white {
@@ -307,7 +356,7 @@ body {
 
 /* ================= Features & Courses ================= */
 .section {
-  padding: 80px 0;
+  padding: 50px 0;
 }
 
 .section-title {
@@ -1210,10 +1259,12 @@ body {
   justify-content: space-between;
   align-items: center;
   gap: 50px;
+  position: relative;
+  z-index: 10;
 }
 
 .cd-banner-info {
-  flex: 1.2;
+  flex: 1;
 }
 
 .cd-tags {
@@ -1298,6 +1349,7 @@ body {
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+  z-index: 10;
 }
 
 .cd-banner-video img {
@@ -1583,7 +1635,7 @@ body {
 }
 
 .my-courses-section {
-  background-color: #f9fafb;
+  background-color: #fef9e7;
   min-height: 60vh;
 }
 
@@ -1620,6 +1672,10 @@ body {
   display: flex;
   flex-direction: column;
   height: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  background: white;
 }
 
 .course-image-wrapper {
@@ -1628,8 +1684,9 @@ body {
 
 .course-image-img {
   width: 100%;
-  height: 200px;
+  height: 180px;
   object-fit: cover;
+  border-radius: 12px 12px 0 0;
 }
 
 .status-badge {
@@ -2373,3 +2430,224 @@ body {
 .form-group { margin-bottom: 20px; }
 .form-label { display: block; font-weight: 500; color: #374151; margin-bottom: 8px; font-size: 0.9rem; }
 .form-textarea { width: 100%; padding: 0.6rem 1rem; border: 1px solid #d1d5db; border-radius: 8px; outline: none; font-family: inherit; font-size: 0.95rem; }
+/* ============================================================
+   LANDING HERO — ท้องฟ้ากลางคืน
+   ============================================================ */
+.landing-hero {
+  background: linear-gradient(
+    180deg,
+    #020818 0%,
+    #060f2e 18%,
+    #0a1a4a 35%,
+    #0d2460 52%,
+    #112d72 68%,
+    #1a3a8a 80%,
+    #1e4fa8 90%,
+    #2563b8 100%
+  );
+  color: white;
+  padding: 36px 0 0;
+  position: relative;
+  overflow: hidden;
+  min-height: calc(100vh - 64px);
+  height: calc(100vh - 64px);
+  box-sizing: border-box;
+}
+
+/* ดวงดาว */
+.stars-layer {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 10% 15%, white 0%, transparent 100%),
+    radial-gradient(1px 1px at 22% 8%,  rgba(255,255,255,.8) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 35% 20%, white 0%, transparent 100%),
+    radial-gradient(1px 1px at 48% 6%,  rgba(255,255,255,.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 58% 18%, white 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 70% 10%, rgba(255,255,255,.9) 0%, transparent 100%),
+    radial-gradient(1px 1px at 80% 22%, white 0%, transparent 100%),
+    radial-gradient(1px 1px at 90% 5%,  rgba(255,255,255,.7) 0%, transparent 100%),
+    radial-gradient(1px 1px at 15% 40%, rgba(255,255,255,.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 28% 33%, white 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 42% 38%, rgba(255,255,255,.8) 0%, transparent 100%),
+    radial-gradient(1px 1px at 65% 28%, white 0%, transparent 100%),
+    radial-gradient(1px 1px at 75% 35%, rgba(255,255,255,.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 88% 42%, white 0%, transparent 100%),
+    radial-gradient(1px 1px at 5%  28%, rgba(255,255,255,.7) 0%, transparent 100%),
+    radial-gradient(1px 1px at 55% 44%, rgba(255,255,255,.5) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 1;
+  animation: twinkle 5s ease-in-out infinite alternate;
+}
+
+@keyframes twinkle {
+  0%   { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+/* พระจันทร์ */
+.moon {
+  position: absolute;
+  top: 28px;
+  right: 9%;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 38%,
+    #fffde7 0%, #fff9c4 30%, #ffd54f 65%, #ffb300 85%, transparent 100%
+  );
+  box-shadow:
+    0 0 0 6px rgba(255, 236, 153, 0.18),
+    0 0 30px 10px rgba(255, 213, 79, 0.30),
+    0 0 70px 25px rgba(255, 152, 0, 0.15),
+    inset -8px -4px 0 rgba(200, 160, 0, 0.15);
+  animation: moonGlow 4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* รอยบนดวงจันทร์ */
+.moon::before {
+  content: '';
+  position: absolute;
+  top: 18px; left: 16px;
+  width: 14px; height: 10px;
+  border-radius: 50%;
+  background: rgba(200, 160, 0, 0.20);
+}
+.moon::after {
+  content: '';
+  position: absolute;
+  top: 38px; left: 28px;
+  width: 9px; height: 7px;
+  border-radius: 50%;
+  background: rgba(200, 160, 0, 0.15);
+}
+
+@keyframes moonGlow {
+  0%, 100% {
+    box-shadow:
+      0 0 0 6px rgba(255, 236, 153, 0.18),
+      0 0 30px 10px rgba(255, 213, 79, 0.30),
+      0 0 70px 25px rgba(255, 152, 0, 0.15);
+  }
+  50% {
+    box-shadow:
+      0 0 0 8px rgba(255, 236, 153, 0.25),
+      0 0 45px 16px rgba(255, 213, 79, 0.45),
+      0 0 90px 35px rgba(255, 152, 0, 0.22);
+  }
+}
+
+.landing-hero .hero-content {
+  position: relative;
+  z-index: 10;
+}
+
+.landing-hero .hero-text h1 {
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1.25;
+  margin-bottom: 20px;
+  color: white;
+  text-shadow: 0 2px 16px rgba(0,0,0,0.4);
+}
+
+.landing-hero .hero-text p {
+  font-size: 1rem;
+  opacity: 0.9;
+  line-height: 1.65;
+  max-width: 480px;
+  color: rgba(255,255,255,0.92);
+}
+
+.landing-hero .stat-card {
+  background: rgba(255,255,255,0.10);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.18);
+  color: white;
+}
+
+.landing-hero .stat-number {
+  color: #ffd54f;
+}
+
+.landing-hero .stat-label {
+  color: rgba(255,255,255,0.8);
+}
+
+/* ===== landing-hero: ให้ wave, palm, bubble, fish ทำงานด้วย ===== */
+.landing-hero .wave-layer-1,
+.landing-hero .wave-layer-2,
+.landing-hero .wave-layer-3,
+.landing-hero .wave-layer-sand,
+.landing-hero .ocean-bubbles,
+.landing-hero .fish,
+.landing-hero .palm-left,
+.landing-hero .palm-right {
+  pointer-events: none;
+}
+
+/* ต้อง override ให้ position:absolute ทำงานใน landing-hero ด้วย */
+.landing-hero {
+  overflow: hidden;
+}
+
+/* ===== HomePage hero-content ===== */
+.home-hero-content {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 60px;
+  align-items: center;
+  position: relative;
+  z-index: 10;
+}
+
+/* ===== LandingPage hero-content ===== */
+.landing-hero-content {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 80px;
+  align-items: start;
+  padding-top: 20px;
+  position: relative;
+  z-index: 10;
+}
+
+/* ===== HomePage page-header เฉพาะหน้า home ===== */
+.home-page-header {
+  padding: 70px 0 110px !important;
+}
+
+/* ===== HomePage features section — เฉพาะหน้า home ===== */
+.home-features-section {
+  padding: 40px 0;
+}
+
+.home-features-section .section-title {
+  font-size: 1.7rem;
+  margin-bottom: 28px;
+}
+
+.home-features-section .features-grid {
+  gap: 20px;
+}
+
+.home-features-section .feature-card {
+  padding: 24px 20px;
+}
+
+.home-features-section .feature-icon-wrapper {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 16px;
+}
+
+.home-features-section .feature-card h3 {
+  font-size: 1rem;
+  margin-bottom: 6px;
+}
+
+.home-features-section .feature-card p {
+  font-size: 0.88rem;
+}
