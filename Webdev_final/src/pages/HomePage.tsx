@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './HomeTheme.css';
 import { BookOpen, ArrowRight, Users, Star, Clock } from 'lucide-react';
-import GrayLogo from '../assets/graylogo.png';
+import { getImageUrl } from '../utils/getImageUrl';
 import api from '../api'; 
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
@@ -24,19 +24,6 @@ interface CourseData {
     profile_image_url: string;
   };
 }
-
-const getImageUrl = (url?: string, type: 'course' | 'user' = 'course') => {
-  if (!url) {
-    return type === 'user'
-      ? GrayLogo // 👨‍🏫 รูปคน Default
-      : GrayLogo // 📚 รูปคอร์สเรียน Default
-  }
-
-  if (url.startsWith('/uploads')) {
-    return `http://localhost:3001${url}`;
-  }
-  return url;
-};
 
 const HomePage: React.FC = () => {
   const { theme } = useTheme();

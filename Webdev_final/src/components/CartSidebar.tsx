@@ -2,6 +2,7 @@ import React from 'react';
 import { X, Trash2, ShoppingCart } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { useNavigate } from 'react-router-dom';
+import { getImageUrl } from '../utils/getImageUrl';
 
 interface CartSidebarProps {
   isOpen: boolean;
@@ -21,12 +22,6 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
   onClose();
   navigate('/payment'); // ไม่มี courseId = มาจากตะกร้า
 };
-
-  // ดักจับรูปภาพพัง
-  const getImageUrl = (url?: string) => {
-    if (!url) return 'https://via.placeholder.com/150';
-    return url.startsWith('/uploads') ? `http://localhost:3001${url}` : url;
-  };
 
   return (
     <>

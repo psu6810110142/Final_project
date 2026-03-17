@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Users, BookOpen, Briefcase, DollarSign, TrendingUp, CreditCard, GraduationCap, Clock, XCircle, CheckCircle, BarChart2, PlayCircle, Award, PauseCircle } from 'lucide-react';
 import api from '../../api';
 import type { CourseData, OrderData, InstructorData, LearningProgressData } from './types';
+import { getImageUrl } from '../../utils/getImageUrl';
 
 interface Props {
   courses: CourseData[];
@@ -186,7 +187,7 @@ const DashboardTab: React.FC<Props> = ({ courses, users, orders, instructors, pr
                 <div key={u.user_id} style={{ display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px', padding: '10px 14px' }}>
                   <div style={{ position: 'relative' }}>
                     {u.profile_picture_url ? (
-                      <img src={`http://localhost:3001${u.profile_picture_url}`} alt={u.full_name}
+                      <img src={getImageUrl(u.profile_picture_url, 'user')} alt={u.full_name}
                         style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }} />
                     ) : (
                       <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold', fontSize: '14px' }}>

@@ -4,7 +4,7 @@ import {Search, Users, Clock, Filter} from 'lucide-react';
 import api from '../api';
 import ThemeToggleButton from '../components/ThemeToggleButton';
 import { Link } from 'react-router-dom';
-import GrayLogo from '../assets/graylogo.png';
+import { getImageUrl } from '../utils/getImageUrl';
 import Navbar from '../components/Navbar';
 import { useTheme } from '../contexts/ThemeContext';
 import './OceanTheme.css';
@@ -24,19 +24,6 @@ interface CourseData {
     profile_image_url: string;
   };
 }
-
-const getImageUrl = (url?: string, type: 'course' | 'user' = 'course') => {
-  if (!url) {
-    return type === 'user'
-      ? GrayLogo // 👨‍🏫 รูปคน Default
-      : GrayLogo // 📚 รูปคอร์สเรียน Default
-  }
-
-  if (url.startsWith('/uploads')) {
-    return `http://localhost:3001${url}`;
-  }
-  return url;
-};
 
 const CourseList: React.FC = () => {
   const { theme } = useTheme();

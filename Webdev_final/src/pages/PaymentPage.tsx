@@ -8,6 +8,7 @@ import defaultCourseImage from '../assets/locobackgroudewhite.png';
 import { useCart } from '../contexts/CartContext';
 import { useTheme } from '../contexts/ThemeContext';
 import './OceanTheme.css';
+import { getImageUrl } from '../utils/getImageUrl';
 
 const PaymentPage: React.FC = () => {
   const { theme } = useTheme();
@@ -181,11 +182,6 @@ const PaymentPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const getImageUrl = (url?: string) => {
-    if (!url) return defaultCourseImage;
-    return url.startsWith('/uploads') ? `http://localhost:3001${url}` : url;
   };
 
   if (loadingCourse) return (

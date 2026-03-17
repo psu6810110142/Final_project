@@ -4,13 +4,13 @@ import {Book, Clock, Users, PlayCircle, CheckCircle, Lock } from 'lucide-react';
 import './HomeTheme.css';
 import api from '../api';
 import ThemeToggleButton from '../components/ThemeToggleButton';
-import imgVDO from '../assets/locobackgroudewhite.png';
 import Navbar from '../components/Navbar';
 import { useCart } from '../contexts/CartContext';
 import OceanAnimations from '../components/OceanAnimations';
 import BackButton from '../components/BackButton';
 import { useTheme } from '../contexts/ThemeContext';
 import './OceanTheme.css';
+import { getImageUrl } from '../utils/getImageUrl';
 
 // 📌 Types
 interface Lesson {
@@ -76,16 +76,6 @@ export default function CourseDetail() {
 
     if (id) fetchCourseDetail();
   }, [id]);
-
-  // 🌟 ฟังก์ชันดึงรูปภาพ (ใช้รูป Logo.png จาก assets เป็นรูปเริ่มต้น)
-  const getImageUrl = (url?: string, type: 'course' | 'user' = 'course') => {
-    if (!url) {
-      return type === 'user'
-        ? ""
-        : imgVDO;
-    }
-    return url.startsWith('/uploads') ? `http://localhost:3001${url}` : url;
-  };
 
   if (loading) return <div className="state-message" style={{ textAlign: 'center', padding: '100px', fontSize: '1.2rem' }}>กำลังโหลดข้อมูลคอร์สเรียน... ⏳</div>;
 

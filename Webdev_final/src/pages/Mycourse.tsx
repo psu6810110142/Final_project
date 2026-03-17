@@ -8,6 +8,7 @@ import Navbar from '../components/Navbar';
 import OceanAnimations from '../components/OceanAnimations';
 import ThemeToggleButton from '../components/ThemeToggleButton';
 import { useTheme } from '../contexts/ThemeContext';
+import { getImageUrl } from '../utils/getImageUrl';
 
 interface Course {
   id: number;
@@ -21,12 +22,6 @@ interface Course {
   textColor: string;
   expireDate: Date | null;
 }
-
-const getImageUrl = (url?: string): string => {
-  if (!url) return "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=400";
-  if (url.startsWith('/uploads')) return `http://localhost:3001${url}`;
-  return url;
-};
 
 const statusStyleMap: Record<string, { tagColor: string; textColor: string }> = {
   COMPLETED:       { tagColor: '#dcfce7', textColor: '#166534' },

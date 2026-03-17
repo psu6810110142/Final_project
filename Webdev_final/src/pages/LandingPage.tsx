@@ -11,6 +11,7 @@ import ThammasatLogo from '../assets/thammasat-logo.png';
 import PSULogo from '../assets/psu-logo.png';
 import ThemeToggleButton from '../components/ThemeToggleButton';
 import { useTheme } from '../contexts/ThemeContext';
+import { getImageUrl } from '../utils/getImageUrl';
 
 interface CourseData {
   course_id: number; title: string; description: string; price: number;
@@ -26,12 +27,6 @@ interface InstructorData {
   bio?: string;
   expertise?: string;
 }
-
-const getImageUrl = (url?: string) => {
-  if (!url) return GrayLogo;
-  if (url.startsWith('/uploads')) return `http://localhost:3001${url}`;
-  return url;
-};
 
 /* ---- Reveal animation component ---- */
 const Reveal: React.FC<{ children: React.ReactNode; delay?: number; dir?: 'up' | 'left' | 'right' | 'none' }> = ({

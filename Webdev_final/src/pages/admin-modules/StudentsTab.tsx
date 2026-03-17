@@ -4,6 +4,7 @@ import api from '../../api';
 import { useConfirm } from './ConfirmDialog';
 import { mockLevels, getLevelName } from './types';
 import type { UserData, OrderData, CourseData, LearningProgressData } from './types';
+import { getImageUrl } from '../../utils/getImageUrl';
 
 interface Props {
   users: UserData[];
@@ -205,7 +206,7 @@ const StudentsTab: React.FC<Props> = ({ users, orders: _orders, courses: _course
                     <td style={{ padding: '14px 18px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         {(student as any).profile_picture_url ? (
-                          <img src={(student as any).profile_picture_url.startsWith('http') ? (student as any).profile_picture_url : `http://localhost:3001${(student as any).profile_picture_url}`} alt={student.full_name}
+                          <img src={getImageUrl((student as any).profile_picture_url, 'user')} alt={student.full_name}
                             style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #e2e8f0', flexShrink: 0 }} />
                         ) : (
                           <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold', fontSize: '14px', flexShrink: 0 }}>

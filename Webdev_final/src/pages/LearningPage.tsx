@@ -5,6 +5,7 @@ import Navbar from '../components/Navbar';
 import './HomeTheme.css';
 import { ChevronLeft, ChevronRight, CheckCircle, PlayCircle, Lock, FileText, ClipboardList, Award } from 'lucide-react';
 import QuizPlayer from './QuizPlayer';
+import { getImageUrl } from '../utils/getImageUrl';
 
 interface Lesson {
   lesson_id: number;
@@ -19,12 +20,6 @@ interface Progress {
   lesson_id: number;
   is_completed: boolean;
 }
-
-const getVideoUrl = (url?: string) => {
-  if (!url) return null;
-  if (url.startsWith('http')) return url;
-  return `http://localhost:3001${url}`;
-};
 
 // Wrapper เพื่อป้องกัน infinite re-render จาก onPassed
 const QuizPlayerWrapper: React.FC<{ lessonId: number; userId: number; onMarkComplete: (id: number) => Promise<void> }> = 
@@ -254,7 +249,7 @@ const LearningPage: React.FC = () => {
                     controls
                     style={{ width: '100%', height: '100%' }}
                     onEnded={() => markComplete(currentLesson.lesson_id)}>
-                    <source src={getVideoUrl(currentLesson.video_url) || ''} />
+                    <source src={getImageUrl(currentLesson.video_url)} />
                     เบราว์เซอร์ไม่รองรับวิดีโอ
                   </video>
                 </div>
@@ -287,7 +282,7 @@ const LearningPage: React.FC = () => {
 
                 {/* ปุ่มดาวน์โหลดไฟล์แนบ */}
                 {currentLesson.attachment_url && (
-                  <a href={`http://localhost:3001${currentLesson.attachment_url}`} target="_blank" rel="noreferrer"
+                  <a href={getImageUrl(currentLesson.attachment_url)} target="_blank" rel="noreferrer"
                     style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', backgroundColor: '#fffbeb', color: '#92400e', border: '1px solid #fde68a', borderRadius: '8px', textDecoration: 'none', fontWeight: '600', fontSize: '14px' }}>
                     <FileText size={16} /> ดาวน์โหลดเอกสาร
                   </a>

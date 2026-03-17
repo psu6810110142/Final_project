@@ -9,7 +9,7 @@ import '../OceanTheme.css';
 import { useTheme } from '../../contexts/ThemeContext';
 import OceanAnimations from '../../components/OceanAnimations';
 import ThemeToggleButton from '../../components/ThemeToggleButton';
-
+import { getImageUrl } from '../../utils/getImageUrl';
 // ==================== Types ====================
 interface UserData {
   firstName: string;
@@ -93,13 +93,9 @@ const ProfilePage: React.FC = () => {
           email: data.email || '',
           phone: data.phone || data.phoneNumber || data.phone_number || '',
           bio: data.bio || '',
-          profilePictureUrl: data.profile_picture_url
-            ? (data.profile_picture_url.startsWith('http')
-                ? data.profile_picture_url                          // ✅ Google URL ใช้ตรงๆ
-                : `http://localhost:3001${data.profile_picture_url}`) // ✅ รูปที่อัปโหลดเอง
-            : '',
           levelId: lvlId,
-        });
+        profilePictureUrl: getImageUrl(data.profile_picture_url, 'user'),
+});
         setSelectedLevelId(lvlId);
       } catch (error) {
         console.error('ดึงข้อมูลผู้ใช้ล้มเหลว:', error);
