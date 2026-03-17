@@ -5,6 +5,8 @@ import Navbar from '../components/Navbar';
 import './HomeTheme.css';
 import { ChevronLeft, ChevronRight, CheckCircle, PlayCircle, Lock, FileText, ClipboardList, Award } from 'lucide-react';
 import QuizPlayer from './QuizPlayer';
+import ThemeToggleButton from '../components/ThemeToggleButton';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface Lesson {
   lesson_id: number;
@@ -41,6 +43,7 @@ const LearningPage: React.FC = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
 
+  const { theme } = useTheme();
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [progress, setProgress] = useState<Progress[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -194,7 +197,8 @@ const LearningPage: React.FC = () => {
   );
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
+     <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-page' : ''}`}>
+      <ThemeToggleButton/>
       <Navbar />
       <div style={{ display: 'flex', height: 'calc(100vh - 64px)' }}>
 
