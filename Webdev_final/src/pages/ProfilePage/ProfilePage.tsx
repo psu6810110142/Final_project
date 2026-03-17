@@ -8,8 +8,8 @@ import ProfileTabs from '../ProfilePage/ProfileTabs';
 import '../OceanTheme.css';
 import { useTheme } from '../../contexts/ThemeContext';
 import ThemeToggleButton from '../../components/ThemeToggleButton';
-import OceanAnimations from '../../components/OceanAnimations';
 import BackButton from '../../components/BackButton';
+import OceanAnimations from '../../components/OceanAnimations';
 
 // ==================== Types ====================
 interface UserData {
