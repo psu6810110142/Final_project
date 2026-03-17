@@ -37,7 +37,7 @@ const ProfileSidebar: React.FC<Props> = ({
     <div className="profile-card profile-sidebar">
       {/* รูปโปรไฟล์ */}
       <div className="profile-avatar-container">
-        <img src={avatarSrc} alt="Avatar" className="profile-avatar" />
+        <img src={avatarSrc} alt="Avatar" referrerPolicy="no-referrer" className="profile-avatar" />
         <label className="avatar-edit-btn" title="เปลี่ยนรูปโปรไฟล์">
           📷
           <input type="file" accept="image/*" onChange={onFileChange} style={{ display: 'none' }} />
