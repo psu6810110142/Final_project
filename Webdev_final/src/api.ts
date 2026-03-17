@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://43.210.144.64:3001', 
+  baseURL: 'https://wd10.pupasoft.com/api', 
   headers: {
     'Content-Type': 'application/json',
   },
