@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import './HomeTheme.css';
 import {Search, Users, Clock, Filter} from 'lucide-react';
 import api from '../api';
-import ThemeToggleButton from '../components/ThemeToggleButton';
 import { Link } from 'react-router-dom';
 import GrayLogo from '../assets/graylogo.png';
 import Navbar from '../components/Navbar';
 import { useTheme } from '../contexts/ThemeContext';
 import './OceanTheme.css';
+import OceanAnimations from '../components/OceanAnimations';
+import ThemeToggleButton from '../components/ThemeToggleButton';
 
 interface CourseData {
   course_id: number;
@@ -64,7 +65,7 @@ const CourseList: React.FC = () => {
   }, []);
 
   return (
-    <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-theme' : ''}`}>
+    <div className={`page-wrapper ${theme === 'ocean' ? 'ocean-page' : ''}`}>
       <Navbar />
       {/* ================= Course Header & Search ================= */}
       <div className="page-header" style={{ padding: '60px 0', textAlign: 'center' }}>
@@ -84,6 +85,8 @@ const CourseList: React.FC = () => {
             />
           </div>
         </div>
+        <OceanAnimations />
+        <ThemeToggleButton />
       </div>
 
       {/* ================= Courses Content ================= */}
@@ -185,7 +188,6 @@ const CourseList: React.FC = () => {
           </div>
         </div>
       </footer>
-      <ThemeToggleButton />
     </div>
   );
 };

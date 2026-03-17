@@ -2373,3 +2373,32 @@ body {
 .form-group { margin-bottom: 20px; }
 .form-label { display: block; font-weight: 500; color: #374151; margin-bottom: 8px; font-size: 0.9rem; }
 .form-textarea { width: 100%; padding: 0.6rem 1rem; border: 1px solid #d1d5db; border-radius: 8px; outline: none; font-family: inherit; font-size: 0.95rem; }
+
+/* ================= Primary Button ================= */
+.btn-primary {
+  background-color: var(--primary-blue);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition: background-color 0.2s, transform 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-primary:hover {
+  background-color: var(--dark-blue);
+  transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
