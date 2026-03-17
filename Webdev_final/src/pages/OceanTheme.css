@@ -1006,7 +1006,7 @@
 
 /* ===== CourseDetail ocean — ให้เหมือนธีมปกติ ===== */
 .ocean-page .cd-banner-content {
-  gap: 50px !important;
+  gap: 500px !important;
 }
 
 .ocean-page .cd-banner-video img {
