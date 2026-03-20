@@ -82,7 +82,7 @@ export const mockSubjects = [
 export const getImageUrl = (url?: string): string | undefined => {
   if (!url) return undefined;
   if (url.startsWith('http')) return url;
-  return `https://wd10.pupasoft.com/api${url}?t=${Date.now()}`;
+  return `http://localhost:3001${url}?t=${Date.now()}`;
 };
 
 export const getLevelName = (id?: number) =>
