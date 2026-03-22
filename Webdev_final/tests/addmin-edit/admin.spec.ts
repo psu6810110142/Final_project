@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 
 // ============================================================
-// ⚙️ ตั้งค่า — แก้ค่าเหล่านี้ให้ตรงกับ environment จริง
+// ⚙️ ตั้งค่า — แก้ค่าเหล่านี้ให้ตรงกับ environment จริงzsc
 // ============================================================
 const BASE_URL = 'http://localhost:5173';
 const ADMIN_USERNAME = 'admin';         // username หรือ email ของ ADMIN
