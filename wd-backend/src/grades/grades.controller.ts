@@ -3,10 +3,15 @@ import { GradesService } from './grades.service';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
+import { InjectEntityManager } from '@nestjs/typeorm';
+import { EntityManager } from 'typeorm';
 
 @Controller('grades')
 export class GradesController {
-  constructor(private readonly gradesService: GradesService) {}
+  constructor(
+    private readonly gradesService: GradesService,
+    @InjectEntityManager() private readonly manager: EntityManager,
+  ) {}
 
   // INSTRUCTOR/ADMIN ให้เกรด
   @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -38,5 +43,13 @@ export class GradesController {
   myGrade(@Req() req: any, @Param('courseId') courseId: string) {
     const userId = req.user.userId || req.user.user_id || req.user.sub;
     return this.gradesService.findOne(userId, +courseId);
+  }
+
+  // ✅ ออกใบเซอร์ — คำนวณเกรดอัตโนมัติ + ตรวจสอบสิทธิ์
+  @UseGuards(AuthGuard('jwt'))
+  @Get('certificate/:courseId')
+  getCertificate(@Req() req: any, @Param('courseId') courseId: string) {
+    const userId = req.user.userId || req.user.user_id || req.user.sub;
+    return this.gradesService.getCertificateData(userId, +courseId, this.manager);
   }
 }

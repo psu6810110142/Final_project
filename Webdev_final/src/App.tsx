@@ -13,6 +13,7 @@ import CourseManagement from './pages/admin-modules/AdminDashboard';
 import MyCourses from './pages/Mycourse';
 import CourseDetail from './pages/CourseDetail';
 import LearningPage from './pages/LearningPage';
+import CertificatePage from './pages/CertificatePage';
 import ProfilePage from './pages/ProfilePage/ProfilePage';
 import PaymentPage from './pages/PaymentPage'; // ✨ 1. Import หน้า Payment เข้ามา
 import CompleteProfile from './pages/CompleteProfile';
@@ -65,6 +66,9 @@ function App() {
             <Route path="/learn/:courseId" element={<LearningPage />} />
 
             <Route path="/profile" element={<ProfilePage />} />
+
+            {/* ใบประกาศนียบัตร */}
+            <Route path="/certificate/:courseId" element={<CertificatePage />} />
 
           {/* กรณีพิมพ์มั่ว ให้เด้งกลับหน้าแรก */}
           <Route path="*" element={<LandingPage />} />

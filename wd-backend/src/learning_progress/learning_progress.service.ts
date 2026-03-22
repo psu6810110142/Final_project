@@ -63,10 +63,14 @@ export class LearningProgressService {
   }
 
   async findByUser(userId: number) {
-    return this.progressRepo.find({
-      where: { user: { user_id: userId } },
-      relations: ['lesson', 'lesson.course']
-    });
+    // ใช้ QueryBuilder เพื่อ force join lesson.course ให้ครบทุก record
+    return this.progressRepo
+      .createQueryBuilder('progress')
+      .leftJoinAndSelect('progress.lesson', 'lesson')
+      .leftJoinAndSelect('lesson.course', 'course')
+      .where('progress.user_id = :userId', { userId })
+      .orderBy('progress.progress_id', 'ASC')
+      .getMany();
   }
 
   async update(id: number, updateDto: UpdateLearningProgressDto) {

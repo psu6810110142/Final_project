@@ -2,13 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './HomeTheme.css';
 import './OceanTheme.css';
-import { PlayCircle, CheckCircle, LockKeyhole, RefreshCw, XCircle, Mail, Clock, Search } from 'lucide-react';
+import { PlayCircle, CheckCircle, LockKeyhole, RefreshCw, XCircle, Mail, Clock, Search, Award } from 'lucide-react';
 import api from '../api';
 import Navbar from '../components/Navbar';
 import OceanAnimations from '../components/OceanAnimations';
 import ThemeToggleButton from '../components/ThemeToggleButton';
 import { useTheme } from '../contexts/ThemeContext';
-import { getImageUrl } from '../utils/getImageUrl';
 
 interface Course {
   id: number;
@@ -22,6 +21,12 @@ interface Course {
   textColor: string;
   expireDate: Date | null;
 }
+
+const getImageUrl = (url?: string): string => {
+  if (!url) return "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=400";
+  if (url.startsWith('/uploads')) return `http://localhost:3001${url}`;
+  return url;
+};
 
 const statusStyleMap: Record<string, { tagColor: string; textColor: string }> = {
   COMPLETED:       { tagColor: '#dcfce7', textColor: '#166534' },
@@ -153,11 +158,32 @@ const MyCourses: React.FC = () => {
         setExpiringCourses(expiringSoon);
       }
 
-      // grades
+      // grades — เริ่มจาก manual grades ที่อาจารย์ให้
       const gradesMap: Record<number, string> = {};
       (Array.isArray(gradesRes.data) ? gradesRes.data : []).forEach((g: any) => {
         if (g.course?.course_id && g.grade) gradesMap[g.course.course_id] = g.grade;
       });
+
+      // ✅ สำหรับคอร์สที่เรียนจบ 100% แต่ยังไม่มีเกรดจากอาจารย์
+      // ดึงเกรดอัตโนมัติจาก /grades/certificate/:courseId
+      // ใช้ c.id เพราะ Course interface map course_id → id
+      const completedCourseIds100 = uniqueCourses
+        .filter((c: any) => c.progress === 100 && !gradesMap[Number(c.id)])
+        .map((c: any) => Number(c.id));
+
+      if (completedCourseIds100.length > 0) {
+        const certResults = await Promise.all(
+          completedCourseIds100.map((courseId: number) =>
+            api.get(`/grades/certificate/${courseId}`)
+              .then(r => ({ courseId, grade: r.data?.grade }))
+              .catch(() => null)
+          )
+        );
+        certResults.forEach(r => {
+          if (r && r.grade) gradesMap[r.courseId] = r.grade;
+        });
+      }
+
       setMyGrades(gradesMap);
 
     } catch (error: any) {
@@ -413,9 +439,24 @@ const MyCourseCard = ({ course, onCancel, grade }: { course: Course; onCancel: (
             </div>
           </div>
         ) : (
-          <button className={`btn-learn ${isCompleted ? 'review' : 'continue'}`} onClick={() => navigate(`/learn/${course.id}`)}>
-            {isCompleted ? 'ทบทวนเนื้อหา' : <><PlayCircle size={18} /> เรียนต่อ</>}
-          </button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <button className={`btn-learn ${isCompleted ? 'review' : 'continue'}`} onClick={() => navigate(`/learn/${course.id}`)}>
+              {isCompleted ? 'ทบทวนเนื้อหา' : <><PlayCircle size={18} /> เรียนต่อ</>}
+            </button>
+            {/* ✅ ปุ่มใบเซอร์ — แสดงเมื่อเรียนจบ 100% และเกรด A/B/C */}
+            {isCompleted && grade && ['A', 'B', 'C'].includes(grade) && (
+              <button
+                onClick={(e) => { e.stopPropagation(); navigate(`/certificate/${course.id}`); }}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px 16px', backgroundColor: '#c9a84c', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '700', fontSize: '14px', boxShadow: '0 2px 8px rgba(201,168,76,0.35)' }}>
+                <Award size={16} /> รับใบประกาศนียบัตร
+              </button>
+            )}
+            {isCompleted && !grade && (
+              <div style={{ fontSize: '12px', color: '#64748b', textAlign: 'center', padding: '6px', backgroundColor: '#f8fafc', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                ⏳ รอผลการประเมินจากอาจารย์
+              </div>
+            )}
+          </div>
         )}
 
         {isApproved && course.expireDate && (() => {
